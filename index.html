@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' wss://broker.emqx.io:8084 wss://broker.hivemq.com:8884; object-src 'none'; base-uri 'self';" />
-  <title>1080p Hockey Broadcast Scorebug &amp; Live Producer Studio v6</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; frame-src https://www.youtube.com https://www.youtube-nocookie.com; connect-src 'self' wss://broker.emqx.io:8084 wss://broker.hivemq.com:8884; object-src 'none'; base-uri 'self';" />
+  <title>1080p Hockey Broadcast Scorebug &amp; Live Producer Studio v7</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
@@ -49,9 +49,7 @@
       height: 100%;
       overflow: hidden !important;
     }
-    body.overlay-mode #studio-app {
-      display: none !important;
-    }
+    body.overlay-mode #studio-app { display: none !important; }
     body.overlay-mode #overlay-mount-root {
       position: fixed;
       inset: 0;
@@ -83,9 +81,7 @@
       display: none !important;
     }
 
-    #overlay-mount-root {
-      display: none;
-    }
+    #overlay-mount-root { display: none; }
 
     #overlay-toast {
       position: fixed;
@@ -173,17 +169,9 @@
       cursor: pointer;
       transition: 0.15s;
     }
-    .nav-tab.active {
-      background: var(--accent-blue);
-      color: #fff;
-    }
+    .nav-tab.active { background: var(--accent-blue); color: #fff; }
 
-    .top-actions {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
+    .top-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 
     .btn {
       border: 1px solid var(--border);
@@ -211,6 +199,7 @@
     .btn-blue { background: #1d4ed8; border-color: #3b82f6; color: #eff6ff; }
     .btn-blue:hover { background: #2563eb; }
     .btn-amber { background: #78350f; border-color: #f59e0b; color: #fffbeb; }
+    .btn-xs { padding: 3px 7px; font-size: 10px; border-radius: 5px; }
 
     /* =========================================================
        GAME MODE VIEW
@@ -218,7 +207,7 @@
     #view-game {
       flex: 1;
       display: grid;
-      grid-template-columns: minmax(0, 1.45fr) minmax(340px, 1fr);
+      grid-template-columns: minmax(0, 1.42fr) minmax(360px, 1fr);
       gap: 12px;
       padding: 12px;
       overflow: hidden;
@@ -291,7 +280,7 @@
     }
 
     /* =========================================================
-       MOBILE / IPHONE RESPONSIVE FIX (NO OVERLAPPING)
+       MOBILE / IPHONE RESPONSIVE FIX
        ========================================================= */
     @media (max-width: 960px) {
       html:not(.overlay-mode),
@@ -301,62 +290,23 @@
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
       }
-      #studio-app {
-        height: auto;
-        min-height: 100dvh;
-        overflow: visible;
-      }
-      .topbar {
-        padding: 10px;
-        gap: 8px;
-      }
-      .brand {
-        font-size: 13px;
-      }
-      .top-actions {
-        width: 100%;
-        justify-content: flex-start;
-      }
-      .top-actions .btn {
-        font-size: 11px;
-        padding: 6px 8px;
-      }
-      #view-game {
-        grid-template-columns: 1fr;
-        overflow: visible;
-        padding: 10px;
-        gap: 10px;
-      }
-      .stage-aspect-box {
-        max-height: none;
-        width: 100%;
-      }
-      .producer-column {
-        overflow: visible;
-        padding-right: 0;
-      }
-      .teams-grid {
-        grid-template-columns: 1fr;
-      }
-      #view-setup {
-        grid-template-columns: 1fr;
-        overflow: visible;
-        padding: 10px;
-      }
-      .form-grid-2, .form-grid-3 {
-        grid-template-columns: 1fr;
-      }
+      #studio-app { height: auto; min-height: 100dvh; overflow: visible; }
+      .topbar { padding: 10px; gap: 8px; }
+      .brand { font-size: 13px; }
+      .top-actions { width: 100%; justify-content: flex-start; }
+      .top-actions .btn { font-size: 11px; padding: 6px 8px; }
+      #view-game { grid-template-columns: 1fr; overflow: visible; padding: 10px; gap: 10px; }
+      .stage-aspect-box { max-height: none; width: 100%; }
+      .producer-column { overflow: visible; padding-right: 0; }
+      .teams-grid { grid-template-columns: 1fr; }
+      #view-setup { grid-template-columns: 1fr; overflow: visible; padding: 10px; }
+      .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
     }
 
     /* =========================================================
        1920x1080 BROADCAST CANVAS & INTERACTIVE HANDLES
        ========================================================= */
-    #broadcast-stage-wrapper {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      overflow: hidden;
-    }
+    #broadcast-stage-wrapper { width: 100%; height: 100%; position: relative; overflow: hidden; }
 
     #broadcast-canvas {
       width: 1920px;
@@ -374,20 +324,8 @@
       user-select: none;
     }
 
-    .safe-guide {
-      position: absolute;
-      inset: 44px 64px;
-      border: 1px dashed rgba(255, 255, 255, 0.12);
-      pointer-events: none;
-      z-index: 1;
-    }
-    .snap-guide {
-      position: absolute;
-      background: rgba(56, 189, 248, 0.75);
-      pointer-events: none;
-      z-index: 90;
-      display: none;
-    }
+    .safe-guide { position: absolute; inset: 44px 64px; border: 1px dashed rgba(255, 255, 255, 0.12); pointer-events: none; z-index: 1; }
+    .snap-guide { position: absolute; background: rgba(56, 189, 248, 0.75); pointer-events: none; z-index: 90; display: none; }
     .snap-guide.v { width: 2px; top: 0; bottom: 0; left: 960px; }
     .snap-guide.h { height: 2px; left: 0; right: 0; top: 540px; }
 
@@ -412,9 +350,7 @@
       transition: border-color 0.15s;
     }
     .draggable-graphic:not(.locked):hover .drag-outline,
-    .draggable-graphic.is-dragging .drag-outline {
-      border-color: rgba(59, 130, 246, 0.85);
-    }
+    .draggable-graphic.is-dragging .drag-outline { border-color: rgba(59, 130, 246, 0.85); }
     .draggable-graphic.locked .resize-handle { display: none !important; }
 
     .resize-handle {
@@ -433,9 +369,7 @@
       z-index: 5;
     }
     .draggable-graphic:not(.locked):hover .resize-handle,
-    .draggable-graphic.is-dragging .resize-handle {
-      opacity: 1;
-    }
+    .draggable-graphic.is-dragging .resize-handle { opacity: 1; }
 
     /* =========================================================
        MODE A: COMPACT TSN / ESPN SCOREBUG
@@ -463,8 +397,9 @@
     .badge-en { background: #ef4444; color: #fff; }
     .bug-score { width: 52px; height: 100%; background: #f8fafc; color: #090d16; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900; line-height: 1; border-left: 1px solid rgba(0,0,0,0.15); border-right: 1px solid rgba(0,0,0,0.15); transition: transform 0.2s, background-color 0.25s; }
     .bug-score.flash { background: #fef08a; transform: scale(1.08); }
-    .bug-clock-box { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 16px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); min-width: 112px; }
+    .bug-clock-box { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 16px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); min-width: 86px; }
     .bug-period { font-size: 14px; font-weight: 800; letter-spacing: 0.08em; color: #38bdf8; line-height: 1; text-transform: uppercase; }
+    .bug-clock-box.no-clock .bug-period { font-size: 24px; color: #ffffff; }
     .bug-time { font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: #ffffff; line-height: 1.05; margin-top: 2px; }
 
     /* =========================================================
@@ -508,7 +443,7 @@
     @keyframes tickerScroll { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
 
     /* =========================================================
-       SPONSOR LOOP, BANNERS & TAKEOVERS
+       SPONSOR LOOP, BANNERS, CUSTOM UPPER-RIGHT ALERT & TAKEOVERS
        ========================================================= */
     .sponsor-bug { width: 248px; height: 92px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 12px; position: relative; transition: opacity 0.35s ease; }
     .sponsor-bug.with-backing { background: rgba(11, 15, 24, 0.86); border: 1px solid rgba(255, 255, 255, 0.16); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55); }
@@ -518,18 +453,21 @@
 
     #banner-node { z-index: 30; }
     #banner-node.inactive { pointer-events: none !important; }
+    #alert-node { z-index: 35; }
+    #alert-node.inactive { pointer-events: none !important; }
+
     .tv-banner-wrap { opacity: 0; transform: translateY(16px); transition: opacity var(--fade-ms, 300ms) ease, transform var(--fade-ms, 300ms) cubic-bezier(0.16, 1, 0.3, 1); }
     .tv-banner-wrap.visible { opacity: 1; transform: translateY(0); }
 
     .espn-goal-strip { display: inline-flex; align-items: center; height: 76px; background: linear-gradient(90deg, #0d131f 0%, #161f33 65%, #0d131f 100%); border-radius: 6px; overflow: hidden; box-shadow: 0 14px 36px rgba(0, 0, 0, 0.78), 0 0 0 1px rgba(255, 255, 255, 0.18); font-family: var(--font-tv); position: relative; }
     .espn-goal-strip::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.28) 50%, transparent 75%); transform: translateX(-100%); animation: sheenSweep 1.3s ease-out 0.15s forwards; pointer-events: none; }
     @keyframes sheenSweep { to { transform: translateX(120%); } }
-    .goal-crest-box { width: 84px; height: 100%; display: flex; align-items: center; justify-content: center; padding: 8px; background: rgba(255, 255, 255, 0.06); }
+    .goal-crest-box { width: 84px; height: 100%; display: flex; align-items: center; justify-content: center; padding: 8px; background: rgba(255, 255, 255, 0.06); flex-shrink: 0; }
     .goal-crest-box img { max-width: 64px; max-height: 64px; object-fit: contain; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.65)); }
-    .goal-badge-skew { height: 100%; padding: 0 26px; display: flex; align-items: center; justify-content: center; font-size: 46px; font-weight: 900; font-style: italic; letter-spacing: 0.04em; color: #ffffff; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); margin: 0 -8px; text-shadow: 0 2px 10px rgba(0,0,0,0.45); }
-    .goal-details { padding: 0 26px 0 22px; display: flex; flex-direction: column; justify-content: center; }
-    .goal-team-title { font-size: 32px; font-weight: 900; letter-spacing: 0.03em; color: #ffffff; line-height: 0.95; text-transform: uppercase; }
-    .goal-meta-line { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: #cbd5e1; margin-top: 4px; letter-spacing: 0.03em; }
+    .goal-badge-skew { height: 100%; padding: 0 24px; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 900; font-style: italic; letter-spacing: 0.04em; color: #ffffff; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); margin: 0 -8px; text-shadow: 0 2px 10px rgba(0,0,0,0.45); flex-shrink: 0; }
+    .goal-details { padding: 0 24px 0 20px; display: flex; flex-direction: column; justify-content: center; }
+    .goal-team-title { font-size: 30px; font-weight: 900; letter-spacing: 0.03em; color: #ffffff; line-height: 0.98; text-transform: uppercase; white-space: nowrap; }
+    .goal-meta-line { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: #cbd5e1; margin-top: 4px; letter-spacing: 0.03em; white-space: nowrap; }
 
     .espn-info-strip { display: inline-flex; align-items: center; height: 64px; background: linear-gradient(180deg, #161d2b 0%, #0b0f18 100%); border-radius: 6px; overflow: hidden; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(255, 255, 255, 0.16); font-family: var(--font-tv); }
     .info-pill-tag { height: 100%; padding: 0 18px; display: flex; align-items: center; font-size: 22px; font-weight: 900; letter-spacing: 0.06em; color: #fff; text-transform: uppercase; }
@@ -540,14 +478,14 @@
     #takeover-layer { position: absolute; inset: 0; width: 1920px; height: 1080px; z-index: 60; display: none; pointer-events: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--fade-ms, 350ms) ease; }
     #takeover-layer.active { display: flex; }
     #takeover-layer.visible { opacity: 1; }
-    .takeover-media { width: 1920px; height: 1080px; object-fit: cover; }
-    .takeover-slate { width: 1920px; height: 1080px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 42%, var(--tk-color, #b91c1c) 0%, #090d16 74%); overflow: hidden; font-family: var(--font-tv); }
+    .takeover-media { width: 1920px; height: 1080px; object-fit: cover; border: none; }
+    .takeover-slate { width: 1920px; height: 1080px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 42%, var(--tk-color, #b91c1c) 0%, #090d16 74%); overflow: hidden; font-family: var(--font-tv); text-align: center; padding: 60px; }
     .takeover-slate::before { content: ''; position: absolute; inset: -40%; background: repeating-linear-gradient(-35deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 24px, transparent 24px, transparent 56px); animation: bgDrift 18s linear infinite; }
     @keyframes bgDrift { from { transform: translateX(0); } to { transform: translateX(112px); } }
     .takeover-crest { width: 310px; height: 310px; object-fit: contain; z-index: 2; filter: drop-shadow(0 22px 48px rgba(0, 0, 0, 0.75)); animation: crestFloat 3.6s ease-in-out infinite; }
     @keyframes crestFloat { 0%, 100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.04) translateY(-10px); } }
     .takeover-kicker { z-index: 2; margin-top: 26px; padding: 6px 22px; background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.28); border-radius: 999px; font-size: 26px; font-weight: 800; letter-spacing: 0.16em; color: #f8fafc; text-transform: uppercase; }
-    .takeover-headline { z-index: 2; margin-top: 12px; font-size: 108px; font-weight: 900; font-style: italic; line-height: 0.95; letter-spacing: 0.03em; color: #ffffff; text-transform: uppercase; text-shadow: 0 10px 32px rgba(0, 0, 0, 0.7); }
+    .takeover-headline { z-index: 2; margin-top: 12px; font-size: 104px; font-weight: 900; font-style: italic; line-height: 0.95; letter-spacing: 0.03em; color: #ffffff; text-transform: uppercase; text-shadow: 0 10px 32px rgba(0, 0, 0, 0.7); }
     .takeover-subline { z-index: 2; margin-top: 14px; font-family: var(--font-mono); font-size: 32px; font-weight: 800; color: #e2e8f0; letter-spacing: 0.06em; }
 
     /* =========================================================
@@ -555,7 +493,7 @@
        ========================================================= */
     .producer-column { display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow-y: auto; padding-right: 2px; }
     .panel-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; padding: 11px 12px; }
-    .panel-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-dim); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+    .panel-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-dim); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
     .teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .team-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 9px; display: flex; flex-direction: column; gap: 7px; }
     .team-header { display: flex; align-items: center; justify-content: space-between; font-weight: 800; font-size: 13px; }
@@ -581,9 +519,10 @@
     .pad-label { font-size: 12px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .pad-badge { font-family: var(--font-mono); font-size: 9px; font-weight: 800; padding: 2px 5px; border-radius: 4px; background: rgba(59, 130, 246, 0.2); color: #93c5fd; flex-shrink: 0; }
     .pad-badge.static { background: rgba(245, 158, 11, 0.22); color: #fcd34d; }
+    .pad-badge.yt { background: rgba(239, 68, 68, 0.25); color: #fca5a5; }
     .pad-sub { font-size: 10px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    #view-setup { flex: 1; overflow-y: auto; padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 14px; align-content: start; }
+    #view-setup { flex: 1; overflow-y: auto; padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 14px; align-content: start; }
     #view-setup.hidden { display: none; }
     .form-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
     .form-row label { font-size: 11px; font-weight: 700; color: var(--text-dim); }
@@ -594,10 +533,15 @@
     .logo-preview-box { width: 56px; height: 56px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
     .logo-preview-box img { max-width: 48px; max-height: 48px; object-fit: contain; }
     .list-item-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 7px; padding: 7px 9px; margin-bottom: 6px; font-size: 12px; }
+    .inline-edit-box { background: #0f1624; border: 1px solid var(--accent-blue); border-radius: 8px; padding: 9px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
 
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.72); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
     .modal-backdrop.open { display: flex; }
     .modal-card { background: var(--bg-panel); border: 1px solid var(--border-hi); border-radius: 12px; max-width: 480px; width: 100%; padding: 18px; }
+
+    .preset-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+    .chip-btn { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-dim); font-size: 10px; font-weight: 700; padding: 4px 7px; border-radius: 999px; cursor: pointer; }
+    .chip-btn:hover { border-color: var(--accent-amber); color: var(--text); }
   </style>
 </head>
 <body>
@@ -608,7 +552,7 @@
     <header class="topbar">
       <div class="brand">
         <span class="brand-dot"></span>
-        <span>HOCKEY BROADCAST STUDIO v6</span>
+        <span>HOCKEY BROADCAST STUDIO v7</span>
       </div>
 
       <nav class="nav-tabs">
@@ -645,7 +589,7 @@
               <div class="snap-guide v" id="snap-v"></div>
               <div class="snap-guide h" id="snap-h"></div>
 
-              <!-- 1A. Compact Scorebug -->
+              <!-- 1A. Compact Scorebug (Default 130% scale) -->
               <div class="draggable-graphic" id="scorebug-node" data-target="scorebug">
                 <div class="drag-outline"></div>
                 <div class="tv-scorebug" id="scorebug-inner">
@@ -675,7 +619,7 @@
                     <div class="bug-logo-wrap" id="bug-away-logo"></div>
                     <div class="bug-color-bar" id="bug-away-bar" style="background:#1d4ed8;"></div>
                   </div>
-                  <div class="bug-clock-box">
+                  <div class="bug-clock-box" id="bug-clock-box">
                     <div class="bug-period" id="bug-period">1ST</div>
                     <div class="bug-time" id="bug-time">15:00</div>
                   </div>
@@ -725,14 +669,21 @@
                 <div class="resize-handle" data-resize="sponsor"></div>
               </div>
 
-              <!-- 3. Active Banner -->
+              <!-- 3. Active Goal / Info Banner -->
               <div class="draggable-graphic inactive" id="banner-node" data-target="banner">
                 <div class="drag-outline"></div>
                 <div class="tv-banner-wrap" id="banner-inner"></div>
                 <div class="resize-handle" data-resize="banner"></div>
               </div>
 
-              <!-- 4. Full-Screen Takeover -->
+              <!-- 4. Custom Persistent Upper-Right Message Strip (Goal Strip Template) -->
+              <div class="draggable-graphic inactive" id="alert-node" data-target="alert">
+                <div class="drag-outline"></div>
+                <div class="tv-banner-wrap" id="alert-inner"></div>
+                <div class="resize-handle" data-resize="alert"></div>
+              </div>
+
+              <!-- 5. Full-Screen Takeover / YouTube Video Layer -->
               <div id="takeover-layer"></div>
             </div>
           </div>
@@ -746,10 +697,11 @@
       </section>
 
       <aside class="producer-column">
+        <!-- Scoreboard Controls -->
         <div class="panel-card">
           <div class="panel-title">
             <span>Live Scoreboard</span>
-            <button class="btn" style="padding:3px 8px;font-size:11px;" onclick="resetGameStats()">Reset Game</button>
+            <button class="btn btn-xs" onclick="resetGameStats()">Reset Game</button>
           </div>
           <div class="teams-grid">
             <div class="team-box">
@@ -762,7 +714,7 @@
                 <button class="btn" style="justify-content:center;" onclick="adjustScore('home', -1)">-1</button>
               </div>
               <div class="mini-stats-row">
-                <button class="btn" style="padding:4px 7px;font-size:11px;" onclick="adjustSog('home', 1)">+SOG (<span id="ctrl-home-sog">0</span>)</button>
+                <button class="btn btn-xs" onclick="adjustSog('home', 1)">+SOG (<span id="ctrl-home-sog">0</span>)</button>
                 <div style="display:flex;gap:4px;">
                   <button class="pill-toggle" id="btn-home-pp" onclick="toggleFlag('home', 'pp')">PP</button>
                   <button class="pill-toggle" id="btn-home-en" onclick="toggleFlag('home', 'en')">EN</button>
@@ -780,7 +732,7 @@
                 <button class="btn" style="justify-content:center;" onclick="adjustScore('away', -1)">-1</button>
               </div>
               <div class="mini-stats-row">
-                <button class="btn" style="padding:4px 7px;font-size:11px;" onclick="adjustSog('away', 1)">+SOG (<span id="ctrl-away-sog">0</span>)</button>
+                <button class="btn btn-xs" onclick="adjustSog('away', 1)">+SOG (<span id="ctrl-away-sog">0</span>)</button>
                 <div style="display:flex;gap:4px;">
                   <button class="pill-toggle" id="btn-away-pp" onclick="toggleFlag('away', 'pp')">PP</button>
                   <button class="pill-toggle" id="btn-away-en" onclick="toggleFlag('away', 'en')">EN</button>
@@ -790,26 +742,58 @@
           </div>
         </div>
 
+        <!-- Period & Optional Game Clock -->
         <div class="panel-card">
           <div class="panel-title">
-            <span>Period &amp; Game Clock</span>
-            <span id="clock-status-label" style="color:var(--accent-amber);">STOPPED</span>
+            <span>Period &amp; Optional Clock</span>
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;color:var(--text);">
+              <input type="checkbox" id="chk-game-show-clock" onchange="toggleShowClock(this.checked)" />
+              <span>Show Clock</span>
+            </label>
           </div>
           <div class="clock-bar">
             <div class="period-pills" id="period-pills"></div>
-            <div class="clock-controls">
-              <button class="btn" style="padding:5px 7px;" onclick="adjustClock(-1)">-1s</button>
+            <div class="clock-controls" id="game-clock-controls">
+              <button class="btn btn-xs" onclick="adjustClock(-1)">-1s</button>
               <div class="clock-readout" id="ctrl-clock-time">15:00</div>
-              <button class="btn" style="padding:5px 7px;" onclick="adjustClock(1)">+1s</button>
-              <button class="btn btn-green" id="btn-clock-toggle" onclick="toggleClock()">Start</button>
-              <button class="btn" style="padding:5px 8px;" onclick="resetClock()">Reset</button>
+              <button class="btn btn-xs" onclick="adjustClock(1)">+1s</button>
+              <button class="btn btn-green btn-xs" id="btn-clock-toggle" onclick="toggleClock()">Start</button>
+              <button class="btn btn-xs" onclick="resetClock()">Reset</button>
             </div>
           </div>
         </div>
 
-        <div class="panel-card" style="flex:1;min-height:0;overflow-y:auto;">
+        <!-- Custom Persistent Upper-Right Message Strip -->
+        <div class="panel-card">
           <div class="panel-title">
-            <span>One-Tap Graphics &amp; Full-Screen Takeovers</span>
+            <span>Upper-Right Custom Message Strip</span>
+            <span id="alert-live-status" style="color:var(--text-dim);">HIDDEN</span>
+          </div>
+          <div style="display:flex;gap:6px;margin-bottom:6px;">
+            <input type="text" id="alert-badge-input" placeholder="Badge (e.g. NOTICE)" style="width:95px;flex-shrink:0;" oninput="updateAlertField('badge', this.value)" />
+            <input type="text" id="alert-title-input" placeholder="Message (e.g. POOR CONNECTION - POOR QUALITY POSSIBLE)" oninput="updateAlertField('title', this.value)" />
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input type="text" id="alert-sub-input" placeholder="Optional subtext (e.g. Arena Wi-Fi fluctuating)" style="flex:1;" oninput="updateAlertField('subtitle', this.value)" />
+            <select id="alert-color-select" style="width:92px;" onchange="updateAlertField('color', this.value)">
+              <option value="#d97706">Amber</option>
+              <option value="#dc2626">Red</option>
+              <option value="#2563eb">Blue</option>
+              <option value="#059669">Green</option>
+            </select>
+            <button class="btn btn-amber" id="btn-toggle-alert" onclick="toggleCustomAlert()">Show</button>
+          </div>
+          <div class="preset-chips">
+            <button class="chip-btn" onclick="applyAlertPreset('NOTICE', 'POOR CONNECTION - POOR QUALITY POSSIBLE', 'Arena signal fluctuating', '#d97706')">Poor Connection</button>
+            <button class="chip-btn" onclick="applyAlertPreset('AUDIO', 'TEMPORARY AUDIO ISSUE', 'Working to restore rink mic', '#dc2626')">Audio Issue</button>
+            <button class="chip-btn" onclick="applyAlertPreset('UPDATE', 'ZAMBONI FLOOD IN PROGRESS', 'Next period starting shortly', '#2563eb')">Zamboni Flood</button>
+          </div>
+        </div>
+
+        <!-- One-Tap Overlay, Full-Screen Slates & YouTube Video Pads -->
+        <div class="panel-card" style="flex:1;min-height:140px;overflow-y:auto;">
+          <div class="panel-title">
+            <span>One-Tap Graphics, Full-Screen Slates &amp; Videos</span>
             <span id="live-overlay-badge" style="color:var(--text-dim);">READY</span>
           </div>
           <div class="pads-grid" id="trigger-pads-grid"></div>
@@ -817,26 +801,29 @@
       </aside>
     </main>
 
+    <!-- =======================================================
+         TAB 2: SETUP & LAYOUT (FULL ASSET & SLATE EDITORS)
+         ======================================================= -->
     <main id="view-setup" class="hidden">
-      <!-- NEW CARD: Permanent Fixed Room Name for Moblin -->
+      <!-- Card 1: Permanent Moblin Room -->
       <section class="panel-card">
         <div class="panel-title">
           <span>Permanent Moblin Broadcast Room</span>
           <span id="setup-room-status" style="color:var(--accent-amber);">OFFLINE</span>
         </div>
         <div class="form-row">
-          <label>Custom Fixed Room Name (Letters, Numbers, Hyphens — Keeps Your Moblin URL Identical Every Game)</label>
+          <label>Custom Fixed Room Name (Keeps Your Moblin URL Identical Every Game)</label>
           <div style="display:flex;gap:6px;">
             <input type="text" id="set-fixed-room" maxlength="32" placeholder="e.g. soo-greyhounds-red" />
             <button class="btn btn-blue" onclick="applyFixedRoomFromSetup()">Save &amp; Connect</button>
           </div>
         </div>
         <div class="list-item-row">
-          <span><strong>Auto-Connect Room on Page Load</strong> (recommended for game day)</span>
+          <span><strong>Auto-Connect Room on Page Load</strong></span>
           <input type="checkbox" id="chk-auto-connect" onchange="toggleAutoConnect(this.checked)" />
         </div>
         <div class="form-row" style="margin-top:8px;">
-          <label>Your Permanent Moblin Browser Widget URL (1920 &times; 1080)</label>
+          <label>Permanent Moblin Browser Widget URL (1920 &times; 1080)</label>
           <div style="display:flex;gap:6px;">
             <input type="text" id="setup-clean-url" readonly onclick="this.select()" style="font-family:var(--font-mono);font-size:11px;" />
             <button class="btn btn-green" onclick="copyCleanViewUrl()">Copy</button>
@@ -844,12 +831,53 @@
         </div>
       </section>
 
+      <!-- Card 2: Full-Screen Slates Editor (Edit Existing + Add New) -->
+      <section class="panel-card">
+        <div class="panel-title">
+          <span>Full-Screen Overlays Editor</span>
+          <button class="btn btn-blue btn-xs" onclick="openSlateEditor(-1)">+ New Slate</button>
+        </div>
+        <p style="font-size:11px;color:var(--text-dim);margin-bottom:8px;">
+          Edit text, colors, or static hold on any full-screen slate. Dynamic tags supported: <code>{HOME}</code>, <code>{AWAY}</code>, <code>{HSCORE}</code>, <code>{ASCORE}</code>, <code>{PERIOD}</code>, <code>{HSOG}</code>, <code>{ASOG}</code>.
+        </p>
+        <div id="slate-editor-form-wrap"></div>
+        <div id="slates-list-container" style="max-height:220px;overflow-y:auto;"></div>
+      </section>
+
+      <!-- Card 3: YouTube Full-Screen Video Overlays (Pregame Hype Videos) -->
+      <section class="panel-card">
+        <div class="panel-title">
+          <span>YouTube Video Overlays (Pregame Hype / Intros)</span>
+        </div>
+        <p style="font-size:11px;color:var(--text-dim);margin-bottom:8px;">
+          Paste any YouTube link (unlisted or public) to trigger it as a full-screen 1080p overlay pad. <strong>Muted Autoplay</strong> is recommended on iOS/Moblin so playback starts automatically without needing a tap.
+        </p>
+        <div class="form-row">
+          <label>Pad Label &amp; YouTube URL</label>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <input type="text" id="yt-pad-title" placeholder="e.g. Pregame Hype Video" />
+            <input type="text" id="yt-pad-url" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." />
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text);cursor:pointer;">
+                <input type="checkbox" id="yt-pad-muted" checked /> Muted Autoplay (iOS Safe)
+              </label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text);cursor:pointer;">
+                <input type="checkbox" id="yt-pad-loop" checked /> Loop Video
+              </label>
+              <button class="btn btn-red" id="btn-save-yt-pad" onclick="saveYouTubePad()">+ Add Video Pad</button>
+            </div>
+          </div>
+        </div>
+        <div id="yt-pads-list" style="max-height:160px;overflow-y:auto;"></div>
+      </section>
+
+      <!-- Card 4: Scoreboard Mode & Editable Bottom Ticker -->
       <section class="panel-card">
         <div class="panel-title"><span>Scoreboard Mode &amp; Bottom Broadcast Ticker</span></div>
         <div class="form-row">
           <label>Active Scoreboard Display Mode</label>
           <select id="set-bug-mode" onchange="setScorebugMode(this.value)">
-            <option value="compact">Compact Scorebug (Draggable Corner Box)</option>
+            <option value="compact">Compact Scorebug (130% Default Corner Box)</option>
             <option value="bottom-bar">Full-Width Bottom Broadcast Bar + Ticker (1920&times;54)</option>
             <option value="ticker-only">Bottom Ticker Crawl Only (No Score in Bar)</option>
             <option value="hidden">Hidden (Banners &amp; Takeovers Only)</option>
@@ -866,15 +894,36 @@
           </div>
         </div>
         <div class="form-row">
-          <label>Add Bottom Ticker Headline / Sponsor Shoutout</label>
+          <label>Add or Edit Bottom Ticker Message</label>
           <div style="display:flex;gap:6px;">
             <input type="text" id="new-ticker-msg" placeholder="e.g. U10 AA SOO JR. GREYHOUNDS • NEXT GAME 4:30 PM" />
-            <button class="btn btn-blue" onclick="addTickerMessage()">+ Add</button>
+            <button class="btn btn-blue" id="btn-save-ticker" onclick="saveTickerMessage()">+ Add</button>
           </div>
         </div>
-        <div id="ticker-list-container" style="max-height:130px;overflow-y:auto;"></div>
+        <div id="ticker-list-container" style="max-height:150px;overflow-y:auto;"></div>
       </section>
 
+      <!-- Card 5: Always-On Sponsor Loop Rotator (With Inline Edit) -->
+      <section class="panel-card">
+        <div class="panel-title"><span>Always-On Sponsor Loop Rotator</span></div>
+        <div class="form-grid-2">
+          <div class="form-row"><label>Header Label</label><input type="text" id="set-sponsor-tag" maxlength="24" oninput="updateSponsorConfig('tag', this.value)" /></div>
+          <div class="form-row"><label>Rotate Every (Sec)</label><input type="number" id="set-sponsor-interval" min="3" max="120" onchange="updateSponsorConfig('intervalSec', Number(this.value))" /></div>
+        </div>
+        <div class="list-item-row"><span>Show dark TV-pill backing</span><input type="checkbox" id="chk-sponsor-backing" checked onchange="updateSponsorConfig('backing', this.checked)" /></div>
+        <div class="form-row" style="margin-top:8px;">
+          <label>Add Sponsor Logo or Text</label>
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="new-sponsor-name" placeholder="Sponsor Name" />
+            <button class="btn btn-blue" onclick="addTextSponsor()">+ Text</button>
+            <label class="btn" style="cursor:pointer;">+ Logo<input type="file" accept="image/*" multiple style="display:none;" onchange="handleSponsorUpload(event)" /></label>
+          </div>
+        </div>
+        <div id="sponsor-edit-wrap"></div>
+        <div id="sponsor-list-container" style="max-height:170px;overflow-y:auto;"></div>
+      </section>
+
+      <!-- Card 6: Teams, Colors & Crests -->
       <section class="panel-card">
         <div class="panel-title"><span>Teams, Colors &amp; Crests</span></div>
         <div class="form-grid-2">
@@ -905,8 +954,13 @@
         </div>
       </section>
 
+      <!-- Card 7: Clock, Timers & Custom Uploaded Media Pads -->
       <section class="panel-card">
-        <div class="panel-title"><span>Clock &amp; Overlay Timer Rules</span></div>
+        <div class="panel-title"><span>Clock, Timers &amp; Uploaded Media Pads</span></div>
+        <div class="list-item-row">
+          <span><strong>Show Period Clock on Scoreboard</strong> (uncheck to show Period only)</span>
+          <input type="checkbox" id="chk-setup-show-clock" onchange="toggleShowClock(this.checked)" />
+        </div>
         <div class="form-grid-2">
           <div class="form-row">
             <label>Period Length</label>
@@ -920,35 +974,9 @@
           <div class="form-row"><label>Goal Strip Duration (sec)</label><input type="number" id="set-goal-sec" min="2" max="30" onchange="updateSetting('goalBannerSec', Number(this.value))" /></div>
           <div class="form-row"><label>Info Strip Duration (sec)</label><input type="number" id="set-info-sec" min="2" max="30" onchange="updateSetting('infoBannerSec', Number(this.value))" /></div>
         </div>
-        <div class="form-row">
-          <label>Intro &amp; Intermission Behavior</label>
-          <div class="list-item-row"><span><strong>Intro Open</strong> stays static until off</span><input type="checkbox" id="chk-intro-static" onchange="updateStaticDefault('tk-intro', this.checked)" /></div>
-          <div class="list-item-row"><span><strong>Intermission Slate</strong> stays static until off</span><input type="checkbox" id="chk-intermission-static" onchange="updateStaticDefault('tk-intermission', this.checked)" /></div>
-        </div>
-      </section>
 
-      <section class="panel-card">
-        <div class="panel-title"><span>Always-On Sponsor Loop Rotator</span></div>
-        <div class="form-grid-2">
-          <div class="form-row"><label>Header Label</label><input type="text" id="set-sponsor-tag" maxlength="24" oninput="updateSponsorConfig('tag', this.value)" /></div>
-          <div class="form-row"><label>Rotate Every (Sec)</label><input type="number" id="set-sponsor-interval" min="3" max="120" onchange="updateSponsorConfig('intervalSec', Number(this.value))" /></div>
-        </div>
-        <div class="list-item-row"><span>Show dark TV-pill backing</span><input type="checkbox" id="chk-sponsor-backing" checked onchange="updateSponsorConfig('backing', this.checked)" /></div>
         <div class="form-row" style="margin-top:8px;">
-          <label>Add Sponsor Logo or Text</label>
-          <div style="display:flex;gap:6px;">
-            <input type="text" id="new-sponsor-name" placeholder="Sponsor Name" />
-            <button class="btn btn-blue" onclick="addTextSponsor()">+ Text</button>
-            <label class="btn" style="cursor:pointer;">+ Logo<input type="file" accept="image/*" multiple style="display:none;" onchange="handleSponsorUpload(event)" /></label>
-          </div>
-        </div>
-        <div id="sponsor-list-container" style="max-height:140px;overflow-y:auto;"></div>
-      </section>
-
-      <section class="panel-card">
-        <div class="panel-title"><span>Custom Media &amp; 1920&times;1080 Coordinates</span></div>
-        <div class="form-row">
-          <label>Upload Custom Graphic or Full-Screen Takeover (.webm, .webp, .png, .mp4)</label>
+          <label>Upload Custom Graphic or Video (.webm, .webp, .png, .mp4)</label>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <input type="text" id="custom-pad-title" placeholder="Pad Label" style="flex:1;min-width:120px;" />
             <select id="custom-pad-mode" style="width:auto;"><option value="takeover">Full-Screen 1080p</option><option value="banner">Overlay Graphic</option></select>
@@ -956,15 +984,15 @@
             <label class="btn btn-blue" style="cursor:pointer;">Upload File<input type="file" accept="video/webm,video/mp4,image/webp,image/png,image/apng,image/gif" style="display:none;" onchange="handleCustomPadUpload(event)" /></label>
           </div>
         </div>
-        <div id="custom-pads-list" style="max-height:110px;overflow-y:auto;margin-bottom:10px;"></div>
-        <div class="form-row"><label>Fine-Tune Positions (X, Y, Scale %)</label><div class="form-grid-3" id="numeric-coords-grid"></div></div>
+        <div id="custom-pad-edit-wrap"></div>
+        <div id="custom-pads-list" style="max-height:130px;overflow-y:auto;margin-bottom:10px;"></div>
+
+        <div class="form-row"><label>Fine-Tune 1920&times;1080 Positions (X, Y, Scale %)</label><div class="form-grid-2" id="numeric-coords-grid"></div></div>
       </section>
     </main>
   </div>
 
-  <!-- =========================================================
-       IPAD -> MOBLIN LIVE LINK MODAL (FIXED ROOM SUPPORT)
-       ========================================================= -->
+  <!-- Live Link Modal -->
   <div class="modal-backdrop" id="sync-modal" onclick="if(event.target===this) closeSyncModal()">
     <div class="modal-card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -972,7 +1000,7 @@
         <button class="btn" onclick="closeSyncModal()">Close</button>
       </div>
       <p style="font-size:12px;color:var(--text-dim);line-height:1.5;margin-bottom:12px;">
-        Set a custom fixed room name once so your <strong>Moblin Browser Widget URL</strong> never changes between games. Pick something unique to your team (e.g. <code>soo-u10aa-red-2026</code>).
+        Set a custom fixed room name once so your <strong>Moblin Browser Widget URL</strong> stays the same every game.
       </p>
       <div class="form-row">
         <label>Fixed Room Name</label>
@@ -1019,6 +1047,30 @@
     function sanitizeRoomId(raw) {
       if (!raw || typeof raw !== 'string') return '';
       return raw.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 32);
+    }
+
+    function extractYouTubeId(input) {
+      if (!input || typeof input !== 'string') return '';
+      const trimmed = input.trim();
+      if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+      try {
+        const u = new URL(trimmed);
+        if (u.hostname.includes('youtu.be')) {
+          const id = u.pathname.replace('/', '').split('/')[0];
+          return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : '';
+        }
+        if (u.hostname.includes('youtube.com')) {
+          if (u.searchParams.get('v')) {
+            const id = u.searchParams.get('v');
+            return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : '';
+          }
+          const parts = u.pathname.split('/').filter(Boolean);
+          if ((parts[0] === 'embed' || parts[0] === 'shorts' || parts[0] === 'live') && parts[1]) {
+            return /^[a-zA-Z0-9_-]{11}$/.test(parts[1]) ? parts[1] : '';
+          }
+        }
+      } catch (e) {}
+      return '';
     }
 
     function showOverlayToast(msg) {
@@ -1106,19 +1158,58 @@
     }
 
     /* =========================================================
-       APPLICATION STATE
+       APPLICATION STATE (v7)
        ========================================================= */
-    const STORAGE_KEY = 'hockey_broadcast_state_v6';
+    const STORAGE_KEY = 'hockey_broadcast_state_v7';
+    // Compact Bug defaults to 130% bigger (scale 1.3), Upper-Right Alert strip positioned cleanly in upper right
     const DEFAULT_POSITIONS = {
-      scorebug: { x: 64, y: 958, scale: 1.0 },
-      sponsor:  { x: 1608, y: 48, scale: 1.0 },
-      banner:   { x: 64, y: 48, scale: 1.0 }
+      scorebug: { x: 64, y: 940, scale: 1.3 },
+      sponsor:  { x: 1608, y: 152, scale: 1.0 },
+      banner:   { x: 64, y: 48, scale: 1.0 },
+      alert:    { x: 1120, y: 48, scale: 0.92 }
     };
+
+    const DEFAULT_FULLSCREEN_SLATES = [
+      {
+        id: 'tk-goal-hype',
+        title: 'Full-Screen Goal Hype',
+        kicker: 'LIGHT THE LAMP',
+        headline: '{HOME} GOAL!',
+        subline: '{HOME} {HSCORE} — {AWAY} {ASCORE}',
+        useHomeColor: true,
+        bgColor: '#c8102e',
+        showCrest: true,
+        durationSec: 5
+      },
+      {
+        id: 'tk-intro',
+        title: 'Full-Screen Intro Open',
+        kicker: 'HOCKEY NIGHT BROADCAST',
+        headline: '{HOME_FULL}',
+        subline: '{HOME} VS {AWAY}',
+        useHomeColor: true,
+        bgColor: '#c8102e',
+        showCrest: true,
+        durationSec: 0
+      },
+      {
+        id: 'tk-intermission',
+        title: 'Intermission Slate',
+        kicker: '{PERIOD} INTERMISSION',
+        headline: 'WE WILL BE RIGHT BACK',
+        subline: '{HOME} {HSCORE}  |  {AWAY} {ASCORE}  •  SOG {HSOG}-{ASOG}',
+        useHomeColor: true,
+        bgColor: '#c8102e',
+        showCrest: true,
+        durationSec: 0
+      }
+    ];
 
     const defaultState = {
       fixedRoomName: 'soo-greyhounds-red',
       autoConnectHost: true,
       scorebugMode: 'compact',
+      showClock: true,
       home: { shortName: 'SOO RED', fullName: 'SOO JR. GREYHOUNDS RED', color: '#c8102e', score: 0, sog: 0, pp: false, en: false, logoKey: 'home_logo' },
       away: { shortName: 'GUEST', fullName: 'VISITING TEAM', color: '#1d4ed8', score: 0, sog: 0, pp: false, en: false, logoKey: '' },
       period: '1ST',
@@ -1128,7 +1219,6 @@
       layoutLocked: false,
       positions: JSON.parse(JSON.stringify(DEFAULT_POSITIONS)),
       settings: { fadeMs: 300, goalBannerSec: 6, infoBannerSec: 6 },
-      staticTakeoverDefaults: { 'tk-intro': true, 'tk-intermission': true },
       ticker: {
         tag: 'HOCKEY LIVE',
         speedSec: 26,
@@ -1142,6 +1232,15 @@
         enabled: true, tag: 'PRESENTED BY', intervalSec: 8, backing: true,
         items: [{ id: 'sp-1', name: 'SOO JR. GREYHOUNDS HOCKEY', mediaKey: '' }]
       },
+      customAlert: {
+        visible: false,
+        badge: 'NOTICE',
+        title: 'POOR CONNECTION - POOR QUALITY POSSIBLE',
+        subtitle: 'Arena signal fluctuating',
+        color: '#d97706'
+      },
+      fullScreenSlates: JSON.parse(JSON.stringify(DEFAULT_FULLSCREEN_SLATES)),
+      youtubePads: [],
       customPads: [],
       activeBanner: null,
       activeTakeover: null
@@ -1156,31 +1255,55 @@
     let sponsorIndex = 0;
     let sponsorTimer = null;
 
+    // Inline Editor Tracking Indices
+    let editingTickerIdx = -1;
+    let editingSponsorIdx = -1;
+    let editingCustomPadIdx = -1;
+    let editingYtPadIdx = -1;
+    let editingSlateIdx = null; // null = closed, -1 = new slate, >=0 = edit existing
+
     const MQTT_BROKER_URL = 'wss://broker.emqx.io:8084/mqtt';
     let mqttClient = null;
     let hostRoomId = sanitizeRoomId(state.fixedRoomName || 'soo-greyhounds-red');
 
     function loadState() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('hockey_broadcast_state_v5');
+        const rawV7 = localStorage.getItem(STORAGE_KEY);
+        const rawOld = !rawV7 ? (localStorage.getItem('hockey_broadcast_state_v6') || localStorage.getItem('hockey_broadcast_state_v5')) : null;
+        const raw = rawV7 || rawOld;
         if (!raw) return JSON.parse(JSON.stringify(defaultState));
         const parsed = JSON.parse(raw);
+
+        // If migrating from v5/v6 where scorebug was scale 1.0, upgrade to 1.3 default
+        const posScorebug = { ...DEFAULT_POSITIONS.scorebug, ...(parsed.positions?.scorebug || {}) };
+        if (!rawV7 && posScorebug.scale === 1.0) {
+          posScorebug.scale = 1.3;
+          posScorebug.y = 940;
+        }
+
         return {
           ...JSON.parse(JSON.stringify(defaultState)),
           ...parsed,
           fixedRoomName: sanitizeRoomId(parsed.fixedRoomName || defaultState.fixedRoomName),
           autoConnectHost: parsed.autoConnectHost !== undefined ? !!parsed.autoConnectHost : true,
+          showClock: parsed.showClock !== undefined ? !!parsed.showClock : true,
           home: { ...defaultState.home, ...(parsed.home || {}) },
           away: { ...defaultState.away, ...(parsed.away || {}) },
           positions: {
-            scorebug: { ...DEFAULT_POSITIONS.scorebug, ...(parsed.positions?.scorebug || {}) },
+            scorebug: posScorebug,
             sponsor: { ...DEFAULT_POSITIONS.sponsor, ...(parsed.positions?.sponsor || {}) },
-            banner: { ...DEFAULT_POSITIONS.banner, ...(parsed.positions?.banner || {}) }
+            banner: { ...DEFAULT_POSITIONS.banner, ...(parsed.positions?.banner || {}) },
+            alert: { ...DEFAULT_POSITIONS.alert, ...(parsed.positions?.alert || {}) }
           },
           settings: { ...defaultState.settings, ...(parsed.settings || {}) },
-          staticTakeoverDefaults: { ...defaultState.staticTakeoverDefaults, ...(parsed.staticTakeoverDefaults || {}) },
           ticker: { ...defaultState.ticker, ...(parsed.ticker || {}) },
           sponsorLoop: { ...defaultState.sponsorLoop, ...(parsed.sponsorLoop || {}) },
+          customAlert: { ...defaultState.customAlert, ...(parsed.customAlert || {}) },
+          fullScreenSlates: Array.isArray(parsed.fullScreenSlates) && parsed.fullScreenSlates.length
+            ? parsed.fullScreenSlates
+            : JSON.parse(JSON.stringify(DEFAULT_FULLSCREEN_SLATES)),
+          youtubePads: Array.isArray(parsed.youtubePads) ? parsed.youtubePads : [],
+          customPads: Array.isArray(parsed.customPads) ? parsed.customPads : [],
           clockRunning: false,
           activeBanner: null,
           activeTakeover: null
@@ -1233,11 +1356,8 @@
         const rescaleOverlay = () => {
           const vw = window.innerWidth;
           const vh = window.innerHeight;
-          if (!vw || !vh || vw >= 1900) {
-            canvas.style.transform = 'scale(1)';
-          } else {
-            canvas.style.transform = `scale(${Math.min(vw / 1920, vh / 1080)})`;
-          }
+          if (!vw || !vh || vw >= 1900) canvas.style.transform = 'scale(1)';
+          else canvas.style.transform = `scale(${Math.min(vw / 1920, vh / 1080)})`;
         };
         window.addEventListener('resize', rescaleOverlay);
         rescaleOverlay();
@@ -1270,9 +1390,13 @@
 
     function setScorebugMode(mode) {
       state.scorebugMode = BUG_MODE_ORDER.includes(mode) ? mode : 'compact';
-      saveState();
-      renderAll();
-      publishState();
+      saveState(); renderAll(); publishState();
+    }
+
+    function toggleShowClock(enabled) {
+      state.showClock = !!enabled;
+      if (!state.showClock && state.clockRunning) toggleClock();
+      saveState(); renderAll(); publishState();
     }
 
     function applyScorebugModeVisibility() {
@@ -1301,6 +1425,7 @@
           if (state.layoutLocked) return;
           const target = el.dataset.target;
           if (target === 'banner' && !state.activeBanner) return;
+          if (target === 'alert' && !state.customAlert.visible) return;
           e.preventDefault(); e.stopPropagation();
           const isResize = e.target.classList.contains('resize-handle');
           const pos = state.positions[target];
@@ -1342,14 +1467,12 @@
         document.querySelectorAll('.draggable-graphic').forEach((el) => el.classList.remove('is-dragging'));
         snapV.style.display = 'none'; snapH.style.display = 'none';
         interaction = null;
-        saveState();
-        renderNumericCoords();
-        publishState();
+        saveState(); renderNumericCoords(); publishState();
       });
     }
 
     function applyElementPositions() {
-      ['scorebug', 'sponsor', 'banner'].forEach((key) => {
+      ['scorebug', 'sponsor', 'banner', 'alert'].forEach((key) => {
         const el = document.getElementById(`${key}-node`);
         const p = state.positions[key];
         if (!el || !p) return;
@@ -1361,6 +1484,9 @@
     function toggleLayoutLock() { state.layoutLocked = !state.layoutLocked; saveState(); renderAll(); }
     function resetDefaultPositions() { state.positions = JSON.parse(JSON.stringify(DEFAULT_POSITIONS)); saveState(); applyElementPositions(); renderNumericCoords(); publishState(); }
 
+    /* =========================================================
+       GAME ACTIONS & CUSTOM UPPER-RIGHT ALERT STRIP
+       ========================================================= */
     function scoreGoal(side) {
       state[side].score += 1;
       saveState(); renderScorebug(); renderGameControls();
@@ -1383,6 +1509,35 @@
       state.period = '1ST'; resetClock(); saveState(); renderAll(); publishState();
     }
 
+    function updateAlertField(field, val) {
+      state.customAlert[field] = val;
+      saveState();
+      if (state.customAlert.visible) {
+        renderCustomAlert();
+        publishState();
+      }
+    }
+
+    function toggleCustomAlert() {
+      state.customAlert.visible = !state.customAlert.visible;
+      saveState();
+      renderCustomAlert();
+      renderGameControls();
+      publishState();
+    }
+
+    function applyAlertPreset(badge, title, subtitle, color) {
+      state.customAlert.badge = badge;
+      state.customAlert.title = title;
+      state.customAlert.subtitle = subtitle;
+      state.customAlert.color = color;
+      state.customAlert.visible = true;
+      saveState();
+      renderCustomAlert();
+      renderGameControls();
+      publishState();
+    }
+
     function formatClock(totalSec) {
       const clamped = Math.max(0, Math.ceil(totalSec));
       return `${String(Math.floor(clamped / 60)).padStart(2, '0')}:${String(clamped % 60).padStart(2, '0')}`;
@@ -1397,8 +1552,7 @@
         if (clockRafId) cancelAnimationFrame(clockRafId);
         clockRafId = null;
       }
-      renderGameControls();
-      publishState();
+      renderGameControls(); publishState();
     }
 
     function tickClock(now) {
@@ -1416,9 +1570,7 @@
         if (ctrlClock) ctrlClock.textContent = formatted;
         publishClockTick();
       }
-      if (state.clockRemainingSec <= 0) {
-        state.clockRunning = false; renderGameControls(); publishState(); return;
-      }
+      if (state.clockRemainingSec <= 0) { state.clockRunning = false; renderGameControls(); publishState(); return; }
       clockRafId = requestAnimationFrame(tickClock);
     }
 
@@ -1446,16 +1598,54 @@
       renderGameControls(); saveState(); publishState();
     }
 
-    function getBuiltInPads() {
-      return [
+    /* =========================================================
+       DYNAMIC PADS BUILDER (BANNERS + SLATES + YOUTUBE + CUSTOM)
+       ========================================================= */
+    function resolveTokens(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/\{HOME_FULL\}/g, state.home.fullName)
+        .replace(/\{AWAY_FULL\}/g, state.away.fullName)
+        .replace(/\{HOME\}/g, state.home.shortName)
+        .replace(/\{AWAY\}/g, state.away.shortName)
+        .replace(/\{HSCORE\}/g, String(state.home.score))
+        .replace(/\{ASCORE\}/g, String(state.away.score))
+        .replace(/\{HSOG\}/g, String(state.home.sog))
+        .replace(/\{ASOG\}/g, String(state.away.sog))
+        .replace(/\{PERIOD\}/g, state.period);
+    }
+
+    function getAllTriggerPads() {
+      const baseBanners = [
         { id: 'goal-home', kind: 'banner', type: 'goal', side: 'home', title: `${state.home.shortName} Goal Strip`, subtitle: 'Upper/Lower Third', durationSec: state.settings.goalBannerSec },
         { id: 'goal-away', kind: 'banner', type: 'goal', side: 'away', title: `${state.away.shortName} Goal Strip`, subtitle: 'Upper/Lower Third', durationSec: state.settings.goalBannerSec },
         { id: 'strip-matchup', kind: 'banner', type: 'matchup', title: 'Matchup Strip', subtitle: 'Crests + Score', durationSec: state.settings.infoBannerSec },
-        { id: 'strip-sog', kind: 'banner', type: 'sog', title: 'Shots on Goal Bar', subtitle: 'Live SOG', durationSec: state.settings.infoBannerSec },
-        { id: 'tk-goal-hype', kind: 'takeover', type: 'slate', variant: 'goal-hype', title: 'Full-Screen Goal Hype', subtitle: '1080p Home Crest', durationSec: 5 },
-        { id: 'tk-intro', kind: 'takeover', type: 'slate', variant: 'intro', title: 'Full-Screen Intro Open', subtitle: 'Pregame Slate', durationSec: state.staticTakeoverDefaults['tk-intro'] ? 0 : 8 },
-        { id: 'tk-intermission', kind: 'takeover', type: 'slate', variant: 'intermission', title: 'Intermission Slate', subtitle: 'Break Graphic', durationSec: state.staticTakeoverDefaults['tk-intermission'] ? 0 : 10 }
+        { id: 'strip-sog', kind: 'banner', type: 'sog', title: 'Shots on Goal Bar', subtitle: 'Live SOG', durationSec: state.settings.infoBannerSec }
       ];
+
+      const slatePads = (state.fullScreenSlates || []).map((s) => ({
+        id: s.id,
+        kind: 'takeover',
+        type: 'slate',
+        slateData: s,
+        title: s.title,
+        subtitle: s.kicker || 'Full-Screen Slate',
+        durationSec: Number(s.durationSec) || 0
+      }));
+
+      const ytPads = (state.youtubePads || []).map((y) => ({
+        id: y.id,
+        kind: 'takeover',
+        type: 'youtube',
+        videoId: y.videoId,
+        muted: !!y.muted,
+        loop: !!y.loop,
+        title: y.title,
+        subtitle: 'YouTube 1080p Video',
+        durationSec: 0
+      }));
+
+      return [...baseBanners, ...slatePads, ...ytPads, ...(state.customPads || [])];
     }
 
     function activatePad(pad) {
@@ -1512,13 +1702,16 @@
 
     function clearAllLiveOverlays() { clearBanner(); clearTakeover(); }
 
+    /* =========================================================
+       RENDERING FUNCTIONS (XSS-SAFE)
+       ========================================================= */
     function renderAll() {
       document.documentElement.style.setProperty('--fade-ms', `${state.settings.fadeMs}ms`);
       const lockBtn = document.getElementById('btn-lock-layout');
       if (lockBtn) { lockBtn.textContent = state.layoutLocked ? 'Layout: Locked' : 'Layout: Unlocked'; lockBtn.classList.toggle('btn-amber', state.layoutLocked); }
       const spBtn = document.getElementById('btn-sponsor-toggle');
       if (spBtn) { spBtn.textContent = state.sponsorLoop.enabled ? 'Sponsor Loop: ON' : 'Sponsor Loop: OFF'; spBtn.classList.toggle('btn-green', state.sponsorLoop.enabled); }
-      applyScorebugModeVisibility(); applyElementPositions(); renderScorebug(); renderBottomTicker(); renderSponsorLoop(); renderActiveBanner(); renderActiveTakeover(); renderGameControls(); renderTriggerPads(); renderSetupForm();
+      applyScorebugModeVisibility(); applyElementPositions(); renderScorebug(); renderBottomTicker(); renderSponsorLoop(); renderActiveBanner(); renderCustomAlert(); renderActiveTakeover(); renderGameControls(); renderTriggerPads(); renderSetupForm();
     }
 
     function renderTeamLogoHtml(teamObj, sizePx = 38) {
@@ -1529,6 +1722,8 @@
 
     function renderScorebug() {
       const timeFormatted = formatClock(state.clockRemainingSec);
+      const showClk = !!state.showClock;
+
       document.getElementById('bug-home-bar').style.background = state.home.color;
       document.getElementById('bug-home-logo').innerHTML = renderTeamLogoHtml(state.home, 38);
       document.getElementById('bug-home-name').textContent = state.home.shortName;
@@ -1544,8 +1739,11 @@
       document.getElementById('bug-away-sog').textContent = `SOG ${state.away.sog}`;
       document.getElementById('bug-away-pp').style.display = state.away.pp ? 'inline-block' : 'none';
       document.getElementById('bug-away-en').style.display = state.away.en ? 'inline-block' : 'none';
+
       document.getElementById('bug-period').textContent = state.period;
       document.getElementById('bug-time').textContent = timeFormatted;
+      document.getElementById('bug-time').style.display = showClk ? 'block' : 'none';
+      document.getElementById('bug-clock-box').classList.toggle('no-clock', !showClk);
 
       document.getElementById('bbar-home-bar').style.background = state.home.color;
       document.getElementById('bbar-home-logo').innerHTML = renderTeamLogoHtml(state.home, 32);
@@ -1558,8 +1756,10 @@
       document.getElementById('bbar-away-name').textContent = state.away.shortName;
       document.getElementById('bbar-away-sog').textContent = `SOG ${state.away.sog}${state.away.pp ? ' • PP' : ''}${state.away.en ? ' • EN' : ''}`;
       document.getElementById('bbar-away-score').textContent = state.away.score;
+
       document.getElementById('bbar-period').textContent = state.period;
       document.getElementById('bbar-time').textContent = timeFormatted;
+      document.getElementById('bbar-time').style.display = showClk ? 'inline' : 'none';
     }
 
     function renderBottomTicker() {
@@ -1600,6 +1800,36 @@
       }, Math.max(3, state.sponsorLoop.intervalSec || 8) * 1000);
     }
 
+    function renderCustomAlert() {
+      const node = document.getElementById('alert-node');
+      const inner = document.getElementById('alert-inner');
+      if (!node || !inner) return;
+      const a = state.customAlert;
+      if (!a || !a.visible || !a.title) {
+        node.classList.add('inactive');
+        inner.classList.remove('visible');
+        inner.innerHTML = '';
+        return;
+      }
+      node.classList.remove('inactive');
+      const badgeColor = escapeHTML(a.color || '#d97706');
+      const homeLogo = state.home.logoKey ? mediaBlobCache.get(state.home.logoKey) : '';
+      const crestHtml = (homeLogo && isSafeMediaUrl(homeLogo))
+        ? `<img src="${homeLogo}" alt="" />`
+        : `<div class="bug-logo-fallback" style="background:${badgeColor};width:48px;height:48px;font-size:20px;">!</div>`;
+
+      inner.innerHTML = `
+        <div class="espn-goal-strip">
+          <div class="goal-crest-box">${crestHtml}</div>
+          <div class="goal-badge-skew" style="background:${badgeColor};font-size:32px;padding:0 20px;">${escapeHTML(a.badge || 'NOTICE')}</div>
+          <div class="goal-details">
+            <div class="goal-team-title" style="font-size:26px;">${escapeHTML(a.title)}</div>
+            ${a.subtitle ? `<div class="goal-meta-line">${escapeHTML(a.subtitle)}</div>` : ''}
+          </div>
+        </div>`;
+      requestAnimationFrame(() => inner.classList.add('visible'));
+    }
+
     function renderActiveBanner() {
       const node = document.getElementById('banner-node');
       const inner = document.getElementById('banner-inner');
@@ -1612,7 +1842,8 @@
         const tm = b.side === 'away' ? state.away : state.home;
         const logoUrl = tm.logoKey ? mediaBlobCache.get(tm.logoKey) : '';
         const logoImg = (logoUrl && isSafeMediaUrl(logoUrl)) ? `<img src="${logoUrl}" alt="" />` : `<div class="bug-logo-fallback" style="background:${escapeHTML(tm.color)};width:52px;height:52px;font-size:22px;">${escapeHTML(tm.shortName.slice(0,3))}</div>`;
-        html = `<div class="espn-goal-strip"><div class="goal-crest-box">${logoImg}</div><div class="goal-badge-skew" style="background:${escapeHTML(tm.color)};">GOAL!</div><div class="goal-details"><div class="goal-team-title">${escapeHTML(tm.fullName)}</div><div class="goal-meta-line">${escapeHTML(state.home.shortName)} ${state.home.score} &ndash; ${escapeHTML(state.away.shortName)} ${state.away.score} &bull; ${escapeHTML(state.period)} (${formatClock(state.clockRemainingSec)})</div></div></div>`;
+        const clockPart = state.showClock ? ` (${formatClock(state.clockRemainingSec)})` : '';
+        html = `<div class="espn-goal-strip"><div class="goal-crest-box">${logoImg}</div><div class="goal-badge-skew" style="background:${escapeHTML(tm.color)};">GOAL!</div><div class="goal-details"><div class="goal-team-title">${escapeHTML(tm.fullName)}</div><div class="goal-meta-line">${escapeHTML(state.home.shortName)} ${state.home.score} &ndash; ${escapeHTML(state.away.shortName)} ${state.away.score} &bull; ${escapeHTML(state.period)}${clockPart}</div></div></div>`;
       } else if (b.type === 'matchup') {
         const hUrl = state.home.logoKey ? mediaBlobCache.get(state.home.logoKey) : '';
         const aUrl = state.away.logoKey ? mediaBlobCache.get(state.away.logoKey) : '';
@@ -1633,16 +1864,24 @@
       const tk = state.activeTakeover;
       if (!tk) { layer.classList.remove('visible', 'active'); layer.innerHTML = ''; return; }
       let html = '';
-      if (tk.type === 'customMedia' && tk.mediaKey) {
+
+      if (tk.type === 'youtube' && tk.videoId && /^[a-zA-Z0-9_-]{11}$/.test(tk.videoId)) {
+        const muteParam = tk.muted ? '1' : '0';
+        const loopParam = tk.loop ? `&loop=1&playlist=${tk.videoId}` : '';
+        const src = `https://www.youtube-nocookie.com/embed/${tk.videoId}?autoplay=1&mute=${muteParam}&controls=0&rel=0&playsinline=1&modestbranding=1${loopParam}`;
+        html = `<iframe class="takeover-media" src="${src}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+      } else if (tk.type === 'customMedia' && tk.mediaKey) {
         const mUrl = mediaBlobCache.get(tk.mediaKey);
         if (mUrl && isSafeMediaUrl(mUrl)) html = tk.isVideo ? `<video class="takeover-media" src="${mUrl}" autoplay loop muted playsinline></video>` : `<img class="takeover-media" src="${mUrl}" alt="" />`;
       } else {
+        const s = tk.slateData || (state.fullScreenSlates || []).find((x) => x.id === tk.id) || DEFAULT_FULLSCREEN_SLATES[0];
         const homeLogo = state.home.logoKey ? mediaBlobCache.get(state.home.logoKey) : '';
-        const logoTag = (homeLogo && isSafeMediaUrl(homeLogo)) ? `<img class="takeover-crest" src="${homeLogo}" alt="" />` : '';
-        let kicker = 'HOCKEY NIGHT BROADCAST', headline = state.home.fullName, subline = `${state.home.shortName} VS ${state.away.shortName}`;
-        if (tk.variant === 'goal-hype') { kicker = 'LIGHT THE LAMP'; headline = `${state.home.shortName} GOAL!`; subline = `${state.home.shortName} ${state.home.score} — ${state.away.shortName} ${state.away.score}`; }
-        else if (tk.variant === 'intermission') { kicker = `${state.period} INTERMISSION`; headline = 'WE WILL BE RIGHT BACK'; subline = `${state.home.shortName} ${state.home.score}  |  ${state.away.shortName} ${state.away.score}  •  SOG ${state.home.sog}-${state.away.sog}`; }
-        html = `<div class="takeover-slate" style="--tk-color:${escapeHTML(state.home.color)};">${logoTag}<div class="takeover-kicker">${escapeHTML(kicker)}</div><div class="takeover-headline">${escapeHTML(headline)}</div><div class="takeover-subline">${escapeHTML(subline)}</div></div>`;
+        const logoTag = (s.showCrest !== false && homeLogo && isSafeMediaUrl(homeLogo)) ? `<img class="takeover-crest" src="${homeLogo}" alt="" />` : '';
+        const color = s.useHomeColor !== false ? state.home.color : (s.bgColor || state.home.color);
+        const kicker = resolveTokens(s.kicker || '');
+        const headline = resolveTokens(s.headline || '');
+        const subline = resolveTokens(s.subline || '');
+        html = `<div class="takeover-slate" style="--tk-color:${escapeHTML(color)};">${logoTag}${kicker ? `<div class="takeover-kicker">${escapeHTML(kicker)}</div>` : ''}<div class="takeover-headline">${escapeHTML(headline)}</div>${subline ? `<div class="takeover-subline">${escapeHTML(subline)}</div>` : ''}</div>`;
       }
       layer.innerHTML = html;
       layer.classList.add('active');
@@ -1662,39 +1901,69 @@
       document.getElementById('ctrl-away-sog').textContent = state.away.sog;
       document.getElementById('btn-away-pp').classList.toggle('active-pp', state.away.pp);
       document.getElementById('btn-away-en').classList.toggle('active-en', state.away.en);
+
+      const chkClk = document.getElementById('chk-game-show-clock');
+      if (chkClk) chkClk.checked = !!state.showClock;
+      const clkWrap = document.getElementById('game-clock-controls');
+      if (clkWrap) clkWrap.style.display = state.showClock ? 'flex' : 'none';
+
       document.getElementById('ctrl-clock-time').textContent = formatClock(state.clockRemainingSec);
       const clockBtn = document.getElementById('btn-clock-toggle');
-      const statusLbl = document.getElementById('clock-status-label');
-      if (clockBtn && statusLbl) {
+      if (clockBtn) {
         clockBtn.textContent = state.clockRunning ? 'Pause' : 'Start';
         clockBtn.classList.toggle('btn-amber', state.clockRunning);
         clockBtn.classList.toggle('btn-green', !state.clockRunning);
-        statusLbl.textContent = state.clockRunning ? 'RUNNING' : 'STOPPED';
-        statusLbl.style.color = state.clockRunning ? 'var(--accent-green)' : 'var(--accent-amber)';
       }
+
       const pillsEl = document.getElementById('period-pills');
       if (pillsEl) pillsEl.innerHTML = ['1ST', '2ND', '3RD', 'OT', 'SO', 'INT', 'FINAL'].map((p) => `<button class="period-pill ${state.period === p ? 'active' : ''}" onclick="setPeriod('${p}')">${p}</button>`).join('');
+
+      // Sync Custom Upper-Right Alert Controls
+      const a = state.customAlert;
+      const ab = document.getElementById('alert-badge-input');
+      if (ab && document.activeElement !== ab) ab.value = a.badge || '';
+      const at = document.getElementById('alert-title-input');
+      if (at && document.activeElement !== at) at.value = a.title || '';
+      const as = document.getElementById('alert-sub-input');
+      if (as && document.activeElement !== as) as.value = a.subtitle || '';
+      const ac = document.getElementById('alert-color-select');
+      if (ac) ac.value = a.color || '#d97706';
+      const aBtn = document.getElementById('btn-toggle-alert');
+      const aStat = document.getElementById('alert-live-status');
+      if (aBtn && aStat) {
+        aBtn.textContent = a.visible ? 'Hide' : 'Show';
+        aBtn.classList.toggle('btn-red', a.visible);
+        aBtn.classList.toggle('btn-amber', !a.visible);
+        aStat.textContent = a.visible ? 'LIVE ON SCREEN' : 'HIDDEN';
+        aStat.style.color = a.visible ? 'var(--accent)' : 'var(--text-dim)';
+      }
     }
 
     function renderTriggerPads() {
       const grid = document.getElementById('trigger-pads-grid');
       const liveBadge = document.getElementById('live-overlay-badge');
       if (!grid) return;
-      const allPads = [...getBuiltInPads(), ...(state.customPads || [])];
+      const allPads = getAllTriggerPads();
       const activeId = (state.activeTakeover && state.activeTakeover.id) || (state.activeBanner && state.activeBanner.id) || null;
       if (liveBadge) { liveBadge.textContent = activeId ? 'ON AIR' : 'READY'; liveBadge.style.color = activeId ? 'var(--accent)' : 'var(--text-dim)'; }
       grid.innerHTML = allPads.map((pad, idx) => {
         const isLive = activeId === pad.id;
         const isStatic = !pad.durationSec || pad.durationSec <= 0;
-        return `<button class="pad-btn ${isLive ? 'live-now' : ''}" onclick="triggerPadByIndex(${idx})"><div class="pad-top"><span class="pad-label">${escapeHTML(pad.title)}</span><span class="pad-badge ${isStatic ? 'static' : ''}">${isLive ? 'LIVE' : (isStatic ? 'STATIC' : pad.durationSec + 's')}</span></div><span class="pad-sub">${escapeHTML(pad.subtitle || 'Overlay')}</span></button>`;
+        const isYt = pad.type === 'youtube';
+        const badgeCls = isYt ? 'yt' : (isStatic ? 'static' : '');
+        const badgeTxt = isLive ? 'LIVE' : (isYt ? 'YOUTUBE' : (isStatic ? 'STATIC' : pad.durationSec + 's'));
+        return `<button class="pad-btn ${isLive ? 'live-now' : ''}" onclick="triggerPadByIndex(${idx})"><div class="pad-top"><span class="pad-label">${escapeHTML(pad.title)}</span><span class="pad-badge ${badgeCls}">${badgeTxt}</span></div><span class="pad-sub">${escapeHTML(pad.subtitle || 'Overlay')}</span></button>`;
       }).join('');
     }
 
     function triggerPadByIndex(idx) {
-      const allPads = [...getBuiltInPads(), ...(state.customPads || [])];
+      const allPads = getAllTriggerPads();
       if (allPads[idx]) activatePad(allPads[idx]);
     }
 
+    /* =========================================================
+       SETUP & LAYOUT — FULL EDITORS FOR ALL ASSETS
+       ========================================================= */
     function switchTab(tab) {
       document.querySelectorAll('.nav-tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
       document.getElementById('view-game').classList.toggle('hidden', tab !== 'game');
@@ -1707,6 +1976,7 @@
       if (!bugModeSel) return;
       document.getElementById('set-fixed-room').value = state.fixedRoomName || hostRoomId;
       document.getElementById('chk-auto-connect').checked = !!state.autoConnectHost;
+      document.getElementById('chk-setup-show-clock').checked = !!state.showClock;
       bugModeSel.value = state.scorebugMode || 'compact';
       document.getElementById('set-ticker-tag').value = state.ticker.tag || 'HOCKEY LIVE';
       document.getElementById('set-ticker-speed').value = state.ticker.speedSec || 26;
@@ -1722,50 +1992,368 @@
       document.getElementById('set-fade-ms').value = state.settings.fadeMs;
       document.getElementById('set-goal-sec').value = state.settings.goalBannerSec;
       document.getElementById('set-info-sec').value = state.settings.infoBannerSec;
-      document.getElementById('chk-intro-static').checked = !!state.staticTakeoverDefaults['tk-intro'];
-      document.getElementById('chk-intermission-static').checked = !!state.staticTakeoverDefaults['tk-intermission'];
       document.getElementById('set-sponsor-tag').value = state.sponsorLoop.tag;
       document.getElementById('set-sponsor-interval').value = state.sponsorLoop.intervalSec;
       document.getElementById('chk-sponsor-backing').checked = !!state.sponsorLoop.backing;
+
       updateCleanViewUrls();
-      renderTickerList(); renderSponsorList(); renderCustomPadsList(); renderNumericCoords();
+      renderSlatesList();
+      renderYouTubePadsList();
+      renderTickerList();
+      renderSponsorList();
+      renderCustomPadsList();
+      renderNumericCoords();
     }
 
-    function applyFixedRoomFromSetup() {
-      const val = sanitizeRoomId(document.getElementById('set-fixed-room').value);
-      if (!val) { alert('Please enter a valid room name using letters, numbers, or hyphens.'); return; }
-      state.fixedRoomName = val;
-      hostRoomId = val;
+    /* --- 1. Full-Screen Slates Editor --- */
+    function openSlateEditor(idx) {
+      editingSlateIdx = idx;
+      const wrap = document.getElementById('slate-editor-form-wrap');
+      if (!wrap) return;
+      const s = idx >= 0 ? state.fullScreenSlates[idx] : {
+        id: 'tk-' + Date.now(),
+        title: 'Custom Slate',
+        kicker: 'LIVE HOCKEY',
+        headline: 'STARTING SOON',
+        subline: '{HOME} VS {AWAY}',
+        useHomeColor: true,
+        bgColor: state.home.color,
+        showCrest: true,
+        durationSec: 0
+      };
+      wrap.innerHTML = `
+        <div class="inline-edit-box">
+          <div style="font-size:11px;font-weight:800;color:#60a5fa;">${idx >= 0 ? 'Edit Full-Screen Slate' : 'Add New Full-Screen Slate'}</div>
+          <div class="form-grid-2">
+            <input type="text" id="ed-slate-title" value="${escapeHTML(s.title)}" placeholder="Pad Button Name" />
+            <input type="text" id="ed-slate-kicker" value="${escapeHTML(s.kicker)}" placeholder="Top Pill Kicker" />
+          </div>
+          <input type="text" id="ed-slate-headline" value="${escapeHTML(s.headline)}" placeholder="Main Big Headline" />
+          <input type="text" id="ed-slate-subline" value="${escapeHTML(s.subline)}" placeholder="Subline (e.g. {HOME} {HSCORE} - {AWAY} {ASCORE})" />
+          <div class="form-grid-3" style="align-items:center;">
+            <label style="font-size:11px;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="ed-slate-crest" ${s.showCrest !== false ? 'checked' : ''} /> Home Crest</label>
+            <label style="font-size:11px;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="ed-slate-usehome" ${s.useHomeColor !== false ? 'checked' : ''} /> Home Color</label>
+            <input type="color" id="ed-slate-color" value="${escapeHTML(s.bgColor || state.home.color)}" style="height:28px;" />
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+            <label style="font-size:11px;color:var(--text-dim);">Duration (0 = Static until off):</label>
+            <input type="number" id="ed-slate-dur" min="0" max="120" value="${Number(s.durationSec) || 0}" style="width:72px;" />
+            <div style="display:flex;gap:5px;">
+              <button class="btn btn-green btn-xs" onclick="saveSlateEditor('${escapeHTML(s.id)}')">Save Slate</button>
+              <button class="btn btn-xs" onclick="closeSlateEditor()">Cancel</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function closeSlateEditor() {
+      editingSlateIdx = null;
+      const wrap = document.getElementById('slate-editor-form-wrap');
+      if (wrap) wrap.innerHTML = '';
+    }
+
+    function saveSlateEditor(id) {
+      const obj = {
+        id,
+        title: (document.getElementById('ed-slate-title').value || 'Custom Slate').trim(),
+        kicker: (document.getElementById('ed-slate-kicker').value || '').trim(),
+        headline: (document.getElementById('ed-slate-headline').value || 'LIVE').trim(),
+        subline: (document.getElementById('ed-slate-subline').value || '').trim(),
+        showCrest: document.getElementById('ed-slate-crest').checked,
+        useHomeColor: document.getElementById('ed-slate-usehome').checked,
+        bgColor: document.getElementById('ed-slate-color').value || state.home.color,
+        durationSec: Math.max(0, Number(document.getElementById('ed-slate-dur').value) || 0)
+      };
+      if (editingSlateIdx >= 0) state.fullScreenSlates[editingSlateIdx] = obj;
+      else state.fullScreenSlates.push(obj);
+      closeSlateEditor();
       saveState();
-      updateCleanViewUrls();
-      startBroadcastHost(val);
+      renderSlatesList();
+      renderTriggerPads();
+      publishState();
     }
 
-    function applyFixedRoomFromModal() {
-      const val = sanitizeRoomId(document.getElementById('modal-fixed-room').value);
-      if (!val) { alert('Please enter a valid room name using letters, numbers, or hyphens.'); return; }
-      state.fixedRoomName = val;
-      hostRoomId = val;
-      saveState();
-      const setupInp = document.getElementById('set-fixed-room');
-      if (setupInp) setupInp.value = val;
-      updateCleanViewUrls();
-      startBroadcastHost(val);
+    function removeSlate(idx) {
+      if (state.fullScreenSlates.length <= 1) return alert('Keep at least one full-screen slate.');
+      state.fullScreenSlates.splice(idx, 1);
+      closeSlateEditor();
+      saveState(); renderSlatesList(); renderTriggerPads(); publishState();
     }
 
-    function toggleAutoConnect(enabled) {
-      state.autoConnectHost = !!enabled;
-      saveState();
+    function renderSlatesList() {
+      const el = document.getElementById('slates-list-container');
+      if (!el) return;
+      el.innerHTML = (state.fullScreenSlates || []).map((s, idx) => `
+        <div class="list-item-row">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><strong>${escapeHTML(s.title)}</strong> &bull; ${s.durationSec ? s.durationSec + 's' : 'Static'}</span>
+          <div style="display:flex;gap:4px;flex-shrink:0;">
+            <button class="btn btn-blue btn-xs" onclick="openSlateEditor(${idx})">Edit</button>
+            <button class="btn btn-red btn-xs" onclick="removeSlate(${idx})">Delete</button>
+          </div>
+        </div>`).join('');
     }
 
+    /* --- 2. YouTube Video Overlays --- */
+    function saveYouTubePad() {
+      const titleInp = document.getElementById('yt-pad-title');
+      const urlInp = document.getElementById('yt-pad-url');
+      const muted = document.getElementById('yt-pad-muted').checked;
+      const loop = document.getElementById('yt-pad-loop').checked;
+      const vidId = extractYouTubeId(urlInp.value);
+      if (!vidId) {
+        alert('Could not find a valid 11-character YouTube Video ID in that link. Paste a standard youtube.com/watch?v=... or youtu.be/... link.');
+        return;
+      }
+      const title = (titleInp.value || 'Pregame Hype Video').trim();
+      if (editingYtPadIdx >= 0) {
+        state.youtubePads[editingYtPadIdx] = { ...state.youtubePads[editingYtPadIdx], title, videoId: vidId, url: urlInp.value.trim(), muted, loop };
+        editingYtPadIdx = -1;
+        document.getElementById('btn-save-yt-pad').textContent = '+ Add Video Pad';
+      } else {
+        state.youtubePads.push({ id: 'yt-' + Date.now(), title, videoId: vidId, url: urlInp.value.trim(), muted, loop });
+      }
+      titleInp.value = ''; urlInp.value = '';
+      saveState(); renderYouTubePadsList(); renderTriggerPads(); publishState();
+    }
+
+    function editYouTubePad(idx) {
+      const y = state.youtubePads[idx];
+      if (!y) return;
+      editingYtPadIdx = idx;
+      document.getElementById('yt-pad-title').value = y.title;
+      document.getElementById('yt-pad-url').value = y.url || `https://youtu.be/${y.videoId}`;
+      document.getElementById('yt-pad-muted').checked = !!y.muted;
+      document.getElementById('yt-pad-loop').checked = !!y.loop;
+      document.getElementById('btn-save-yt-pad').textContent = 'Save Edit';
+    }
+
+    function removeYouTubePad(idx) {
+      state.youtubePads.splice(idx, 1);
+      editingYtPadIdx = -1;
+      document.getElementById('btn-save-yt-pad').textContent = '+ Add Video Pad';
+      saveState(); renderYouTubePadsList(); renderTriggerPads(); publishState();
+    }
+
+    function renderYouTubePadsList() {
+      const el = document.getElementById('yt-pads-list');
+      if (!el) return;
+      el.innerHTML = (state.youtubePads || []).map((y, idx) => `
+        <div class="list-item-row">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><strong>${escapeHTML(y.title)}</strong> (${escapeHTML(y.videoId)}${y.muted ? ', Muted' : ''})</span>
+          <div style="display:flex;gap:4px;flex-shrink:0;">
+            <button class="btn btn-blue btn-xs" onclick="editYouTubePad(${idx})">Edit</button>
+            <button class="btn btn-red btn-xs" onclick="removeYouTubePad(${idx})">Delete</button>
+          </div>
+        </div>`).join('');
+    }
+
+    /* --- 3. Tickers (Add + Edit + Remove) --- */
     function updateTickerConfig(key, val) { state.ticker[key] = val; saveState(); renderBottomTicker(); publishState(); }
-    function addTickerMessage() { const inp = document.getElementById('new-ticker-msg'); const txt = (inp.value || '').trim(); if (!txt) return; state.ticker.messages.push(txt); inp.value = ''; saveState(); renderBottomTicker(); renderTickerList(); publishState(); }
-    function removeTickerMessage(idx) { state.ticker.messages.splice(idx, 1); saveState(); renderBottomTicker(); renderTickerList(); publishState(); }
-    function renderTickerList() { const el = document.getElementById('ticker-list-container'); if (el) el.innerHTML = (state.ticker.messages || []).map((msg, idx) => `<div class="list-item-row"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(msg)}</span><button class="btn btn-red" style="padding:3px 7px;font-size:10px;" onclick="removeTickerMessage(${idx})">Remove</button></div>`).join(''); }
+    function saveTickerMessage() {
+      const inp = document.getElementById('new-ticker-msg');
+      const txt = (inp.value || '').trim();
+      if (!txt) return;
+      if (editingTickerIdx >= 0) {
+        state.ticker.messages[editingTickerIdx] = txt;
+        editingTickerIdx = -1;
+        document.getElementById('btn-save-ticker').textContent = '+ Add';
+      } else {
+        state.ticker.messages.push(txt);
+      }
+      inp.value = '';
+      saveState(); renderBottomTicker(); renderTickerList(); publishState();
+    }
+    function editTickerMessage(idx) {
+      editingTickerIdx = idx;
+      const inp = document.getElementById('new-ticker-msg');
+      inp.value = state.ticker.messages[idx] || '';
+      inp.focus();
+      document.getElementById('btn-save-ticker').textContent = 'Save Edit';
+    }
+    function removeTickerMessage(idx) {
+      state.ticker.messages.splice(idx, 1);
+      editingTickerIdx = -1;
+      document.getElementById('btn-save-ticker').textContent = '+ Add';
+      saveState(); renderBottomTicker(); renderTickerList(); publishState();
+    }
+    function renderTickerList() {
+      const el = document.getElementById('ticker-list-container');
+      if (!el) return;
+      el.innerHTML = (state.ticker.messages || []).map((msg, idx) => `
+        <div class="list-item-row">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(msg)}</span>
+          <div style="display:flex;gap:4px;flex-shrink:0;">
+            <button class="btn btn-blue btn-xs" onclick="editTickerMessage(${idx})">Edit</button>
+            <button class="btn btn-red btn-xs" onclick="removeTickerMessage(${idx})">Remove</button>
+          </div>
+        </div>`).join('');
+    }
+
+    /* --- 4. Sponsor Loop Rotator (Add + Inline Edit + Swap Logo + Remove) --- */
+    function toggleSponsorLoop() { state.sponsorLoop.enabled = !state.sponsorLoop.enabled; saveState(); renderAll(); publishState(); }
+    function updateSponsorConfig(key, val) { state.sponsorLoop[key] = val; saveState(); renderSponsorLoop(); startSponsorTimer(); publishState(); }
+    function addTextSponsor() {
+      const inp = document.getElementById('new-sponsor-name');
+      const name = (inp.value || '').trim();
+      if (!name) return;
+      state.sponsorLoop.items.push({ id: `sp-${Date.now()}`, name, mediaKey: '' });
+      inp.value = '';
+      saveState(); renderSponsorLoop(); renderSponsorList(); publishState();
+    }
+    function handleSponsorUpload(e) {
+      Array.from(e.target.files || []).forEach((file, i) => {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          if (!isSafeMediaUrl(reader.result)) return;
+          const key = `sponsor_${Date.now()}_${i}`;
+          await saveMediaAsset(key, reader.result);
+          state.sponsorLoop.items.push({ id: key, name: file.name.replace(/\.[^.]+$/, ''), mediaKey: key });
+          saveState(); renderSponsorLoop(); renderSponsorList(); publishState(); publishMediaAsset(key, reader.result);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    function openSponsorEdit(idx) {
+      editingSponsorIdx = idx;
+      const item = state.sponsorLoop.items[idx];
+      const wrap = document.getElementById('sponsor-edit-wrap');
+      if (!item || !wrap) return;
+      wrap.innerHTML = `
+        <div class="inline-edit-box">
+          <div style="font-size:11px;font-weight:800;color:#60a5fa;">Edit Sponsor</div>
+          <input type="text" id="ed-sponsor-name" value="${escapeHTML(item.name)}" placeholder="Sponsor Name" />
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;">
+            <label class="btn btn-xs" style="cursor:pointer;">Replace Logo<input type="file" accept="image/*" style="display:none;" onchange="replaceSponsorLogo(event, ${idx})" /></label>
+            <div style="display:flex;gap:5px;">
+              <button class="btn btn-green btn-xs" onclick="saveSponsorEdit(${idx})">Save</button>
+              <button class="btn btn-xs" onclick="closeSponsorEdit()">Cancel</button>
+            </div>
+          </div>
+        </div>`;
+    }
+    function closeSponsorEdit() {
+      editingSponsorIdx = -1;
+      const wrap = document.getElementById('sponsor-edit-wrap');
+      if (wrap) wrap.innerHTML = '';
+    }
+    function saveSponsorEdit(idx) {
+      const val = (document.getElementById('ed-sponsor-name').value || '').trim();
+      if (val && state.sponsorLoop.items[idx]) state.sponsorLoop.items[idx].name = val;
+      closeSponsorEdit();
+      saveState(); renderSponsorLoop(); renderSponsorList(); publishState();
+    }
+    function replaceSponsorLogo(e, idx) {
+      const file = e.target.files && e.target.files[0];
+      if (!file || !state.sponsorLoop.items[idx]) return;
+      const reader = new FileReader();
+      reader.onload = async () => {
+        if (!isSafeMediaUrl(reader.result)) return;
+        const key = state.sponsorLoop.items[idx].mediaKey || `sponsor_${Date.now()}`;
+        await saveMediaAsset(key, reader.result);
+        state.sponsorLoop.items[idx].mediaKey = key;
+        saveState(); renderSponsorLoop(); renderSponsorList(); publishState(); publishMediaAsset(key, reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+    async function removeSponsor(idx) {
+      const item = state.sponsorLoop.items[idx];
+      if (item && item.mediaKey) await deleteMediaAsset(item.mediaKey);
+      state.sponsorLoop.items.splice(idx, 1);
+      sponsorIndex = 0; closeSponsorEdit();
+      saveState(); renderSponsorLoop(); renderSponsorList(); publishState();
+    }
+    function renderSponsorList() {
+      const el = document.getElementById('sponsor-list-container');
+      if (!el) return;
+      el.innerHTML = (state.sponsorLoop.items || []).map((item, idx) => `
+        <div class="list-item-row">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(item.name)} ${item.mediaKey ? '(Logo)' : '(Text)'}</span>
+          <div style="display:flex;gap:4px;flex-shrink:0;">
+            <button class="btn btn-blue btn-xs" onclick="openSponsorEdit(${idx})">Edit</button>
+            <button class="btn btn-red btn-xs" onclick="removeSponsor(${idx})">Remove</button>
+          </div>
+        </div>`).join('');
+    }
+
+    /* --- 5. Custom Uploaded Media Pads (With Inline Edit) --- */
+    function handleCustomPadUpload(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const titleInput = document.getElementById('custom-pad-title');
+      const mode = document.getElementById('custom-pad-mode').value;
+      const holdVal = document.getElementById('custom-pad-hold').value;
+      const durationSec = holdVal === 'static' ? 0 : Number(holdVal);
+      const title = (titleInput.value || '').trim() || file.name.replace(/\.[^.]+$/, '');
+      const isVideo = file.type.startsWith('video/');
+      const reader = new FileReader();
+      reader.onload = async () => {
+        if (!isSafeMediaUrl(reader.result)) return alert('Unsupported file format.');
+        const key = `custom_${Date.now()}`;
+        await saveMediaAsset(key, reader.result);
+        state.customPads.push({ id: key, kind: mode, type: 'customMedia', title, subtitle: isVideo ? 'Video Loop' : 'Graphic', mediaKey: key, isVideo, durationSec });
+        titleInput.value = '';
+        saveState(); renderTriggerPads(); renderCustomPadsList(); publishState(); publishMediaAsset(key, reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+    function openCustomPadEdit(idx) {
+      editingCustomPadIdx = idx;
+      const p = state.customPads[idx];
+      const wrap = document.getElementById('custom-pad-edit-wrap');
+      if (!p || !wrap) return;
+      wrap.innerHTML = `
+        <div class="inline-edit-box">
+          <div style="font-size:11px;font-weight:800;color:#60a5fa;">Edit Uploaded Pad</div>
+          <input type="text" id="ed-cpad-title" value="${escapeHTML(p.title)}" />
+          <div class="form-grid-2">
+            <select id="ed-cpad-kind">
+              <option value="takeover" ${p.kind === 'takeover' ? 'selected' : ''}>Full-Screen 1080p</option>
+              <option value="banner" ${p.kind === 'banner' ? 'selected' : ''}>Overlay Graphic</option>
+            </select>
+            <input type="number" id="ed-cpad-dur" min="0" max="120" value="${Number(p.durationSec) || 0}" title="0 = Static" />
+          </div>
+          <div style="display:flex;gap:5px;justify-content:flex-end;">
+            <button class="btn btn-green btn-xs" onclick="saveCustomPadEdit(${idx})">Save</button>
+            <button class="btn btn-xs" onclick="closeCustomPadEdit()">Cancel</button>
+          </div>
+        </div>`;
+    }
+    function closeCustomPadEdit() {
+      editingCustomPadIdx = -1;
+      const wrap = document.getElementById('custom-pad-edit-wrap');
+      if (wrap) wrap.innerHTML = '';
+    }
+    function saveCustomPadEdit(idx) {
+      const p = state.customPads[idx];
+      if (!p) return;
+      p.title = (document.getElementById('ed-cpad-title').value || p.title).trim();
+      p.kind = document.getElementById('ed-cpad-kind').value;
+      p.durationSec = Math.max(0, Number(document.getElementById('ed-cpad-dur').value) || 0);
+      closeCustomPadEdit();
+      saveState(); renderTriggerPads(); renderCustomPadsList(); publishState();
+    }
+    async function removeCustomPad(idx) {
+      const pad = state.customPads[idx];
+      if (pad && pad.mediaKey) await deleteMediaAsset(pad.mediaKey);
+      state.customPads.splice(idx, 1); closeCustomPadEdit();
+      saveState(); renderTriggerPads(); renderCustomPadsList(); publishState();
+    }
+    function renderCustomPadsList() {
+      const el = document.getElementById('custom-pads-list');
+      if (!el) return;
+      el.innerHTML = (state.customPads || []).map((p, idx) => `
+        <div class="list-item-row">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><strong>${escapeHTML(p.title)}</strong> (${p.durationSec ? p.durationSec + 's' : 'Static'})</span>
+          <div style="display:flex;gap:4px;flex-shrink:0;">
+            <button class="btn btn-blue btn-xs" onclick="openCustomPadEdit(${idx})">Edit</button>
+            <button class="btn btn-red btn-xs" onclick="removeCustomPad(${idx})">Delete</button>
+          </div>
+        </div>`).join('');
+    }
+
     function updateTeamConfig(side, field, val) { state[side][field] = val; saveState(); renderScorebug(); renderBottomTicker(); renderGameControls(); renderTriggerPads(); publishState(); }
     function updateSetting(key, val) { state.settings[key] = val; document.documentElement.style.setProperty('--fade-ms', `${state.settings.fadeMs}ms`); saveState(); renderTriggerPads(); publishState(); }
     function setPeriodMinutes(mins) { state.periodMinutes = Number(mins) || 15; resetClock(); }
-    function updateStaticDefault(id, isStatic) { state.staticTakeoverDefaults[id] = isStatic; saveState(); renderTriggerPads(); }
 
     function handleLogoUpload(e, side) {
       const file = e.target.files && e.target.files[0];
@@ -1788,53 +2376,17 @@
       reader.readAsDataURL(file);
     }
 
-    function toggleSponsorLoop() { state.sponsorLoop.enabled = !state.sponsorLoop.enabled; saveState(); renderAll(); publishState(); }
-    function updateSponsorConfig(key, val) { state.sponsorLoop[key] = val; saveState(); renderSponsorLoop(); startSponsorTimer(); publishState(); }
-    function addTextSponsor() { const inp = document.getElementById('new-sponsor-name'); const name = (inp.value || '').trim(); if (!name) return; state.sponsorLoop.items.push({ id: `sp-${Date.now()}`, name, mediaKey: '' }); inp.value = ''; saveState(); renderSponsorLoop(); renderSponsorList(); publishState(); }
-    function handleSponsorUpload(e) {
-      Array.from(e.target.files || []).forEach((file, i) => {
-        const reader = new FileReader();
-        reader.onload = async () => {
-          if (!isSafeMediaUrl(reader.result)) return;
-          const key = `sponsor_${Date.now()}_${i}`;
-          await saveMediaAsset(key, reader.result);
-          state.sponsorLoop.items.push({ id: key, name: file.name.replace(/\.[^.]+$/, ''), mediaKey: key });
-          saveState(); renderSponsorLoop(); renderSponsorList(); publishState(); publishMediaAsset(key, reader.result);
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-    async function removeSponsor(idx) { const item = state.sponsorLoop.items[idx]; if (item && item.mediaKey) await deleteMediaAsset(item.mediaKey); state.sponsorLoop.items.splice(idx, 1); sponsorIndex = 0; saveState(); renderSponsorLoop(); renderSponsorList(); publishState(); }
-    function renderSponsorList() { const el = document.getElementById('sponsor-list-container'); if (el) el.innerHTML = (state.sponsorLoop.items || []).map((item, idx) => `<div class="list-item-row"><span>${escapeHTML(item.name)}</span><button class="btn btn-red" style="padding:3px 7px;font-size:10px;" onclick="removeSponsor(${idx})">Remove</button></div>`).join(''); }
-
-    function handleCustomPadUpload(e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      const titleInput = document.getElementById('custom-pad-title');
-      const mode = document.getElementById('custom-pad-mode').value;
-      const holdVal = document.getElementById('custom-pad-hold').value;
-      const durationSec = holdVal === 'static' ? 0 : Number(holdVal);
-      const title = (titleInput.value || '').trim() || file.name.replace(/\.[^.]+$/, '');
-      const isVideo = file.type.startsWith('video/');
-      const reader = new FileReader();
-      reader.onload = async () => {
-        if (!isSafeMediaUrl(reader.result)) return alert('Unsupported file format.');
-        const key = `custom_${Date.now()}`;
-        await saveMediaAsset(key, reader.result);
-        state.customPads.push({ id: key, kind: mode, type: 'customMedia', title, subtitle: isVideo ? 'Video Loop' : 'Graphic', mediaKey: key, isVideo, durationSec });
-        titleInput.value = '';
-        saveState(); renderTriggerPads(); renderCustomPadsList(); publishMediaAsset(key, reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-    async function removeCustomPad(idx) { const pad = state.customPads[idx]; if (pad && pad.mediaKey) await deleteMediaAsset(pad.mediaKey); state.customPads.splice(idx, 1); saveState(); renderTriggerPads(); renderCustomPadsList(); }
-    function renderCustomPadsList() { const el = document.getElementById('custom-pads-list'); if (el) el.innerHTML = (state.customPads || []).map((p, idx) => `<div class="list-item-row"><span><strong>${escapeHTML(p.title)}</strong></span><button class="btn btn-red" style="padding:3px 7px;font-size:10px;" onclick="removeCustomPad(${idx})">Delete</button></div>`).join(''); }
     function renderNumericCoords() {
       const grid = document.getElementById('numeric-coords-grid');
       if (!grid) return;
-      grid.innerHTML = [{ key: 'scorebug', label: 'Compact Bug' }, { key: 'sponsor', label: 'Sponsor Loop' }, { key: 'banner', label: 'Banner Strip' }].map((t) => {
+      grid.innerHTML = [
+        { key: 'scorebug', label: 'Compact Bug' },
+        { key: 'sponsor', label: 'Sponsor Loop' },
+        { key: 'banner', label: 'Goal / Info Strip' },
+        { key: 'alert', label: 'Upper-Right Alert' }
+      ].map((t) => {
         const p = state.positions[t.key];
-        return `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:7px;"><div style="font-size:11px;font-weight:800;margin-bottom:5px;">${t.label}</div><div style="display:flex;flex-direction:column;gap:4px;"><input type="number" value="${p.x}" onchange="setNumericCoord('${t.key}','x',this.value)" /><input type="number" value="${p.y}" onchange="setNumericCoord('${t.key}','y',this.value)" /><input type="number" value="${Math.round(p.scale * 100)}" min="45" max="240" onchange="setNumericCoord('${t.key}','scale',this.value/100)" /></div></div>`;
+        return `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:7px;"><div style="font-size:11px;font-weight:800;margin-bottom:5px;">${t.label}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;"><input type="number" value="${p.x}" onchange="setNumericCoord('${t.key}','x',this.value)" title="X" /><input type="number" value="${p.y}" onchange="setNumericCoord('${t.key}','y',this.value)" title="Y" /><input type="number" value="${Math.round(p.scale * 100)}" min="45" max="240" onchange="setNumericCoord('${t.key}','scale',this.value/100)" title="Scale %" /></div></div>`;
       }).join('');
     }
     function setNumericCoord(key, prop, val) { state.positions[key][prop] = Number(val); saveState(); applyElementPositions(); publishState(); }
@@ -1842,6 +2394,21 @@
     /* =========================================================
        MQTT OVER SECURE WEBSOCKETS (WSS) — PERMANENT FIXED ROOM
        ========================================================= */
+    function applyFixedRoomFromSetup() {
+      const val = sanitizeRoomId(document.getElementById('set-fixed-room').value);
+      if (!val) return alert('Enter a valid room name (letters, numbers, hyphens).');
+      state.fixedRoomName = val; hostRoomId = val; saveState(); updateCleanViewUrls(); startBroadcastHost(val);
+    }
+    function applyFixedRoomFromModal() {
+      const val = sanitizeRoomId(document.getElementById('modal-fixed-room').value);
+      if (!val) return alert('Enter a valid room name (letters, numbers, hyphens).');
+      state.fixedRoomName = val; hostRoomId = val; saveState();
+      const setupInp = document.getElementById('set-fixed-room');
+      if (setupInp) setupInp.value = val;
+      updateCleanViewUrls(); startBroadcastHost(val);
+    }
+    function toggleAutoConnect(enabled) { state.autoConnectHost = !!enabled; saveState(); }
+
     function buildCleanViewUrl() {
       const url = new URL(window.location.href);
       url.search = '';
@@ -1889,25 +2456,15 @@
         topBtn.textContent = connected ? `LIVE: ${hostRoomId}` : 'Live Link: Offline';
         topBtn.classList.toggle('btn-green', connected);
       }
-      if (modalStatus) {
-        modalStatus.textContent = labelText;
-        modalStatus.style.color = connected ? 'var(--accent-green)' : 'var(--accent-amber)';
-      }
-      if (setupStatus) {
-        setupStatus.textContent = connected ? `LIVE (${hostRoomId})` : 'CONNECTING...';
-        setupStatus.style.color = connected ? 'var(--accent-green)' : 'var(--accent-amber)';
-      }
+      if (modalStatus) { modalStatus.textContent = labelText; modalStatus.style.color = connected ? 'var(--accent-green)' : 'var(--accent-amber)'; }
+      if (setupStatus) { setupStatus.textContent = connected ? `LIVE (${hostRoomId})` : 'CONNECTING...'; setupStatus.style.color = connected ? 'var(--accent-green)' : 'var(--accent-amber)'; }
     }
 
     function startBroadcastHost(customRoom) {
-      if (typeof mqtt === 'undefined') {
-        alert('MQTT WebSocket library failed to load. Check internet connection.');
-        return;
-      }
+      if (typeof mqtt === 'undefined') return alert('MQTT WebSocket library failed to load.');
       hostRoomId = sanitizeRoomId(customRoom || state.fixedRoomName || 'soo-greyhounds-red');
       state.fixedRoomName = hostRoomId;
-      saveState();
-      updateCleanViewUrls();
+      saveState(); updateCleanViewUrls();
 
       if (mqttClient) { try { mqttClient.end(true); } catch (e) {} }
       setLiveStatusUI(false, 'Connecting WSS...');
@@ -1923,10 +2480,7 @@
         publishState();
         mediaBlobCache.forEach((v, k) => publishMediaAsset(k, v));
       });
-
-      mqttClient.on('reconnect', () => {
-        setLiveStatusUI(false, 'Reconnecting WSS...');
-      });
+      mqttClient.on('reconnect', () => setLiveStatusUI(false, 'Reconnecting WSS...'));
     }
 
     function publishState() {
@@ -1987,7 +2541,8 @@
                 positions: { ...state.positions, ...(incoming.positions || {}) },
                 settings: { ...state.settings, ...(incoming.settings || {}) },
                 ticker: { ...state.ticker, ...(incoming.ticker || {}) },
-                sponsorLoop: { ...state.sponsorLoop, ...(incoming.sponsorLoop || {}) }
+                sponsorLoop: { ...state.sponsorLoop, ...(incoming.sponsorLoop || {}) },
+                customAlert: { ...state.customAlert, ...(incoming.customAlert || {}) }
               };
               renderAll();
             }
