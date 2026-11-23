@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; frame-src https://www.youtube.com https://www.youtube-nocookie.com; connect-src 'self' wss://broker.emqx.io:8084 wss://broker.hivemq.com:8884; object-src 'none'; base-uri 'self';" />
-  <title>1080p Hockey Broadcast Scorebug &amp; Live Producer Studio v7</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; frame-src https://www.youtube.com https://www.youtube-nocookie.com; connect-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app; object-src 'none'; base-uri 'self';" />
+  <title>1080p Hockey Broadcast Scorebug &amp; Live Producer Studio v8</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js" crossorigin="anonymous"></script>
   <style>
     :root {
       --bg-app: #090c12;
@@ -537,7 +536,7 @@
 
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.72); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
     .modal-backdrop.open { display: flex; }
-    .modal-card { background: var(--bg-panel); border: 1px solid var(--border-hi); border-radius: 12px; max-width: 480px; width: 100%; padding: 18px; }
+    .modal-card { background: var(--bg-panel); border: 1px solid var(--border-hi); border-radius: 12px; max-width: 500px; width: 100%; padding: 18px; }
 
     .preset-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
     .chip-btn { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-dim); font-size: 10px; font-weight: 700; padding: 4px 7px; border-radius: 999px; cursor: pointer; }
@@ -552,7 +551,7 @@
     <header class="topbar">
       <div class="brand">
         <span class="brand-dot"></span>
-        <span>HOCKEY BROADCAST STUDIO v7</span>
+        <span>HOCKEY BROADCAST STUDIO v8</span>
       </div>
 
       <nav class="nav-tabs">
@@ -563,7 +562,7 @@
       <div class="top-actions">
         <button class="btn btn-blue" id="btn-bug-mode-cycle" onclick="cycleScorebugMode()">Layout: Compact Bug</button>
         <button class="btn" id="btn-sponsor-toggle" onclick="toggleSponsorLoop()">Sponsor Loop: ON</button>
-        <button class="btn" id="btn-sync-modal" onclick="openSyncModal()">Live Link: Offline</button>
+        <button class="btn" id="btn-sync-modal" onclick="openSyncModal()">Firebase: Setup</button>
         <button class="btn btn-green" id="btn-copy-clean" onclick="copyCleanViewUrl()">Copy Clean URL</button>
         <a class="btn" id="link-open-clean" href="?overlay=true" target="_blank" rel="noopener">Preview &#8599;</a>
       </div>
@@ -676,7 +675,7 @@
                 <div class="resize-handle" data-resize="banner"></div>
               </div>
 
-              <!-- 4. Custom Persistent Upper-Right Message Strip (Goal Strip Template) -->
+              <!-- 4. Custom Persistent Upper-Right Message Strip -->
               <div class="draggable-graphic inactive" id="alert-node" data-target="alert">
                 <div class="drag-outline"></div>
                 <div class="tv-banner-wrap" id="alert-inner"></div>
@@ -802,76 +801,109 @@
     </main>
 
     <!-- =======================================================
-         TAB 2: SETUP & LAYOUT (FULL ASSET & SLATE EDITORS)
+         TAB 2: SETUP & LAYOUT (FIREBASE + CONFIG.JSON + /ASSETS/)
          ======================================================= -->
     <main id="view-setup" class="hidden">
-      <!-- Card 1: Permanent Moblin Room -->
+      <!-- Card 1: Firebase Port-443 Sync + GitHub config.json Flat-File Retention -->
       <section class="panel-card">
         <div class="panel-title">
-          <span>Permanent Moblin Broadcast Room</span>
-          <span id="setup-room-status" style="color:var(--accent-amber);">OFFLINE</span>
+          <span>Firebase Live Sync (Port 443) &amp; config.json</span>
+          <span id="setup-room-status" style="color:var(--accent-amber);">NOT CONFIGURED</span>
         </div>
         <div class="form-row">
-          <label>Custom Fixed Room Name (Keeps Your Moblin URL Identical Every Game)</label>
+          <label>Firebase Realtime Database URL (HTTPS Port 443 — Never Blocked by Wi-Fi)</label>
+          <input type="text" id="set-firebase-url" placeholder="https://your-project-default-rtdb.firebaseio.com" />
+        </div>
+        <div class="form-row">
+          <label>Permanent Fixed Room Name</label>
           <div style="display:flex;gap:6px;">
             <input type="text" id="set-fixed-room" maxlength="32" placeholder="e.g. soo-greyhounds-red" />
-            <button class="btn btn-blue" onclick="applyFixedRoomFromSetup()">Save &amp; Connect</button>
+            <button class="btn btn-blue" onclick="applyFirebaseFromSetup()">Save &amp; Sync</button>
           </div>
         </div>
-        <div class="list-item-row">
-          <span><strong>Auto-Connect Room on Page Load</strong></span>
-          <input type="checkbox" id="chk-auto-connect" onchange="toggleAutoConnect(this.checked)" />
-        </div>
-        <div class="form-row" style="margin-top:8px;">
+        <div class="form-row">
           <label>Permanent Moblin Browser Widget URL (1920 &times; 1080)</label>
           <div style="display:flex;gap:6px;">
             <input type="text" id="setup-clean-url" readonly onclick="this.select()" style="font-family:var(--font-mono);font-size:11px;" />
             <button class="btn btn-green" onclick="copyCleanViewUrl()">Copy</button>
           </div>
         </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+          <button class="btn btn-green" onclick="exportConfigJson()">Export config.json (for GitHub)</button>
+          <button class="btn" onclick="reloadFromGitHubConfig()">Reload from GitHub config.json</button>
+        </div>
+        <p style="font-size:10px;color:var(--text-dim);margin-top:6px;line-height:1.4;">
+          Commit your exported <code>config.json</code> and any logo/video files inside <code>/assets/</code> to GitHub so every device automatically loads your defaults and Firebase URL on open.
+        </p>
       </section>
 
-      <!-- Card 2: Full-Screen Slates Editor (Edit Existing + Add New) -->
+      <!-- Card 2: Teams, Colors, Crests & /assets/ Paths -->
+      <section class="panel-card">
+        <div class="panel-title"><span>Teams, Colors &amp; Crests (/assets/ or Upload)</span></div>
+        <div class="form-grid-2">
+          <div>
+            <div class="form-row"><label>Home Team (Scorebug)</label><input type="text" id="set-home-short" maxlength="16" oninput="updateTeamConfig('home', 'shortName', this.value)" /></div>
+            <div class="form-row"><label>Home Full Name</label><input type="text" id="set-home-full" maxlength="36" oninput="updateTeamConfig('home', 'fullName', this.value)" /></div>
+            <div class="form-row"><label>Home Color</label><input type="color" id="set-home-color" onchange="updateTeamConfig('home', 'color', this.value)" /></div>
+            <div class="form-row"><label>Home /assets/ Path (Recommended)</label><input type="text" id="set-home-logopath" placeholder="./assets/home.png" onchange="updateTeamConfig('home', 'logoPath', this.value.trim())" /></div>
+            <div class="form-row">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div class="logo-preview-box" id="prev-home-logo"></div>
+                <label class="btn btn-xs" style="cursor:pointer;">Or Local Upload<input type="file" accept="image/*" style="display:none;" onchange="handleLogoUpload(event, 'home')" /></label>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="form-row"><label>Away Team (Scorebug)</label><input type="text" id="set-away-short" maxlength="16" oninput="updateTeamConfig('away', 'shortName', this.value)" /></div>
+            <div class="form-row"><label>Away Full Name</label><input type="text" id="set-away-full" maxlength="36" oninput="updateTeamConfig('away', 'fullName', this.value)" /></div>
+            <div class="form-row"><label>Away Color</label><input type="color" id="set-away-color" onchange="updateTeamConfig('away', 'color', this.value)" /></div>
+            <div class="form-row"><label>Away /assets/ Path (Optional)</label><input type="text" id="set-away-logopath" placeholder="./assets/away.png" onchange="updateTeamConfig('away', 'logoPath', this.value.trim())" /></div>
+            <div class="form-row">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div class="logo-preview-box" id="prev-away-logo"></div>
+                <label class="btn btn-xs" style="cursor:pointer;">Or Local Upload<input type="file" accept="image/*" style="display:none;" onchange="handleLogoUpload(event, 'away')" /></label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Card 3: Full-Screen Slates Editor -->
       <section class="panel-card">
         <div class="panel-title">
           <span>Full-Screen Overlays Editor</span>
           <button class="btn btn-blue btn-xs" onclick="openSlateEditor(-1)">+ New Slate</button>
         </div>
         <p style="font-size:11px;color:var(--text-dim);margin-bottom:8px;">
-          Edit text, colors, or static hold on any full-screen slate. Dynamic tags supported: <code>{HOME}</code>, <code>{AWAY}</code>, <code>{HSCORE}</code>, <code>{ASCORE}</code>, <code>{PERIOD}</code>, <code>{HSOG}</code>, <code>{ASOG}</code>.
+          Tags: <code>{HOME}</code>, <code>{AWAY}</code>, <code>{HSCORE}</code>, <code>{ASCORE}</code>, <code>{PERIOD}</code>, <code>{HSOG}</code>, <code>{ASOG}</code>.
         </p>
         <div id="slate-editor-form-wrap"></div>
         <div id="slates-list-container" style="max-height:220px;overflow-y:auto;"></div>
       </section>
 
-      <!-- Card 3: YouTube Full-Screen Video Overlays (Pregame Hype Videos) -->
+      <!-- Card 4: YouTube Full-Screen Video Overlays -->
       <section class="panel-card">
-        <div class="panel-title">
-          <span>YouTube Video Overlays (Pregame Hype / Intros)</span>
-        </div>
-        <p style="font-size:11px;color:var(--text-dim);margin-bottom:8px;">
-          Paste any YouTube link (unlisted or public) to trigger it as a full-screen 1080p overlay pad. <strong>Muted Autoplay</strong> is recommended on iOS/Moblin so playback starts automatically without needing a tap.
-        </p>
+        <div class="panel-title"><span>YouTube Video Overlays (Pregame Hype / Intros)</span></div>
         <div class="form-row">
           <label>Pad Label &amp; YouTube URL</label>
           <div style="display:flex;flex-direction:column;gap:6px;">
             <input type="text" id="yt-pad-title" placeholder="e.g. Pregame Hype Video" />
             <input type="text" id="yt-pad-url" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." />
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
               <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text);cursor:pointer;">
-                <input type="checkbox" id="yt-pad-muted" checked /> Muted Autoplay (iOS Safe)
+                <input type="checkbox" id="yt-pad-muted" checked /> Muted Autoplay (iOS)
               </label>
               <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text);cursor:pointer;">
-                <input type="checkbox" id="yt-pad-loop" checked /> Loop Video
+                <input type="checkbox" id="yt-pad-loop" checked /> Loop
               </label>
-              <button class="btn btn-red" id="btn-save-yt-pad" onclick="saveYouTubePad()">+ Add Video Pad</button>
+              <button class="btn btn-red btn-xs" id="btn-save-yt-pad" onclick="saveYouTubePad()">+ Add Video Pad</button>
             </div>
           </div>
         </div>
         <div id="yt-pads-list" style="max-height:160px;overflow-y:auto;"></div>
       </section>
 
-      <!-- Card 4: Scoreboard Mode & Editable Bottom Ticker -->
+      <!-- Card 5: Scoreboard Mode & Editable Bottom Ticker -->
       <section class="panel-card">
         <div class="panel-title"><span>Scoreboard Mode &amp; Bottom Broadcast Ticker</span></div>
         <div class="form-row">
@@ -884,14 +916,8 @@
           </select>
         </div>
         <div class="form-grid-2">
-          <div class="form-row">
-            <label>Bottom Bar Tag Label</label>
-            <input type="text" id="set-ticker-tag" maxlength="20" oninput="updateTickerConfig('tag', this.value)" />
-          </div>
-          <div class="form-row">
-            <label>Scroll Loop Speed (Seconds)</label>
-            <input type="number" id="set-ticker-speed" min="10" max="90" onchange="updateTickerConfig('speedSec', Number(this.value))" />
-          </div>
+          <div class="form-row"><label>Bottom Bar Tag Label</label><input type="text" id="set-ticker-tag" maxlength="20" oninput="updateTickerConfig('tag', this.value)" /></div>
+          <div class="form-row"><label>Scroll Loop Speed (Seconds)</label><input type="number" id="set-ticker-speed" min="10" max="90" onchange="updateTickerConfig('speedSec', Number(this.value))" /></div>
         </div>
         <div class="form-row">
           <label>Add or Edit Bottom Ticker Message</label>
@@ -903,7 +929,7 @@
         <div id="ticker-list-container" style="max-height:150px;overflow-y:auto;"></div>
       </section>
 
-      <!-- Card 5: Always-On Sponsor Loop Rotator (With Inline Edit) -->
+      <!-- Card 6: Always-On Sponsor Loop Rotator (/assets/ + Upload + Inline Edit) -->
       <section class="panel-card">
         <div class="panel-title"><span>Always-On Sponsor Loop Rotator</span></div>
         <div class="form-grid-2">
@@ -912,53 +938,27 @@
         </div>
         <div class="list-item-row"><span>Show dark TV-pill backing</span><input type="checkbox" id="chk-sponsor-backing" checked onchange="updateSponsorConfig('backing', this.checked)" /></div>
         <div class="form-row" style="margin-top:8px;">
-          <label>Add Sponsor Logo or Text</label>
-          <div style="display:flex;gap:6px;">
-            <input type="text" id="new-sponsor-name" placeholder="Sponsor Name" />
-            <button class="btn btn-blue" onclick="addTextSponsor()">+ Text</button>
-            <label class="btn" style="cursor:pointer;">+ Logo<input type="file" accept="image/*" multiple style="display:none;" onchange="handleSponsorUpload(event)" /></label>
+          <label>Add Sponsor (Text, /assets/ Path, or Upload)</label>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;gap:6px;">
+              <input type="text" id="new-sponsor-name" placeholder="Sponsor Name" />
+              <input type="text" id="new-sponsor-path" placeholder="./assets/sponsor1.png (optional)" />
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-blue btn-xs" onclick="addTextOrPathSponsor()">+ Add Sponsor</button>
+              <label class="btn btn-xs" style="cursor:pointer;">+ Local Logo Upload<input type="file" accept="image/*" multiple style="display:none;" onchange="handleSponsorUpload(event)" /></label>
+            </div>
           </div>
         </div>
         <div id="sponsor-edit-wrap"></div>
         <div id="sponsor-list-container" style="max-height:170px;overflow-y:auto;"></div>
       </section>
 
-      <!-- Card 6: Teams, Colors & Crests -->
+      <!-- Card 7: Clock, Timers & Custom /assets/ Media Pads -->
       <section class="panel-card">
-        <div class="panel-title"><span>Teams, Colors &amp; Crests</span></div>
-        <div class="form-grid-2">
-          <div>
-            <div class="form-row"><label>Home Team (Scorebug)</label><input type="text" id="set-home-short" maxlength="16" oninput="updateTeamConfig('home', 'shortName', this.value)" /></div>
-            <div class="form-row"><label>Home Full Name</label><input type="text" id="set-home-full" maxlength="36" oninput="updateTeamConfig('home', 'fullName', this.value)" /></div>
-            <div class="form-row"><label>Home Color</label><input type="color" id="set-home-color" onchange="updateTeamConfig('home', 'color', this.value)" /></div>
-            <div class="form-row">
-              <label>Home Crest Logo</label>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <div class="logo-preview-box" id="prev-home-logo"></div>
-                <label class="btn" style="cursor:pointer;">Upload PNG/WebP<input type="file" accept="image/*" style="display:none;" onchange="handleLogoUpload(event, 'home')" /></label>
-              </div>
-            </div>
-          </div>
-          <div>
-            <div class="form-row"><label>Away Team (Scorebug)</label><input type="text" id="set-away-short" maxlength="16" oninput="updateTeamConfig('away', 'shortName', this.value)" /></div>
-            <div class="form-row"><label>Away Full Name</label><input type="text" id="set-away-full" maxlength="36" oninput="updateTeamConfig('away', 'fullName', this.value)" /></div>
-            <div class="form-row"><label>Away Color</label><input type="color" id="set-away-color" onchange="updateTeamConfig('away', 'color', this.value)" /></div>
-            <div class="form-row">
-              <label>Away Crest Logo</label>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <div class="logo-preview-box" id="prev-away-logo"></div>
-                <label class="btn" style="cursor:pointer;">Upload PNG/WebP<input type="file" accept="image/*" style="display:none;" onchange="handleLogoUpload(event, 'away')" /></label>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Card 7: Clock, Timers & Custom Uploaded Media Pads -->
-      <section class="panel-card">
-        <div class="panel-title"><span>Clock, Timers &amp; Uploaded Media Pads</span></div>
+        <div class="panel-title"><span>Clock, Timers &amp; Custom Media Pads</span></div>
         <div class="list-item-row">
-          <span><strong>Show Period Clock on Scoreboard</strong> (uncheck to show Period only)</span>
+          <span><strong>Show Period Clock on Scoreboard</strong></span>
           <input type="checkbox" id="chk-setup-show-clock" onchange="toggleShowClock(this.checked)" />
         </div>
         <div class="form-grid-2">
@@ -976,12 +976,18 @@
         </div>
 
         <div class="form-row" style="margin-top:8px;">
-          <label>Upload Custom Graphic or Video (.webm, .webp, .png, .mp4)</label>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <input type="text" id="custom-pad-title" placeholder="Pad Label" style="flex:1;min-width:120px;" />
-            <select id="custom-pad-mode" style="width:auto;"><option value="takeover">Full-Screen 1080p</option><option value="banner">Overlay Graphic</option></select>
-            <select id="custom-pad-hold" style="width:auto;"><option value="static">Static Until Off</option><option value="6">Auto-Hide 6s</option><option value="10">Auto-Hide 10s</option></select>
-            <label class="btn btn-blue" style="cursor:pointer;">Upload File<input type="file" accept="video/webm,video/mp4,image/webp,image/png,image/apng,image/gif" style="display:none;" onchange="handleCustomPadUpload(event)" /></label>
+          <label>Add Custom Media Pad (/assets/ Path or Local Upload)</label>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;gap:6px;">
+              <input type="text" id="custom-pad-title" placeholder="Pad Label (e.g. Hype Intro)" />
+              <input type="text" id="custom-pad-path" placeholder="./assets/hype.webm (optional)" />
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <select id="custom-pad-mode" style="width:auto;"><option value="takeover">Full-Screen 1080p</option><option value="banner">Overlay Graphic</option></select>
+              <select id="custom-pad-hold" style="width:auto;"><option value="static">Static Until Off</option><option value="6">Auto-Hide 6s</option><option value="10">Auto-Hide 10s</option></select>
+              <button class="btn btn-blue btn-xs" onclick="addAssetPathCustomPad()">+ Add /assets/ Pad</button>
+              <label class="btn btn-xs" style="cursor:pointer;">Upload File<input type="file" accept="video/webm,video/mp4,image/webp,image/png,image/apng,image/gif" style="display:none;" onchange="handleCustomPadUpload(event)" /></label>
+            </div>
           </div>
         </div>
         <div id="custom-pad-edit-wrap"></div>
@@ -992,28 +998,32 @@
     </main>
   </div>
 
-  <!-- Live Link Modal -->
+  <!-- Firebase Live Link Modal -->
   <div class="modal-backdrop" id="sync-modal" onclick="if(event.target===this) closeSyncModal()">
     <div class="modal-card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <h3 style="font-size:15px;font-weight:800;">Permanent Moblin Live Link (WSS)</h3>
+        <h3 style="font-size:15px;font-weight:800;">Firebase Realtime Sync (HTTPS Port 443)</h3>
         <button class="btn" onclick="closeSyncModal()">Close</button>
       </div>
       <p style="font-size:12px;color:var(--text-dim);line-height:1.5;margin-bottom:12px;">
-        Set a custom fixed room name once so your <strong>Moblin Browser Widget URL</strong> stays the same every game.
+        Connects directly over standard <strong>HTTPS Port 443</strong> (zero blocked ports on arena Wi-Fi, instant live state retention if Moblin reloads). Paste your Firebase Realtime Database URL once, then export <code>config.json</code> to GitHub so all devices load it automatically.
       </p>
       <div class="form-row">
-        <label>Fixed Room Name</label>
+        <label>Firebase Realtime Database URL</label>
+        <input type="text" id="modal-firebase-url" placeholder="https://your-project-default-rtdb.firebaseio.com" />
+      </div>
+      <div class="form-row">
+        <label>Permanent Fixed Room Name</label>
         <div style="display:flex;gap:6px;">
-          <input type="text" id="modal-fixed-room" maxlength="32" placeholder="e.g. soo-u10aa-red" />
-          <button class="btn btn-blue" onclick="applyFixedRoomFromModal()">Connect</button>
+          <input type="text" id="modal-fixed-room" maxlength="32" placeholder="e.g. soo-greyhounds-red" />
+          <button class="btn btn-blue" onclick="applyFirebaseFromModal()">Save &amp; Test</button>
         </div>
       </div>
       <div style="margin-bottom:12px;">
-        <span id="sync-status-text" style="font-family:var(--font-mono);font-size:12px;color:var(--accent-amber);">Not Connected</span>
+        <span id="sync-status-text" style="font-family:var(--font-mono);font-size:12px;color:var(--accent-amber);">Not Configured</span>
       </div>
       <div class="form-row">
-        <label>Permanent Moblin Browser Widget URL (1920 &times; 1080)</label>
+        <label>Moblin Browser Widget URL (1920 &times; 1080)</label>
         <div style="display:flex;gap:6px;">
           <input type="text" id="modal-moblin-url" readonly onclick="this.select()" style="font-family:var(--font-mono);font-size:11px;" />
           <button class="btn btn-green" onclick="copyCleanViewUrl()">Copy</button>
@@ -1049,6 +1059,18 @@
       return raw.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 32);
     }
 
+    function normalizeFirebaseUrl(raw) {
+      if (!raw || typeof raw !== 'string') return '';
+      let trimmed = raw.trim().replace(/\/+$/, '');
+      if (!trimmed) return '';
+      if (!/^https:\/\//i.test(trimmed)) return '';
+      try {
+        const u = new URL(trimmed);
+        if (!u.hostname.endsWith('.firebaseio.com') && !u.hostname.endsWith('.firebasedatabase.app')) return '';
+        return `${u.protocol}//${u.host}`;
+      } catch (e) { return ''; }
+    }
+
     function extractYouTubeId(input) {
       if (!input || typeof input !== 'string') return '';
       const trimmed = input.trim();
@@ -1082,7 +1104,7 @@
     }
 
     /* =========================================================
-       INDEXEDDB LARGE MEDIA STORE
+       INDEXEDDB LARGE MEDIA STORE (LOCAL UPLOAD FALLBACK)
        ========================================================= */
     const DB_NAME = 'HockeyBroadcastStudioDB_v2';
     const STORE_NAME = 'mediaAssets';
@@ -1158,10 +1180,9 @@
     }
 
     /* =========================================================
-       APPLICATION STATE (v7)
+       APPLICATION STATE & CONFIG.JSON FLAT-FILE DEFAULTS (v8)
        ========================================================= */
-    const STORAGE_KEY = 'hockey_broadcast_state_v7';
-    // Compact Bug defaults to 130% bigger (scale 1.3), Upper-Right Alert strip positioned cleanly in upper right
+    const STORAGE_KEY = 'hockey_broadcast_state_v8';
     const DEFAULT_POSITIONS = {
       scorebug: { x: 64, y: 940, scale: 1.3 },
       sponsor:  { x: 1608, y: 152, scale: 1.0 },
@@ -1170,48 +1191,19 @@
     };
 
     const DEFAULT_FULLSCREEN_SLATES = [
-      {
-        id: 'tk-goal-hype',
-        title: 'Full-Screen Goal Hype',
-        kicker: 'LIGHT THE LAMP',
-        headline: '{HOME} GOAL!',
-        subline: '{HOME} {HSCORE} — {AWAY} {ASCORE}',
-        useHomeColor: true,
-        bgColor: '#c8102e',
-        showCrest: true,
-        durationSec: 5
-      },
-      {
-        id: 'tk-intro',
-        title: 'Full-Screen Intro Open',
-        kicker: 'HOCKEY NIGHT BROADCAST',
-        headline: '{HOME_FULL}',
-        subline: '{HOME} VS {AWAY}',
-        useHomeColor: true,
-        bgColor: '#c8102e',
-        showCrest: true,
-        durationSec: 0
-      },
-      {
-        id: 'tk-intermission',
-        title: 'Intermission Slate',
-        kicker: '{PERIOD} INTERMISSION',
-        headline: 'WE WILL BE RIGHT BACK',
-        subline: '{HOME} {HSCORE}  |  {AWAY} {ASCORE}  •  SOG {HSOG}-{ASOG}',
-        useHomeColor: true,
-        bgColor: '#c8102e',
-        showCrest: true,
-        durationSec: 0
-      }
+      { id: 'tk-goal-hype', title: 'Full-Screen Goal Hype', kicker: 'LIGHT THE LAMP', headline: '{HOME} GOAL!', subline: '{HOME} {HSCORE} — {AWAY} {ASCORE}', useHomeColor: true, bgColor: '#c8102e', showCrest: true, durationSec: 5 },
+      { id: 'tk-intro', title: 'Full-Screen Intro Open', kicker: 'HOCKEY NIGHT BROADCAST', headline: '{HOME_FULL}', subline: '{HOME} VS {AWAY}', useHomeColor: true, bgColor: '#c8102e', showCrest: true, durationSec: 0 },
+      { id: 'tk-intermission', title: 'Intermission Slate', kicker: '{PERIOD} INTERMISSION', headline: 'WE WILL BE RIGHT BACK', subline: '{HOME} {HSCORE}  |  {AWAY} {ASCORE}  •  SOG {HSOG}-{ASOG}', useHomeColor: true, bgColor: '#c8102e', showCrest: true, durationSec: 0 }
     ];
 
-    const defaultState = {
+    const fallbackDefaultState = {
+      firebaseDbUrl: '',
       fixedRoomName: 'soo-greyhounds-red',
       autoConnectHost: true,
       scorebugMode: 'compact',
       showClock: true,
-      home: { shortName: 'SOO RED', fullName: 'SOO JR. GREYHOUNDS RED', color: '#c8102e', score: 0, sog: 0, pp: false, en: false, logoKey: 'home_logo' },
-      away: { shortName: 'GUEST', fullName: 'VISITING TEAM', color: '#1d4ed8', score: 0, sog: 0, pp: false, en: false, logoKey: '' },
+      home: { shortName: 'SOO RED', fullName: 'SOO JR. GREYHOUNDS RED', color: '#c8102e', score: 0, sog: 0, pp: false, en: false, logoPath: './assets/home.png', logoKey: 'home_logo' },
+      away: { shortName: 'GUEST', fullName: 'VISITING TEAM', color: '#1d4ed8', score: 0, sog: 0, pp: false, en: false, logoPath: '', logoKey: '' },
       period: '1ST',
       periodMinutes: 15,
       clockRemainingSec: 900,
@@ -1223,14 +1215,14 @@
         tag: 'HOCKEY LIVE',
         speedSec: 26,
         messages: [
-          'U10 AA SOO JR. GREYHOUNDS RED LIVE BROADCAST',
+          'SOO JR. GREYHOUNDS RED LIVE BROADCAST',
           'THANK YOU TO OUR TEAM SPONSORS & FAMILIES FOR SUPPORTING YOUTH HOCKEY',
           'FOLLOW LIVE SCORE & SHOTS ON GOAL UPDATES ALL GAME LONG'
         ]
       },
       sponsorLoop: {
         enabled: true, tag: 'PRESENTED BY', intervalSec: 8, backing: true,
-        items: [{ id: 'sp-1', name: 'SOO JR. GREYHOUNDS HOCKEY', mediaKey: '' }]
+        items: [{ id: 'sp-1', name: 'SOO JR. GREYHOUNDS HOCKEY', logoPath: '', mediaKey: '' }]
       },
       customAlert: {
         visible: false,
@@ -1246,7 +1238,8 @@
       activeTakeover: null
     };
 
-    let state = loadState();
+    let githubConfigData = null;
+    let state = JSON.parse(JSON.stringify(fallbackDefaultState));
     let clockRafId = null;
     let lastPerfTimestamp = null;
     let lastRenderedWholeSec = null;
@@ -1255,60 +1248,62 @@
     let sponsorIndex = 0;
     let sponsorTimer = null;
 
-    // Inline Editor Tracking Indices
     let editingTickerIdx = -1;
     let editingSponsorIdx = -1;
     let editingCustomPadIdx = -1;
     let editingYtPadIdx = -1;
-    let editingSlateIdx = null; // null = closed, -1 = new slate, >=0 = edit existing
+    let editingSlateIdx = null;
 
-    const MQTT_BROKER_URL = 'wss://broker.emqx.io:8084/mqtt';
-    let mqttClient = null;
-    let hostRoomId = sanitizeRoomId(state.fixedRoomName || 'soo-greyhounds-red');
+    // Firebase Realtime Database (Port 443 REST + SSE EventSource)
+    let firebaseEventSource = null;
+    let firebasePollTimer = null;
+    let firebaseConnected = false;
 
-    function loadState() {
+    const isOverlayMode = new URLSearchParams(window.location.search).get('overlay') === 'true';
+
+    async function fetchGitHubConfigJson() {
       try {
-        const rawV7 = localStorage.getItem(STORAGE_KEY);
-        const rawOld = !rawV7 ? (localStorage.getItem('hockey_broadcast_state_v6') || localStorage.getItem('hockey_broadcast_state_v5')) : null;
-        const raw = rawV7 || rawOld;
-        if (!raw) return JSON.parse(JSON.stringify(defaultState));
-        const parsed = JSON.parse(raw);
+        const res = await fetch(`./config.json?t=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) return null;
+        const json = await res.json();
+        return (json && typeof json === 'object') ? json : null;
+      } catch (e) {
+        return null;
+      }
+    }
 
-        // If migrating from v5/v6 where scorebug was scale 1.0, upgrade to 1.3 default
-        const posScorebug = { ...DEFAULT_POSITIONS.scorebug, ...(parsed.positions?.scorebug || {}) };
-        if (!rawV7 && posScorebug.scale === 1.0) {
-          posScorebug.scale = 1.3;
-          posScorebug.y = 940;
-        }
+    function mergeConfigIntoState(base, override) {
+      if (!override || typeof override !== 'object') return base;
+      return {
+        ...base,
+        ...override,
+        firebaseDbUrl: normalizeFirebaseUrl(override.firebaseDbUrl || base.firebaseDbUrl || ''),
+        fixedRoomName: sanitizeRoomId(override.fixedRoomName || base.fixedRoomName || 'soo-greyhounds-red'),
+        showClock: override.showClock !== undefined ? !!override.showClock : base.showClock,
+        home: { ...base.home, ...(override.home || {}) },
+        away: { ...base.away, ...(override.away || {}) },
+        positions: {
+          scorebug: { ...DEFAULT_POSITIONS.scorebug, ...(base.positions?.scorebug || {}), ...(override.positions?.scorebug || {}) },
+          sponsor: { ...DEFAULT_POSITIONS.sponsor, ...(base.positions?.sponsor || {}), ...(override.positions?.sponsor || {}) },
+          banner: { ...DEFAULT_POSITIONS.banner, ...(base.positions?.banner || {}), ...(override.positions?.banner || {}) },
+          alert: { ...DEFAULT_POSITIONS.alert, ...(base.positions?.alert || {}), ...(override.positions?.alert || {}) }
+        },
+        settings: { ...base.settings, ...(override.settings || {}) },
+        ticker: { ...base.ticker, ...(override.ticker || {}) },
+        sponsorLoop: { ...base.sponsorLoop, ...(override.sponsorLoop || {}) },
+        customAlert: { ...base.customAlert, ...(override.customAlert || {}) },
+        fullScreenSlates: Array.isArray(override.fullScreenSlates) && override.fullScreenSlates.length ? override.fullScreenSlates : base.fullScreenSlates,
+        youtubePads: Array.isArray(override.youtubePads) ? override.youtubePads : base.youtubePads,
+        customPads: Array.isArray(override.customPads) ? override.customPads : base.customPads
+      };
+    }
 
-        return {
-          ...JSON.parse(JSON.stringify(defaultState)),
-          ...parsed,
-          fixedRoomName: sanitizeRoomId(parsed.fixedRoomName || defaultState.fixedRoomName),
-          autoConnectHost: parsed.autoConnectHost !== undefined ? !!parsed.autoConnectHost : true,
-          showClock: parsed.showClock !== undefined ? !!parsed.showClock : true,
-          home: { ...defaultState.home, ...(parsed.home || {}) },
-          away: { ...defaultState.away, ...(parsed.away || {}) },
-          positions: {
-            scorebug: posScorebug,
-            sponsor: { ...DEFAULT_POSITIONS.sponsor, ...(parsed.positions?.sponsor || {}) },
-            banner: { ...DEFAULT_POSITIONS.banner, ...(parsed.positions?.banner || {}) },
-            alert: { ...DEFAULT_POSITIONS.alert, ...(parsed.positions?.alert || {}) }
-          },
-          settings: { ...defaultState.settings, ...(parsed.settings || {}) },
-          ticker: { ...defaultState.ticker, ...(parsed.ticker || {}) },
-          sponsorLoop: { ...defaultState.sponsorLoop, ...(parsed.sponsorLoop || {}) },
-          customAlert: { ...defaultState.customAlert, ...(parsed.customAlert || {}) },
-          fullScreenSlates: Array.isArray(parsed.fullScreenSlates) && parsed.fullScreenSlates.length
-            ? parsed.fullScreenSlates
-            : JSON.parse(JSON.stringify(DEFAULT_FULLSCREEN_SLATES)),
-          youtubePads: Array.isArray(parsed.youtubePads) ? parsed.youtubePads : [],
-          customPads: Array.isArray(parsed.customPads) ? parsed.customPads : [],
-          clockRunning: false,
-          activeBanner: null,
-          activeTakeover: null
-        };
-      } catch (e) { return JSON.parse(JSON.stringify(defaultState)); }
+    function loadLocalSavedState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('hockey_broadcast_state_v7');
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) { return null; }
     }
 
     function saveState() {
@@ -1316,8 +1311,6 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, clockRunning: false, activeBanner: null, activeTakeover: null }));
       } catch (e) {}
     }
-
-    const isOverlayMode = new URLSearchParams(window.location.search).get('overlay') === 'true';
 
     async function init() {
       if (isOverlayMode) {
@@ -1327,6 +1320,34 @@
         const mountRoot = document.getElementById('overlay-mount-root');
         if (stageWrapper && mountRoot) mountRoot.appendChild(stageWrapper);
       }
+
+      // 1. Load GitHub flat-file config.json defaults first
+      githubConfigData = await fetchGitHubConfigJson();
+      let merged = JSON.parse(JSON.stringify(fallbackDefaultState));
+      if (githubConfigData) {
+        merged = mergeConfigIntoState(merged, githubConfigData);
+      }
+
+      // 2. Overlay local edits (only in Controller mode; Clean View prefers config.json + Firebase live state)
+      if (!isOverlayMode) {
+        const localSaved = loadLocalSavedState();
+        if (localSaved) {
+          merged = mergeConfigIntoState(merged, localSaved);
+          // If local didn't have firebaseDbUrl yet but config.json does, inherit it
+          if (!merged.firebaseDbUrl && githubConfigData?.firebaseDbUrl) {
+            merged.firebaseDbUrl = normalizeFirebaseUrl(githubConfigData.firebaseDbUrl);
+          }
+        }
+      }
+
+      // 3. Apply URL overrides if present (?room=...&db=...)
+      const params = new URLSearchParams(window.location.search);
+      const urlRoom = sanitizeRoomId(params.get('room'));
+      const urlDb = normalizeFirebaseUrl(params.get('db'));
+      if (urlRoom) merged.fixedRoomName = urlRoom;
+      if (urlDb) merged.firebaseDbUrl = urlDb;
+
+      state = { ...merged, clockRunning: false, activeBanner: null, activeTakeover: null };
 
       await loadAllMediaAssets();
       if (!mediaBlobCache.has('home_logo')) {
@@ -1340,15 +1361,70 @@
       updateCleanViewUrls();
 
       if (isOverlayMode) {
-        initOverlayReceiver();
+        initFirebaseReceiver();
         window.addEventListener('storage', (e) => {
-          if (e.key === STORAGE_KEY) { state = loadState(); renderAll(); }
+          if (e.key === STORAGE_KEY) {
+            const loc = loadLocalSavedState();
+            if (loc) { state = mergeConfigIntoState(state, loc); renderAll(); }
+          }
         });
-      } else if (state.autoConnectHost && hostRoomId) {
-        startBroadcastHost(hostRoomId);
+      } else if (state.firebaseDbUrl) {
+        testAndSyncFirebaseHost();
       }
     }
 
+    async function reloadFromGitHubConfig() {
+      const fresh = await fetchGitHubConfigJson();
+      if (!fresh) return alert('Could not find ./config.json in your repository root.');
+      githubConfigData = fresh;
+      state = mergeConfigIntoState(JSON.parse(JSON.stringify(fallbackDefaultState)), fresh);
+      saveState();
+      renderAll();
+      updateCleanViewUrls();
+      if (state.firebaseDbUrl) publishState();
+      alert('Reloaded defaults from GitHub config.json!');
+    }
+
+    function exportConfigJson() {
+      const exportObj = {
+        firebaseDbUrl: state.firebaseDbUrl || '',
+        fixedRoomName: state.fixedRoomName || 'soo-greyhounds-red',
+        autoConnectHost: true,
+        scorebugMode: state.scorebugMode,
+        showClock: state.showClock,
+        home: {
+          shortName: state.home.shortName,
+          fullName: state.home.fullName,
+          color: state.home.color,
+          logoPath: state.home.logoPath || './assets/home.png'
+        },
+        away: {
+          shortName: state.away.shortName,
+          fullName: state.away.fullName,
+          color: state.away.color,
+          logoPath: state.away.logoPath || ''
+        },
+        periodMinutes: state.periodMinutes,
+        positions: state.positions,
+        settings: state.settings,
+        ticker: state.ticker,
+        sponsorLoop: state.sponsorLoop,
+        customAlert: { ...state.customAlert, visible: false },
+        fullScreenSlates: state.fullScreenSlates,
+        youtubePads: state.youtubePads,
+        customPads: state.customPads
+      };
+      const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'config.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    }
+
+    /* =========================================================
+       STAGE SCALING & DRAG/RESIZE
+       ========================================================= */
     function setupStageScaler() {
       const canvas = document.getElementById('broadcast-canvas');
       if (!canvas) return;
@@ -1387,18 +1463,15 @@
       const idx = BUG_MODE_ORDER.indexOf(state.scorebugMode);
       setScorebugMode(BUG_MODE_ORDER[(idx + 1) % BUG_MODE_ORDER.length]);
     }
-
     function setScorebugMode(mode) {
       state.scorebugMode = BUG_MODE_ORDER.includes(mode) ? mode : 'compact';
       saveState(); renderAll(); publishState();
     }
-
     function toggleShowClock(enabled) {
       state.showClock = !!enabled;
       if (!state.showClock && state.clockRunning) toggleClock();
       saveState(); renderAll(); publishState();
     }
-
     function applyScorebugModeVisibility() {
       const compactEl = document.getElementById('scorebug-node');
       const bottomBarEl = document.getElementById('bottom-bar-layer');
@@ -1485,7 +1558,7 @@
     function resetDefaultPositions() { state.positions = JSON.parse(JSON.stringify(DEFAULT_POSITIONS)); saveState(); applyElementPositions(); renderNumericCoords(); publishState(); }
 
     /* =========================================================
-       GAME ACTIONS & CUSTOM UPPER-RIGHT ALERT STRIP
+       GAME ACTIONS & CUSTOM ALERT
        ========================================================= */
     function scoreGoal(side) {
       state[side].score += 1;
@@ -1512,30 +1585,15 @@
     function updateAlertField(field, val) {
       state.customAlert[field] = val;
       saveState();
-      if (state.customAlert.visible) {
-        renderCustomAlert();
-        publishState();
-      }
+      if (state.customAlert.visible) { renderCustomAlert(); publishState(); }
     }
-
     function toggleCustomAlert() {
       state.customAlert.visible = !state.customAlert.visible;
-      saveState();
-      renderCustomAlert();
-      renderGameControls();
-      publishState();
+      saveState(); renderCustomAlert(); renderGameControls(); publishState();
     }
-
     function applyAlertPreset(badge, title, subtitle, color) {
-      state.customAlert.badge = badge;
-      state.customAlert.title = title;
-      state.customAlert.subtitle = subtitle;
-      state.customAlert.color = color;
-      state.customAlert.visible = true;
-      saveState();
-      renderCustomAlert();
-      renderGameControls();
-      publishState();
+      state.customAlert = { visible: true, badge, title, subtitle, color };
+      saveState(); renderCustomAlert(); renderGameControls(); publishState();
     }
 
     function formatClock(totalSec) {
@@ -1545,13 +1603,8 @@
 
     function toggleClock() {
       state.clockRunning = !state.clockRunning;
-      if (state.clockRunning) {
-        lastPerfTimestamp = performance.now();
-        clockRafId = requestAnimationFrame(tickClock);
-      } else {
-        if (clockRafId) cancelAnimationFrame(clockRafId);
-        clockRafId = null;
-      }
+      if (state.clockRunning) { lastPerfTimestamp = performance.now(); clockRafId = requestAnimationFrame(tickClock); }
+      else { if (clockRafId) cancelAnimationFrame(clockRafId); clockRafId = null; }
       renderGameControls(); publishState();
     }
 
@@ -1599,8 +1652,17 @@
     }
 
     /* =========================================================
-       DYNAMIC PADS BUILDER (BANNERS + SLATES + YOUTUBE + CUSTOM)
+       DYNAMIC PADS & RESOLVERS (/assets/ PATHS + INDEXEDDB)
        ========================================================= */
+    function resolveAssetSrc(pathStr, mediaKey) {
+      if (pathStr && isSafeMediaUrl(pathStr)) return pathStr.trim();
+      if (mediaKey) {
+        const cached = mediaBlobCache.get(mediaKey);
+        if (cached && isSafeMediaUrl(cached)) return cached;
+      }
+      return '';
+    }
+
     function resolveTokens(str) {
       if (!str) return '';
       return String(str)
@@ -1622,29 +1684,12 @@
         { id: 'strip-matchup', kind: 'banner', type: 'matchup', title: 'Matchup Strip', subtitle: 'Crests + Score', durationSec: state.settings.infoBannerSec },
         { id: 'strip-sog', kind: 'banner', type: 'sog', title: 'Shots on Goal Bar', subtitle: 'Live SOG', durationSec: state.settings.infoBannerSec }
       ];
-
       const slatePads = (state.fullScreenSlates || []).map((s) => ({
-        id: s.id,
-        kind: 'takeover',
-        type: 'slate',
-        slateData: s,
-        title: s.title,
-        subtitle: s.kicker || 'Full-Screen Slate',
-        durationSec: Number(s.durationSec) || 0
+        id: s.id, kind: 'takeover', type: 'slate', slateData: s, title: s.title, subtitle: s.kicker || 'Full-Screen Slate', durationSec: Number(s.durationSec) || 0
       }));
-
       const ytPads = (state.youtubePads || []).map((y) => ({
-        id: y.id,
-        kind: 'takeover',
-        type: 'youtube',
-        videoId: y.videoId,
-        muted: !!y.muted,
-        loop: !!y.loop,
-        title: y.title,
-        subtitle: 'YouTube 1080p Video',
-        durationSec: 0
+        id: y.id, kind: 'takeover', type: 'youtube', videoId: y.videoId, muted: !!y.muted, loop: !!y.loop, title: y.title, subtitle: 'YouTube 1080p Video', durationSec: 0
       }));
-
       return [...baseBanners, ...slatePads, ...ytPads, ...(state.customPads || [])];
     }
 
@@ -1666,7 +1711,6 @@
         bannerTimeout = setTimeout(() => clearBanner(), bannerObj.durationSec * 1000);
       }
     }
-
     function clearBanner() {
       if (bannerTimeout) clearTimeout(bannerTimeout);
       const inner = document.getElementById('banner-inner');
@@ -1688,7 +1732,6 @@
         takeoverTimeout = setTimeout(() => clearTakeover(), tkObj.durationSec * 1000);
       }
     }
-
     function clearTakeover() {
       if (takeoverTimeout) clearTimeout(takeoverTimeout);
       const layer = document.getElementById('takeover-layer');
@@ -1699,11 +1742,10 @@
         renderTriggerPads(); publishState();
       }, state.settings.fadeMs || 300);
     }
-
     function clearAllLiveOverlays() { clearBanner(); clearTakeover(); }
 
     /* =========================================================
-       RENDERING FUNCTIONS (XSS-SAFE)
+       RENDERING FUNCTIONS
        ========================================================= */
     function renderAll() {
       document.documentElement.style.setProperty('--fade-ms', `${state.settings.fadeMs}ms`);
@@ -1715,9 +1757,15 @@
     }
 
     function renderTeamLogoHtml(teamObj, sizePx = 38) {
-      const dataUrl = teamObj.logoKey ? mediaBlobCache.get(teamObj.logoKey) : '';
-      if (dataUrl && isSafeMediaUrl(dataUrl)) return `<img src="${dataUrl}" alt="${escapeHTML(teamObj.shortName)}" />`;
-      return `<div class="bug-logo-fallback" style="background:${escapeHTML(teamObj.color || '#334155')};width:${sizePx}px;height:${sizePx}px;">${escapeHTML((teamObj.shortName || 'TM').slice(0, 3))}</div>`;
+      const src = resolveAssetSrc(teamObj.logoPath, teamObj.logoKey);
+      const fallback = `<div class="bug-logo-fallback" style="background:${escapeHTML(teamObj.color || '#334155')};width:${sizePx}px;height:${sizePx}px;">${escapeHTML((teamObj.shortName || 'TM').slice(0, 3))}</div>`;
+      if (src) {
+        // If ./assets/home.png isn't uploaded to GitHub yet, gracefully fall back to the built-in crest or badge
+        const fallbackData = teamObj.logoKey ? (mediaBlobCache.get(teamObj.logoKey) || '') : '';
+        const onErr = fallbackData ? `onerror="this.onerror=null;this.src='${fallbackData}'"` : `onerror="this.style.display='none'"`;
+        return `<img src="${escapeHTML(src)}" alt="${escapeHTML(teamObj.shortName)}" ${onErr} />`;
+      }
+      return fallback;
     }
 
     function renderScorebug() {
@@ -1786,9 +1834,9 @@
       inner.classList.toggle('with-backing', !!state.sponsorLoop.backing);
       tagEl.textContent = state.sponsorLoop.tag || 'PRESENTED BY';
       const item = items[sponsorIndex % items.length];
-      const imgData = item.mediaKey ? mediaBlobCache.get(item.mediaKey) : '';
-      slotEl.innerHTML = (imgData && isSafeMediaUrl(imgData))
-        ? `<img class="sponsor-media" src="${imgData}" alt="${escapeHTML(item.name)}" />`
+      const imgSrc = resolveAssetSrc(item.logoPath, item.mediaKey);
+      slotEl.innerHTML = imgSrc
+        ? `<img class="sponsor-media" src="${escapeHTML(imgSrc)}" alt="${escapeHTML(item.name)}" />`
         : `<div class="sponsor-fallback-text">${escapeHTML(item.name)}</div>`;
     }
 
@@ -1806,16 +1854,13 @@
       if (!node || !inner) return;
       const a = state.customAlert;
       if (!a || !a.visible || !a.title) {
-        node.classList.add('inactive');
-        inner.classList.remove('visible');
-        inner.innerHTML = '';
-        return;
+        node.classList.add('inactive'); inner.classList.remove('visible'); inner.innerHTML = ''; return;
       }
       node.classList.remove('inactive');
       const badgeColor = escapeHTML(a.color || '#d97706');
-      const homeLogo = state.home.logoKey ? mediaBlobCache.get(state.home.logoKey) : '';
-      const crestHtml = (homeLogo && isSafeMediaUrl(homeLogo))
-        ? `<img src="${homeLogo}" alt="" />`
+      const homeSrc = resolveAssetSrc(state.home.logoPath, state.home.logoKey);
+      const crestHtml = homeSrc
+        ? `<img src="${escapeHTML(homeSrc)}" alt="" />`
         : `<div class="bug-logo-fallback" style="background:${badgeColor};width:48px;height:48px;font-size:20px;">!</div>`;
 
       inner.innerHTML = `
@@ -1840,19 +1885,19 @@
       let html = '';
       if (b.type === 'goal') {
         const tm = b.side === 'away' ? state.away : state.home;
-        const logoUrl = tm.logoKey ? mediaBlobCache.get(tm.logoKey) : '';
-        const logoImg = (logoUrl && isSafeMediaUrl(logoUrl)) ? `<img src="${logoUrl}" alt="" />` : `<div class="bug-logo-fallback" style="background:${escapeHTML(tm.color)};width:52px;height:52px;font-size:22px;">${escapeHTML(tm.shortName.slice(0,3))}</div>`;
+        const logoSrc = resolveAssetSrc(tm.logoPath, tm.logoKey);
+        const logoImg = logoSrc ? `<img src="${escapeHTML(logoSrc)}" alt="" />` : `<div class="bug-logo-fallback" style="background:${escapeHTML(tm.color)};width:52px;height:52px;font-size:22px;">${escapeHTML(tm.shortName.slice(0,3))}</div>`;
         const clockPart = state.showClock ? ` (${formatClock(state.clockRemainingSec)})` : '';
         html = `<div class="espn-goal-strip"><div class="goal-crest-box">${logoImg}</div><div class="goal-badge-skew" style="background:${escapeHTML(tm.color)};">GOAL!</div><div class="goal-details"><div class="goal-team-title">${escapeHTML(tm.fullName)}</div><div class="goal-meta-line">${escapeHTML(state.home.shortName)} ${state.home.score} &ndash; ${escapeHTML(state.away.shortName)} ${state.away.score} &bull; ${escapeHTML(state.period)}${clockPart}</div></div></div>`;
       } else if (b.type === 'matchup') {
-        const hUrl = state.home.logoKey ? mediaBlobCache.get(state.home.logoKey) : '';
-        const aUrl = state.away.logoKey ? mediaBlobCache.get(state.away.logoKey) : '';
-        html = `<div class="espn-info-strip"><div class="info-pill-tag" style="background:${escapeHTML(state.home.color)};">LIVE HOCKEY</div><div class="info-body">${hUrl && isSafeMediaUrl(hUrl) ? `<img src="${hUrl}" alt="" />` : ''}<span>${escapeHTML(state.home.fullName)} (${state.home.score})</span><span style="color:#64748b;">VS</span><span>${escapeHTML(state.away.fullName)} (${state.away.score})</span>${aUrl && isSafeMediaUrl(aUrl) ? `<img src="${aUrl}" alt="" />` : ''}</div></div>`;
+        const hUrl = resolveAssetSrc(state.home.logoPath, state.home.logoKey);
+        const aUrl = resolveAssetSrc(state.away.logoPath, state.away.logoKey);
+        html = `<div class="espn-info-strip"><div class="info-pill-tag" style="background:${escapeHTML(state.home.color)};">LIVE HOCKEY</div><div class="info-body">${hUrl ? `<img src="${escapeHTML(hUrl)}" alt="" />` : ''}<span>${escapeHTML(state.home.fullName)} (${state.home.score})</span><span style="color:#64748b;">VS</span><span>${escapeHTML(state.away.fullName)} (${state.away.score})</span>${aUrl ? `<img src="${escapeHTML(aUrl)}" alt="" />` : ''}</div></div>`;
       } else if (b.type === 'sog') {
         html = `<div class="espn-info-strip"><div class="info-pill-tag" style="background:#0284c7;">SHOTS ON GOAL</div><div class="info-body"><span>${escapeHTML(state.home.shortName)}: <strong style="color:#38bdf8;">${state.home.sog}</strong></span><span style="color:#475569;">|</span><span>${escapeHTML(state.away.shortName)}: <strong style="color:#38bdf8;">${state.away.sog}</strong></span><span style="color:#475569;">|</span><span style="font-size:22px;color:#94a3b8;">${escapeHTML(state.period)}</span></div></div>`;
-      } else if (b.type === 'customMedia' && b.mediaKey) {
-        const mUrl = mediaBlobCache.get(b.mediaKey);
-        if (mUrl && isSafeMediaUrl(mUrl)) html = b.isVideo ? `<video class="custom-banner-media" src="${mUrl}" autoplay loop muted playsinline></video>` : `<img class="custom-banner-media" src="${mUrl}" alt="" />`;
+      } else if (b.type === 'customMedia') {
+        const mUrl = resolveAssetSrc(b.assetPath, b.mediaKey);
+        if (mUrl) html = b.isVideo ? `<video class="custom-banner-media" src="${escapeHTML(mUrl)}" autoplay loop muted playsinline></video>` : `<img class="custom-banner-media" src="${escapeHTML(mUrl)}" alt="" />`;
       }
       inner.innerHTML = html;
       requestAnimationFrame(() => inner.classList.add('visible'));
@@ -1864,19 +1909,18 @@
       const tk = state.activeTakeover;
       if (!tk) { layer.classList.remove('visible', 'active'); layer.innerHTML = ''; return; }
       let html = '';
-
       if (tk.type === 'youtube' && tk.videoId && /^[a-zA-Z0-9_-]{11}$/.test(tk.videoId)) {
         const muteParam = tk.muted ? '1' : '0';
         const loopParam = tk.loop ? `&loop=1&playlist=${tk.videoId}` : '';
         const src = `https://www.youtube-nocookie.com/embed/${tk.videoId}?autoplay=1&mute=${muteParam}&controls=0&rel=0&playsinline=1&modestbranding=1${loopParam}`;
         html = `<iframe class="takeover-media" src="${src}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
-      } else if (tk.type === 'customMedia' && tk.mediaKey) {
-        const mUrl = mediaBlobCache.get(tk.mediaKey);
-        if (mUrl && isSafeMediaUrl(mUrl)) html = tk.isVideo ? `<video class="takeover-media" src="${mUrl}" autoplay loop muted playsinline></video>` : `<img class="takeover-media" src="${mUrl}" alt="" />`;
+      } else if (tk.type === 'customMedia') {
+        const mUrl = resolveAssetSrc(tk.assetPath, tk.mediaKey);
+        if (mUrl) html = tk.isVideo ? `<video class="takeover-media" src="${escapeHTML(mUrl)}" autoplay loop muted playsinline></video>` : `<img class="takeover-media" src="${escapeHTML(mUrl)}" alt="" />`;
       } else {
         const s = tk.slateData || (state.fullScreenSlates || []).find((x) => x.id === tk.id) || DEFAULT_FULLSCREEN_SLATES[0];
-        const homeLogo = state.home.logoKey ? mediaBlobCache.get(state.home.logoKey) : '';
-        const logoTag = (s.showCrest !== false && homeLogo && isSafeMediaUrl(homeLogo)) ? `<img class="takeover-crest" src="${homeLogo}" alt="" />` : '';
+        const homeSrc = resolveAssetSrc(state.home.logoPath, state.home.logoKey);
+        const logoTag = (s.showCrest !== false && homeSrc) ? `<img class="takeover-crest" src="${escapeHTML(homeSrc)}" alt="" />` : '';
         const color = s.useHomeColor !== false ? state.home.color : (s.bgColor || state.home.color);
         const kicker = resolveTokens(s.kicker || '');
         const headline = resolveTokens(s.headline || '');
@@ -1914,20 +1958,14 @@
         clockBtn.classList.toggle('btn-amber', state.clockRunning);
         clockBtn.classList.toggle('btn-green', !state.clockRunning);
       }
-
       const pillsEl = document.getElementById('period-pills');
       if (pillsEl) pillsEl.innerHTML = ['1ST', '2ND', '3RD', 'OT', 'SO', 'INT', 'FINAL'].map((p) => `<button class="period-pill ${state.period === p ? 'active' : ''}" onclick="setPeriod('${p}')">${p}</button>`).join('');
 
-      // Sync Custom Upper-Right Alert Controls
       const a = state.customAlert;
-      const ab = document.getElementById('alert-badge-input');
-      if (ab && document.activeElement !== ab) ab.value = a.badge || '';
-      const at = document.getElementById('alert-title-input');
-      if (at && document.activeElement !== at) at.value = a.title || '';
-      const as = document.getElementById('alert-sub-input');
-      if (as && document.activeElement !== as) as.value = a.subtitle || '';
-      const ac = document.getElementById('alert-color-select');
-      if (ac) ac.value = a.color || '#d97706';
+      const ab = document.getElementById('alert-badge-input'); if (ab && document.activeElement !== ab) ab.value = a.badge || '';
+      const at = document.getElementById('alert-title-input'); if (at && document.activeElement !== at) at.value = a.title || '';
+      const as = document.getElementById('alert-sub-input'); if (as && document.activeElement !== as) as.value = a.subtitle || '';
+      const ac = document.getElementById('alert-color-select'); if (ac) ac.value = a.color || '#d97706';
       const aBtn = document.getElementById('btn-toggle-alert');
       const aStat = document.getElementById('alert-live-status');
       if (aBtn && aStat) {
@@ -1955,14 +1993,13 @@
         return `<button class="pad-btn ${isLive ? 'live-now' : ''}" onclick="triggerPadByIndex(${idx})"><div class="pad-top"><span class="pad-label">${escapeHTML(pad.title)}</span><span class="pad-badge ${badgeCls}">${badgeTxt}</span></div><span class="pad-sub">${escapeHTML(pad.subtitle || 'Overlay')}</span></button>`;
       }).join('');
     }
-
     function triggerPadByIndex(idx) {
       const allPads = getAllTriggerPads();
       if (allPads[idx]) activatePad(allPads[idx]);
     }
 
     /* =========================================================
-       SETUP & LAYOUT — FULL EDITORS FOR ALL ASSETS
+       SETUP & LAYOUT EDITORS
        ========================================================= */
     function switchTab(tab) {
       document.querySelectorAll('.nav-tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
@@ -1974,8 +2011,8 @@
     function renderSetupForm() {
       const bugModeSel = document.getElementById('set-bug-mode');
       if (!bugModeSel) return;
-      document.getElementById('set-fixed-room').value = state.fixedRoomName || hostRoomId;
-      document.getElementById('chk-auto-connect').checked = !!state.autoConnectHost;
+      document.getElementById('set-firebase-url').value = state.firebaseDbUrl || '';
+      document.getElementById('set-fixed-room').value = state.fixedRoomName || 'soo-greyhounds-red';
       document.getElementById('chk-setup-show-clock').checked = !!state.showClock;
       bugModeSel.value = state.scorebugMode || 'compact';
       document.getElementById('set-ticker-tag').value = state.ticker.tag || 'HOCKEY LIVE';
@@ -1983,10 +2020,12 @@
       document.getElementById('set-home-short').value = state.home.shortName;
       document.getElementById('set-home-full').value = state.home.fullName;
       document.getElementById('set-home-color').value = state.home.color;
+      document.getElementById('set-home-logopath').value = state.home.logoPath || '';
       document.getElementById('prev-home-logo').innerHTML = renderTeamLogoHtml(state.home, 38);
       document.getElementById('set-away-short').value = state.away.shortName;
       document.getElementById('set-away-full').value = state.away.fullName;
       document.getElementById('set-away-color').value = state.away.color;
+      document.getElementById('set-away-logopath').value = state.away.logoPath || '';
       document.getElementById('prev-away-logo').innerHTML = renderTeamLogoHtml(state.away, 38);
       document.getElementById('set-period-mins').value = String(state.periodMinutes);
       document.getElementById('set-fade-ms').value = state.settings.fadeMs;
@@ -2005,21 +2044,13 @@
       renderNumericCoords();
     }
 
-    /* --- 1. Full-Screen Slates Editor --- */
+    /* --- Slates Editor --- */
     function openSlateEditor(idx) {
       editingSlateIdx = idx;
       const wrap = document.getElementById('slate-editor-form-wrap');
       if (!wrap) return;
       const s = idx >= 0 ? state.fullScreenSlates[idx] : {
-        id: 'tk-' + Date.now(),
-        title: 'Custom Slate',
-        kicker: 'LIVE HOCKEY',
-        headline: 'STARTING SOON',
-        subline: '{HOME} VS {AWAY}',
-        useHomeColor: true,
-        bgColor: state.home.color,
-        showCrest: true,
-        durationSec: 0
+        id: 'tk-' + Date.now(), title: 'Custom Slate', kicker: 'LIVE HOCKEY', headline: 'STARTING SOON', subline: '{HOME} VS {AWAY}', useHomeColor: true, bgColor: state.home.color, showCrest: true, durationSec: 0
       };
       wrap.innerHTML = `
         <div class="inline-edit-box">
@@ -2029,29 +2060,23 @@
             <input type="text" id="ed-slate-kicker" value="${escapeHTML(s.kicker)}" placeholder="Top Pill Kicker" />
           </div>
           <input type="text" id="ed-slate-headline" value="${escapeHTML(s.headline)}" placeholder="Main Big Headline" />
-          <input type="text" id="ed-slate-subline" value="${escapeHTML(s.subline)}" placeholder="Subline (e.g. {HOME} {HSCORE} - {AWAY} {ASCORE})" />
+          <input type="text" id="ed-slate-subline" value="${escapeHTML(s.subline)}" placeholder="Subline" />
           <div class="form-grid-3" style="align-items:center;">
             <label style="font-size:11px;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="ed-slate-crest" ${s.showCrest !== false ? 'checked' : ''} /> Home Crest</label>
             <label style="font-size:11px;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="ed-slate-usehome" ${s.useHomeColor !== false ? 'checked' : ''} /> Home Color</label>
             <input type="color" id="ed-slate-color" value="${escapeHTML(s.bgColor || state.home.color)}" style="height:28px;" />
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
-            <label style="font-size:11px;color:var(--text-dim);">Duration (0 = Static until off):</label>
+            <label style="font-size:11px;color:var(--text-dim);">Duration (0 = Static):</label>
             <input type="number" id="ed-slate-dur" min="0" max="120" value="${Number(s.durationSec) || 0}" style="width:72px;" />
             <div style="display:flex;gap:5px;">
-              <button class="btn btn-green btn-xs" onclick="saveSlateEditor('${escapeHTML(s.id)}')">Save Slate</button>
+              <button class="btn btn-green btn-xs" onclick="saveSlateEditor('${escapeHTML(s.id)}')">Save</button>
               <button class="btn btn-xs" onclick="closeSlateEditor()">Cancel</button>
             </div>
           </div>
         </div>`;
     }
-
-    function closeSlateEditor() {
-      editingSlateIdx = null;
-      const wrap = document.getElementById('slate-editor-form-wrap');
-      if (wrap) wrap.innerHTML = '';
-    }
-
+    function closeSlateEditor() { editingSlateIdx = null; const w = document.getElementById('slate-editor-form-wrap'); if (w) w.innerHTML = ''; }
     function saveSlateEditor(id) {
       const obj = {
         id,
@@ -2066,20 +2091,12 @@
       };
       if (editingSlateIdx >= 0) state.fullScreenSlates[editingSlateIdx] = obj;
       else state.fullScreenSlates.push(obj);
-      closeSlateEditor();
-      saveState();
-      renderSlatesList();
-      renderTriggerPads();
-      publishState();
+      closeSlateEditor(); saveState(); renderSlatesList(); renderTriggerPads(); publishState();
     }
-
     function removeSlate(idx) {
       if (state.fullScreenSlates.length <= 1) return alert('Keep at least one full-screen slate.');
-      state.fullScreenSlates.splice(idx, 1);
-      closeSlateEditor();
-      saveState(); renderSlatesList(); renderTriggerPads(); publishState();
+      state.fullScreenSlates.splice(idx, 1); closeSlateEditor(); saveState(); renderSlatesList(); renderTriggerPads(); publishState();
     }
-
     function renderSlatesList() {
       const el = document.getElementById('slates-list-container');
       if (!el) return;
@@ -2093,32 +2110,26 @@
         </div>`).join('');
     }
 
-    /* --- 2. YouTube Video Overlays --- */
+    /* --- YouTube Pads --- */
     function saveYouTubePad() {
       const titleInp = document.getElementById('yt-pad-title');
       const urlInp = document.getElementById('yt-pad-url');
       const muted = document.getElementById('yt-pad-muted').checked;
       const loop = document.getElementById('yt-pad-loop').checked;
       const vidId = extractYouTubeId(urlInp.value);
-      if (!vidId) {
-        alert('Could not find a valid 11-character YouTube Video ID in that link. Paste a standard youtube.com/watch?v=... or youtu.be/... link.');
-        return;
-      }
+      if (!vidId) return alert('Paste a valid YouTube link (youtube.com/watch?v=... or youtu.be/...).');
       const title = (titleInp.value || 'Pregame Hype Video').trim();
       if (editingYtPadIdx >= 0) {
         state.youtubePads[editingYtPadIdx] = { ...state.youtubePads[editingYtPadIdx], title, videoId: vidId, url: urlInp.value.trim(), muted, loop };
-        editingYtPadIdx = -1;
-        document.getElementById('btn-save-yt-pad').textContent = '+ Add Video Pad';
+        editingYtPadIdx = -1; document.getElementById('btn-save-yt-pad').textContent = '+ Add Video Pad';
       } else {
         state.youtubePads.push({ id: 'yt-' + Date.now(), title, videoId: vidId, url: urlInp.value.trim(), muted, loop });
       }
       titleInp.value = ''; urlInp.value = '';
       saveState(); renderYouTubePadsList(); renderTriggerPads(); publishState();
     }
-
     function editYouTubePad(idx) {
-      const y = state.youtubePads[idx];
-      if (!y) return;
+      const y = state.youtubePads[idx]; if (!y) return;
       editingYtPadIdx = idx;
       document.getElementById('yt-pad-title').value = y.title;
       document.getElementById('yt-pad-url').value = y.url || `https://youtu.be/${y.videoId}`;
@@ -2126,20 +2137,16 @@
       document.getElementById('yt-pad-loop').checked = !!y.loop;
       document.getElementById('btn-save-yt-pad').textContent = 'Save Edit';
     }
-
     function removeYouTubePad(idx) {
-      state.youtubePads.splice(idx, 1);
-      editingYtPadIdx = -1;
+      state.youtubePads.splice(idx, 1); editingYtPadIdx = -1;
       document.getElementById('btn-save-yt-pad').textContent = '+ Add Video Pad';
       saveState(); renderYouTubePadsList(); renderTriggerPads(); publishState();
     }
-
     function renderYouTubePadsList() {
-      const el = document.getElementById('yt-pads-list');
-      if (!el) return;
+      const el = document.getElementById('yt-pads-list'); if (!el) return;
       el.innerHTML = (state.youtubePads || []).map((y, idx) => `
         <div class="list-item-row">
-          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><strong>${escapeHTML(y.title)}</strong> (${escapeHTML(y.videoId)}${y.muted ? ', Muted' : ''})</span>
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><strong>${escapeHTML(y.title)}</strong> (${escapeHTML(y.videoId)})</span>
           <div style="display:flex;gap:4px;flex-shrink:0;">
             <button class="btn btn-blue btn-xs" onclick="editYouTubePad(${idx})">Edit</button>
             <button class="btn btn-red btn-xs" onclick="removeYouTubePad(${idx})">Delete</button>
@@ -2147,38 +2154,27 @@
         </div>`).join('');
     }
 
-    /* --- 3. Tickers (Add + Edit + Remove) --- */
+    /* --- Tickers --- */
     function updateTickerConfig(key, val) { state.ticker[key] = val; saveState(); renderBottomTicker(); publishState(); }
     function saveTickerMessage() {
       const inp = document.getElementById('new-ticker-msg');
-      const txt = (inp.value || '').trim();
-      if (!txt) return;
-      if (editingTickerIdx >= 0) {
-        state.ticker.messages[editingTickerIdx] = txt;
-        editingTickerIdx = -1;
-        document.getElementById('btn-save-ticker').textContent = '+ Add';
-      } else {
-        state.ticker.messages.push(txt);
-      }
-      inp.value = '';
-      saveState(); renderBottomTicker(); renderTickerList(); publishState();
+      const txt = (inp.value || '').trim(); if (!txt) return;
+      if (editingTickerIdx >= 0) { state.ticker.messages[editingTickerIdx] = txt; editingTickerIdx = -1; document.getElementById('btn-save-ticker').textContent = '+ Add'; }
+      else state.ticker.messages.push(txt);
+      inp.value = ''; saveState(); renderBottomTicker(); renderTickerList(); publishState();
     }
     function editTickerMessage(idx) {
       editingTickerIdx = idx;
-      const inp = document.getElementById('new-ticker-msg');
-      inp.value = state.ticker.messages[idx] || '';
-      inp.focus();
+      const inp = document.getElementById('new-ticker-msg'); inp.value = state.ticker.messages[idx] || ''; inp.focus();
       document.getElementById('btn-save-ticker').textContent = 'Save Edit';
     }
     function removeTickerMessage(idx) {
-      state.ticker.messages.splice(idx, 1);
-      editingTickerIdx = -1;
+      state.ticker.messages.splice(idx, 1); editingTickerIdx = -1;
       document.getElementById('btn-save-ticker').textContent = '+ Add';
       saveState(); renderBottomTicker(); renderTickerList(); publishState();
     }
     function renderTickerList() {
-      const el = document.getElementById('ticker-list-container');
-      if (!el) return;
+      const el = document.getElementById('ticker-list-container'); if (!el) return;
       el.innerHTML = (state.ticker.messages || []).map((msg, idx) => `
         <div class="list-item-row">
           <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(msg)}</span>
@@ -2189,15 +2185,17 @@
         </div>`).join('');
     }
 
-    /* --- 4. Sponsor Loop Rotator (Add + Inline Edit + Swap Logo + Remove) --- */
+    /* --- Sponsors --- */
     function toggleSponsorLoop() { state.sponsorLoop.enabled = !state.sponsorLoop.enabled; saveState(); renderAll(); publishState(); }
     function updateSponsorConfig(key, val) { state.sponsorLoop[key] = val; saveState(); renderSponsorLoop(); startSponsorTimer(); publishState(); }
-    function addTextSponsor() {
-      const inp = document.getElementById('new-sponsor-name');
-      const name = (inp.value || '').trim();
-      if (!name) return;
-      state.sponsorLoop.items.push({ id: `sp-${Date.now()}`, name, mediaKey: '' });
-      inp.value = '';
+    function addTextOrPathSponsor() {
+      const nameInp = document.getElementById('new-sponsor-name');
+      const pathInp = document.getElementById('new-sponsor-path');
+      const name = (nameInp.value || '').trim();
+      const logoPath = (pathInp.value || '').trim();
+      if (!name && !logoPath) return;
+      state.sponsorLoop.items.push({ id: `sp-${Date.now()}`, name: name || 'Sponsor', logoPath, mediaKey: '' });
+      nameInp.value = ''; pathInp.value = '';
       saveState(); renderSponsorLoop(); renderSponsorList(); publishState();
     }
     function handleSponsorUpload(e) {
@@ -2207,8 +2205,8 @@
           if (!isSafeMediaUrl(reader.result)) return;
           const key = `sponsor_${Date.now()}_${i}`;
           await saveMediaAsset(key, reader.result);
-          state.sponsorLoop.items.push({ id: key, name: file.name.replace(/\.[^.]+$/, ''), mediaKey: key });
-          saveState(); renderSponsorLoop(); renderSponsorList(); publishState(); publishMediaAsset(key, reader.result);
+          state.sponsorLoop.items.push({ id: key, name: file.name.replace(/\.[^.]+$/, ''), logoPath: '', mediaKey: key });
+          saveState(); renderSponsorLoop(); renderSponsorList(); publishState();
         };
         reader.readAsDataURL(file);
       });
@@ -2222,8 +2220,9 @@
         <div class="inline-edit-box">
           <div style="font-size:11px;font-weight:800;color:#60a5fa;">Edit Sponsor</div>
           <input type="text" id="ed-sponsor-name" value="${escapeHTML(item.name)}" placeholder="Sponsor Name" />
+          <input type="text" id="ed-sponsor-path" value="${escapeHTML(item.logoPath || '')}" placeholder="./assets/sponsor1.png (optional)" />
           <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;">
-            <label class="btn btn-xs" style="cursor:pointer;">Replace Logo<input type="file" accept="image/*" style="display:none;" onchange="replaceSponsorLogo(event, ${idx})" /></label>
+            <label class="btn btn-xs" style="cursor:pointer;">Or Replace Local Logo<input type="file" accept="image/*" style="display:none;" onchange="replaceSponsorLogo(event, ${idx})" /></label>
             <div style="display:flex;gap:5px;">
               <button class="btn btn-green btn-xs" onclick="saveSponsorEdit(${idx})">Save</button>
               <button class="btn btn-xs" onclick="closeSponsorEdit()">Cancel</button>
@@ -2231,43 +2230,36 @@
           </div>
         </div>`;
     }
-    function closeSponsorEdit() {
-      editingSponsorIdx = -1;
-      const wrap = document.getElementById('sponsor-edit-wrap');
-      if (wrap) wrap.innerHTML = '';
-    }
+    function closeSponsorEdit() { editingSponsorIdx = -1; const w = document.getElementById('sponsor-edit-wrap'); if (w) w.innerHTML = ''; }
     function saveSponsorEdit(idx) {
-      const val = (document.getElementById('ed-sponsor-name').value || '').trim();
-      if (val && state.sponsorLoop.items[idx]) state.sponsorLoop.items[idx].name = val;
-      closeSponsorEdit();
-      saveState(); renderSponsorLoop(); renderSponsorList(); publishState();
+      const item = state.sponsorLoop.items[idx]; if (!item) return;
+      item.name = (document.getElementById('ed-sponsor-name').value || item.name).trim();
+      item.logoPath = (document.getElementById('ed-sponsor-path').value || '').trim();
+      closeSponsorEdit(); saveState(); renderSponsorLoop(); renderSponsorList(); publishState();
     }
     function replaceSponsorLogo(e, idx) {
-      const file = e.target.files && e.target.files[0];
-      if (!file || !state.sponsorLoop.items[idx]) return;
+      const file = e.target.files && e.target.files[0]; if (!file || !state.sponsorLoop.items[idx]) return;
       const reader = new FileReader();
       reader.onload = async () => {
         if (!isSafeMediaUrl(reader.result)) return;
         const key = state.sponsorLoop.items[idx].mediaKey || `sponsor_${Date.now()}`;
         await saveMediaAsset(key, reader.result);
         state.sponsorLoop.items[idx].mediaKey = key;
-        saveState(); renderSponsorLoop(); renderSponsorList(); publishState(); publishMediaAsset(key, reader.result);
+        saveState(); renderSponsorLoop(); renderSponsorList(); publishState();
       };
       reader.readAsDataURL(file);
     }
     async function removeSponsor(idx) {
       const item = state.sponsorLoop.items[idx];
       if (item && item.mediaKey) await deleteMediaAsset(item.mediaKey);
-      state.sponsorLoop.items.splice(idx, 1);
-      sponsorIndex = 0; closeSponsorEdit();
+      state.sponsorLoop.items.splice(idx, 1); sponsorIndex = 0; closeSponsorEdit();
       saveState(); renderSponsorLoop(); renderSponsorList(); publishState();
     }
     function renderSponsorList() {
-      const el = document.getElementById('sponsor-list-container');
-      if (!el) return;
+      const el = document.getElementById('sponsor-list-container'); if (!el) return;
       el.innerHTML = (state.sponsorLoop.items || []).map((item, idx) => `
         <div class="list-item-row">
-          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(item.name)} ${item.mediaKey ? '(Logo)' : '(Text)'}</span>
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(item.name)} ${item.logoPath ? '(' + escapeHTML(item.logoPath) + ')' : (item.mediaKey ? '(Local)' : '(Text)')}</span>
           <div style="display:flex;gap:4px;flex-shrink:0;">
             <button class="btn btn-blue btn-xs" onclick="openSponsorEdit(${idx})">Edit</button>
             <button class="btn btn-red btn-xs" onclick="removeSponsor(${idx})">Remove</button>
@@ -2275,10 +2267,23 @@
         </div>`).join('');
     }
 
-    /* --- 5. Custom Uploaded Media Pads (With Inline Edit) --- */
+    /* --- Custom Media Pads (/assets/ Path or Upload) --- */
+    function addAssetPathCustomPad() {
+      const titleInput = document.getElementById('custom-pad-title');
+      const pathInput = document.getElementById('custom-pad-path');
+      const mode = document.getElementById('custom-pad-mode').value;
+      const holdVal = document.getElementById('custom-pad-hold').value;
+      const durationSec = holdVal === 'static' ? 0 : Number(holdVal);
+      const assetPath = (pathInput.value || '').trim();
+      if (!assetPath || !isSafeMediaUrl(assetPath)) return alert('Enter a valid path like ./assets/hype.webm or ./assets/banner.png');
+      const title = (titleInput.value || '').trim() || assetPath.split('/').pop();
+      const isVideo = /\.(webm|mp4)(\?.*)?$/i.test(assetPath);
+      state.customPads.push({ id: `custom_${Date.now()}`, kind: mode, type: 'customMedia', title, subtitle: assetPath, assetPath, mediaKey: '', isVideo, durationSec });
+      titleInput.value = ''; pathInput.value = '';
+      saveState(); renderTriggerPads(); renderCustomPadsList(); publishState();
+    }
     function handleCustomPadUpload(e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
+      const file = e.target.files && e.target.files[0]; if (!file) return;
       const titleInput = document.getElementById('custom-pad-title');
       const mode = document.getElementById('custom-pad-mode').value;
       const holdVal = document.getElementById('custom-pad-hold').value;
@@ -2290,9 +2295,9 @@
         if (!isSafeMediaUrl(reader.result)) return alert('Unsupported file format.');
         const key = `custom_${Date.now()}`;
         await saveMediaAsset(key, reader.result);
-        state.customPads.push({ id: key, kind: mode, type: 'customMedia', title, subtitle: isVideo ? 'Video Loop' : 'Graphic', mediaKey: key, isVideo, durationSec });
+        state.customPads.push({ id: key, kind: mode, type: 'customMedia', title, subtitle: isVideo ? 'Local Video' : 'Local Graphic', assetPath: '', mediaKey: key, isVideo, durationSec });
         titleInput.value = '';
-        saveState(); renderTriggerPads(); renderCustomPadsList(); publishState(); publishMediaAsset(key, reader.result);
+        saveState(); renderTriggerPads(); renderCustomPadsList(); publishState();
       };
       reader.readAsDataURL(file);
     }
@@ -2303,8 +2308,9 @@
       if (!p || !wrap) return;
       wrap.innerHTML = `
         <div class="inline-edit-box">
-          <div style="font-size:11px;font-weight:800;color:#60a5fa;">Edit Uploaded Pad</div>
-          <input type="text" id="ed-cpad-title" value="${escapeHTML(p.title)}" />
+          <div style="font-size:11px;font-weight:800;color:#60a5fa;">Edit Custom Media Pad</div>
+          <input type="text" id="ed-cpad-title" value="${escapeHTML(p.title)}" placeholder="Label" />
+          <input type="text" id="ed-cpad-path" value="${escapeHTML(p.assetPath || '')}" placeholder="./assets/file.webm (optional)" />
           <div class="form-grid-2">
             <select id="ed-cpad-kind">
               <option value="takeover" ${p.kind === 'takeover' ? 'selected' : ''}>Full-Screen 1080p</option>
@@ -2318,19 +2324,15 @@
           </div>
         </div>`;
     }
-    function closeCustomPadEdit() {
-      editingCustomPadIdx = -1;
-      const wrap = document.getElementById('custom-pad-edit-wrap');
-      if (wrap) wrap.innerHTML = '';
-    }
+    function closeCustomPadEdit() { editingCustomPadIdx = -1; const w = document.getElementById('custom-pad-edit-wrap'); if (w) w.innerHTML = ''; }
     function saveCustomPadEdit(idx) {
-      const p = state.customPads[idx];
-      if (!p) return;
+      const p = state.customPads[idx]; if (!p) return;
       p.title = (document.getElementById('ed-cpad-title').value || p.title).trim();
+      p.assetPath = (document.getElementById('ed-cpad-path').value || '').trim();
+      if (p.assetPath) p.isVideo = /\.(webm|mp4)(\?.*)?$/i.test(p.assetPath);
       p.kind = document.getElementById('ed-cpad-kind').value;
       p.durationSec = Math.max(0, Number(document.getElementById('ed-cpad-dur').value) || 0);
-      closeCustomPadEdit();
-      saveState(); renderTriggerPads(); renderCustomPadsList(); publishState();
+      closeCustomPadEdit(); saveState(); renderTriggerPads(); renderCustomPadsList(); publishState();
     }
     async function removeCustomPad(idx) {
       const pad = state.customPads[idx];
@@ -2339,8 +2341,7 @@
       saveState(); renderTriggerPads(); renderCustomPadsList(); publishState();
     }
     function renderCustomPadsList() {
-      const el = document.getElementById('custom-pads-list');
-      if (!el) return;
+      const el = document.getElementById('custom-pads-list'); if (!el) return;
       el.innerHTML = (state.customPads || []).map((p, idx) => `
         <div class="list-item-row">
           <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><strong>${escapeHTML(p.title)}</strong> (${p.durationSec ? p.durationSec + 's' : 'Static'})</span>
@@ -2356,8 +2357,7 @@
     function setPeriodMinutes(mins) { state.periodMinutes = Number(mins) || 15; resetClock(); }
 
     function handleLogoUpload(e, side) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
+      const file = e.target.files && e.target.files[0]; if (!file) return;
       const reader = new FileReader();
       reader.onload = () => {
         const img = new Image();
@@ -2369,7 +2369,8 @@
           const key = `${side}_logo`;
           await saveMediaAsset(key, cleanPng);
           state[side].logoKey = key;
-          saveState(); renderAll(); publishState(); publishMediaAsset(key, cleanPng);
+          state[side].logoPath = '';
+          saveState(); renderAll(); publishState();
         };
         img.src = reader.result;
       };
@@ -2377,8 +2378,7 @@
     }
 
     function renderNumericCoords() {
-      const grid = document.getElementById('numeric-coords-grid');
-      if (!grid) return;
+      const grid = document.getElementById('numeric-coords-grid'); if (!grid) return;
       grid.innerHTML = [
         { key: 'scorebug', label: 'Compact Bug' },
         { key: 'sponsor', label: 'Sponsor Loop' },
@@ -2392,29 +2392,58 @@
     function setNumericCoord(key, prop, val) { state.positions[key][prop] = Number(val); saveState(); applyElementPositions(); publishState(); }
 
     /* =========================================================
-       MQTT OVER SECURE WEBSOCKETS (WSS) — PERMANENT FIXED ROOM
+       FIREBASE REALTIME DATABASE SYNC OVER PORT 443 (REST + SSE)
        ========================================================= */
-    function applyFixedRoomFromSetup() {
-      const val = sanitizeRoomId(document.getElementById('set-fixed-room').value);
-      if (!val) return alert('Enter a valid room name (letters, numbers, hyphens).');
-      state.fixedRoomName = val; hostRoomId = val; saveState(); updateCleanViewUrls(); startBroadcastHost(val);
+    function setLiveStatusUI(connected, labelText) {
+      firebaseConnected = connected;
+      const topBtn = document.getElementById('btn-sync-modal');
+      const modalStatus = document.getElementById('sync-status-text');
+      const setupStatus = document.getElementById('setup-room-status');
+      if (topBtn) {
+        topBtn.textContent = connected ? `LIVE 443: ${state.fixedRoomName}` : 'Firebase: Setup';
+        topBtn.classList.toggle('btn-green', connected);
+      }
+      if (modalStatus) { modalStatus.textContent = labelText; modalStatus.style.color = connected ? 'var(--accent-green)' : 'var(--accent-amber)'; }
+      if (setupStatus) { setupStatus.textContent = connected ? `LIVE (${state.fixedRoomName})` : labelText; setupStatus.style.color = connected ? 'var(--accent-green)' : 'var(--accent-amber)'; }
     }
-    function applyFixedRoomFromModal() {
-      const val = sanitizeRoomId(document.getElementById('modal-fixed-room').value);
-      if (!val) return alert('Enter a valid room name (letters, numbers, hyphens).');
-      state.fixedRoomName = val; hostRoomId = val; saveState();
-      const setupInp = document.getElementById('set-fixed-room');
-      if (setupInp) setupInp.value = val;
-      updateCleanViewUrls(); startBroadcastHost(val);
+
+    function applyFirebaseFromSetup() {
+      const dbUrl = normalizeFirebaseUrl(document.getElementById('set-firebase-url').value);
+      const room = sanitizeRoomId(document.getElementById('set-fixed-room').value);
+      if (!dbUrl) return alert('Paste a valid Firebase Realtime Database URL (https://...firebaseio.com or https://...firebasedatabase.app).');
+      if (!room) return alert('Enter a valid room name.');
+      state.firebaseDbUrl = dbUrl;
+      state.fixedRoomName = room;
+      saveState();
+      updateCleanViewUrls();
+      testAndSyncFirebaseHost();
     }
-    function toggleAutoConnect(enabled) { state.autoConnectHost = !!enabled; saveState(); }
+
+    function applyFirebaseFromModal() {
+      const dbUrl = normalizeFirebaseUrl(document.getElementById('modal-firebase-url').value);
+      const room = sanitizeRoomId(document.getElementById('modal-fixed-room').value);
+      if (!dbUrl) return alert('Paste a valid Firebase Realtime Database URL (https://...firebaseio.com or https://...firebasedatabase.app).');
+      if (!room) return alert('Enter a valid room name.');
+      state.firebaseDbUrl = dbUrl;
+      state.fixedRoomName = room;
+      saveState();
+      const sUrl = document.getElementById('set-firebase-url'); if (sUrl) sUrl.value = dbUrl;
+      const sRoom = document.getElementById('set-fixed-room'); if (sRoom) sRoom.value = room;
+      updateCleanViewUrls();
+      testAndSyncFirebaseHost();
+    }
 
     function buildCleanViewUrl() {
       const url = new URL(window.location.href);
       url.search = '';
       url.searchParams.set('overlay', 'true');
-      const activeRoom = sanitizeRoomId(hostRoomId || state.fixedRoomName || 'soo-greyhounds-red');
+      const activeRoom = sanitizeRoomId(state.fixedRoomName || 'soo-greyhounds-red');
       if (activeRoom) url.searchParams.set('room', activeRoom);
+      // Only append &db= if config.json on GitHub doesn't already match this Firebase URL
+      const cfgDb = normalizeFirebaseUrl(githubConfigData?.firebaseDbUrl || '');
+      if (state.firebaseDbUrl && state.firebaseDbUrl !== cfgDb) {
+        url.searchParams.set('db', state.firebaseDbUrl);
+      }
       return url.toString();
     }
 
@@ -2441,120 +2470,131 @@
     }
 
     function openSyncModal() {
-      const modalInp = document.getElementById('modal-fixed-room');
-      if (modalInp) modalInp.value = state.fixedRoomName || hostRoomId;
+      const mUrl = document.getElementById('modal-firebase-url'); if (mUrl) mUrl.value = state.firebaseDbUrl || '';
+      const mRoom = document.getElementById('modal-fixed-room'); if (mRoom) mRoom.value = state.fixedRoomName || 'soo-greyhounds-red';
       updateCleanViewUrls();
       document.getElementById('sync-modal').classList.add('open');
     }
     function closeSyncModal() { document.getElementById('sync-modal').classList.remove('open'); }
 
-    function setLiveStatusUI(connected, labelText) {
-      const topBtn = document.getElementById('btn-sync-modal');
-      const modalStatus = document.getElementById('sync-status-text');
-      const setupStatus = document.getElementById('setup-room-status');
-      if (topBtn) {
-        topBtn.textContent = connected ? `LIVE: ${hostRoomId}` : 'Live Link: Offline';
-        topBtn.classList.toggle('btn-green', connected);
-      }
-      if (modalStatus) { modalStatus.textContent = labelText; modalStatus.style.color = connected ? 'var(--accent-green)' : 'var(--accent-amber)'; }
-      if (setupStatus) { setupStatus.textContent = connected ? `LIVE (${hostRoomId})` : 'CONNECTING...'; setupStatus.style.color = connected ? 'var(--accent-green)' : 'var(--accent-amber)'; }
-    }
-
-    function startBroadcastHost(customRoom) {
-      if (typeof mqtt === 'undefined') return alert('MQTT WebSocket library failed to load.');
-      hostRoomId = sanitizeRoomId(customRoom || state.fixedRoomName || 'soo-greyhounds-red');
-      state.fixedRoomName = hostRoomId;
-      saveState(); updateCleanViewUrls();
-
-      if (mqttClient) { try { mqttClient.end(true); } catch (e) {} }
-      setLiveStatusUI(false, 'Connecting WSS...');
-
-      mqttClient = mqtt.connect(MQTT_BROKER_URL, {
-        clientId: 'host_' + hostRoomId + '_' + Math.random().toString(36).slice(2, 6),
-        clean: true,
-        reconnectPeriod: 2000
-      });
-
-      mqttClient.on('connect', () => {
-        setLiveStatusUI(true, `LIVE WSS ROOM: ${hostRoomId}`);
-        publishState();
-        mediaBlobCache.forEach((v, k) => publishMediaAsset(k, v));
-      });
-      mqttClient.on('reconnect', () => setLiveStatusUI(false, 'Reconnecting WSS...'));
-    }
-
-    function publishState() {
-      if (!mqttClient || !mqttClient.connected || !hostRoomId) return;
-      mqttClient.publish(`sjg-hockey/v5/${hostRoomId}/state`, JSON.stringify(state), { qos: 0, retain: true });
-    }
-
-    function publishClockTick() {
-      if (!mqttClient || !mqttClient.connected || !hostRoomId) return;
-      mqttClient.publish(`sjg-hockey/v5/${hostRoomId}/clock`, JSON.stringify({ clockRemainingSec: state.clockRemainingSec }), { qos: 0, retain: false });
-    }
-
-    function publishMediaAsset(key, dataUrl) {
-      if (!mqttClient || !mqttClient.connected || !hostRoomId || !dataUrl) return;
-      if (dataUrl.length < 250000) {
-        mqttClient.publish(`sjg-hockey/v5/${hostRoomId}/media/${key}`, dataUrl, { qos: 0, retain: true });
+    async function testAndSyncFirebaseHost() {
+      if (!state.firebaseDbUrl || !state.fixedRoomName) return;
+      setLiveStatusUI(false, 'Connecting Port 443...');
+      const ok = await publishState();
+      if (ok) {
+        setLiveStatusUI(true, `CONNECTED (PORT 443): ${state.fixedRoomName}`);
+      } else {
+        setLiveStatusUI(false, 'WRITE FAILED — Check Firebase Rules');
       }
     }
 
-    function initOverlayReceiver() {
-      const room = sanitizeRoomId(new URLSearchParams(window.location.search).get('room'));
-      if (!room || typeof mqtt === 'undefined') return;
+    async function publishState() {
+      if (!state.firebaseDbUrl || !state.fixedRoomName || isOverlayMode) return false;
+      const endpoint = `${state.firebaseDbUrl}/rooms/${state.fixedRoomName}/state.json`;
+      try {
+        const res = await fetch(endpoint, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...state, _updatedAt: Date.now() })
+        });
+        if (res.ok) {
+          if (!firebaseConnected) setLiveStatusUI(true, `CONNECTED (PORT 443): ${state.fixedRoomName}`);
+          return true;
+        }
+        return false;
+      } catch (e) {
+        return false;
+      }
+    }
 
-      const client = mqtt.connect(MQTT_BROKER_URL, {
-        clientId: 'moblin_' + Math.random().toString(36).slice(2, 9),
-        clean: true,
-        reconnectPeriod: 2000
-      });
+    async function publishClockTick() {
+      if (!state.firebaseDbUrl || !state.fixedRoomName || isOverlayMode) return;
+      const endpoint = `${state.firebaseDbUrl}/rooms/${state.fixedRoomName}/clock.json`;
+      try {
+        fetch(endpoint, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clockRemainingSec: state.clockRemainingSec, _t: Date.now() })
+        });
+      } catch (e) {}
+    }
 
-      client.on('connect', () => {
-        showOverlayToast(`LIVE SYNCED: ${room}`);
-        client.subscribe(`sjg-hockey/v5/${room}/state`);
-        client.subscribe(`sjg-hockey/v5/${room}/clock`);
-        client.subscribe(`sjg-hockey/v5/${room}/media/+`);
-      });
+    function applyIncomingRoomState(incoming) {
+      if (!incoming || typeof incoming !== 'object') return;
+      state = mergeConfigIntoState(state, incoming);
+      state.activeBanner = incoming.activeBanner || null;
+      state.activeTakeover = incoming.activeTakeover || null;
+      if (typeof incoming.clockRemainingSec === 'number') {
+        state.clockRemainingSec = incoming.clockRemainingSec;
+      }
+      renderAll();
+    }
 
-      client.on('message', (topic, payloadBuf) => {
-        const text = payloadBuf.toString();
-        if (topic.endsWith('/clock')) {
-          try {
-            const data = JSON.parse(text);
-            if (typeof data.clockRemainingSec === 'number') {
-              state.clockRemainingSec = Math.max(0, data.clockRemainingSec);
-              const formatted = formatClock(state.clockRemainingSec);
-              document.getElementById('bug-time').textContent = formatted;
-              document.getElementById('bbar-time').textContent = formatted;
-            }
-          } catch (e) {}
-        } else if (topic.endsWith('/state')) {
-          try {
-            const incoming = JSON.parse(text);
-            if (incoming && typeof incoming === 'object') {
-              state = {
-                ...state,
-                ...incoming,
-                home: { ...state.home, ...(incoming.home || {}) },
-                away: { ...state.away, ...(incoming.away || {}) },
-                positions: { ...state.positions, ...(incoming.positions || {}) },
-                settings: { ...state.settings, ...(incoming.settings || {}) },
-                ticker: { ...state.ticker, ...(incoming.ticker || {}) },
-                sponsorLoop: { ...state.sponsorLoop, ...(incoming.sponsorLoop || {}) },
-                customAlert: { ...state.customAlert, ...(incoming.customAlert || {}) }
-              };
-              renderAll();
-            }
-          } catch (e) {}
-        } else if (topic.includes('/media/')) {
-          const key = topic.split('/media/')[1];
-          if (key && isSafeMediaUrl(text)) {
-            mediaBlobCache.set(key, text);
-            renderAll();
+    async function initFirebaseReceiver() {
+      const dbUrl = normalizeFirebaseUrl(state.firebaseDbUrl);
+      const room = sanitizeRoomId(state.fixedRoomName);
+      if (!dbUrl || !room) return;
+
+      const roomEndpoint = `${dbUrl}/rooms/${room}.json`;
+
+      // 1. Immediate HTTPS GET on load so Moblin renders live state instantly
+      try {
+        const res = await fetch(`${roomEndpoint}?t=${Date.now()}`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.state) applyIncomingRoomState(data.state);
+          if (data && data.clock && typeof data.clock.clockRemainingSec === 'number') {
+            state.clockRemainingSec = Math.max(0, data.clock.clockRemainingSec);
+            const f = formatClock(state.clockRemainingSec);
+            document.getElementById('bug-time').textContent = f;
+            document.getElementById('bbar-time').textContent = f;
+          }
+          showOverlayToast(`LIVE SYNCED (443): ${room}`);
+        }
+      } catch (e) {}
+
+      // 2. Open Port-443 Server-Sent Events (EventSource) live push stream
+      const startSSE = () => {
+        if (firebaseEventSource) { try { firebaseEventSource.close(); } catch (e) {} }
+        try {
+          firebaseEventSource = new EventSource(roomEndpoint);
+          firebaseEventSource.addEventListener('put', (e) => {
+            try {
+              const msg = JSON.parse(e.data);
+              if (!msg || msg.data === null) return;
+              if (msg.path === '/' && msg.data.state) {
+                applyIncomingRoomState(msg.data.state);
+              } else if (msg.path === '/state') {
+                applyIncomingRoomState(msg.data);
+              } else if (msg.path === '/clock' && typeof msg.data.clockRemainingSec === 'number') {
+                state.clockRemainingSec = Math.max(0, msg.data.clockRemainingSec);
+                const f = formatClock(state.clockRemainingSec);
+                document.getElementById('bug-time').textContent = f;
+                document.getElementById('bbar-time').textContent = f;
+              }
+            } catch (err) {}
+          });
+          firebaseEventSource.onerror = () => {
+            try { firebaseEventSource.close(); } catch (e) {}
+            setTimeout(startSSE, 3000);
+          };
+        } catch (e) {
+          // Fallback lightweight HTTPS polling if EventSource is unavailable
+          if (!firebasePollTimer) {
+            firebasePollTimer = setInterval(async () => {
+              try {
+                const r = await fetch(`${dbUrl}/rooms/${room}/state.json?t=${Date.now()}`, { cache: 'no-store' });
+                if (r.ok) {
+                  const d = await r.json();
+                  if (d) applyIncomingRoomState(d);
+                }
+              } catch (err) {}
+            }, 1500);
           }
         }
-      });
+      };
+
+      startSSE();
     }
 
     window.addEventListener('DOMContentLoaded', init);
