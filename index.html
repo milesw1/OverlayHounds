@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' wss://broker.emqx.io:8084 wss://broker.hivemq.com:8884; object-src 'none'; base-uri 'self';" />
-  <title>1080p Hockey Broadcast Scorebug &amp; Live Producer Studio v5</title>
+  <title>1080p Hockey Broadcast Scorebug &amp; Live Producer Studio v6</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
@@ -608,7 +608,7 @@
     <header class="topbar">
       <div class="brand">
         <span class="brand-dot"></span>
-        <span>HOCKEY BROADCAST STUDIO v5</span>
+        <span>HOCKEY BROADCAST STUDIO v6</span>
       </div>
 
       <nav class="nav-tabs">
@@ -619,7 +619,7 @@
       <div class="top-actions">
         <button class="btn btn-blue" id="btn-bug-mode-cycle" onclick="cycleScorebugMode()">Layout: Compact Bug</button>
         <button class="btn" id="btn-sponsor-toggle" onclick="toggleSponsorLoop()">Sponsor Loop: ON</button>
-        <button class="btn" id="btn-sync-modal" onclick="openSyncModal()">iPad &rarr; Moblin Link</button>
+        <button class="btn" id="btn-sync-modal" onclick="openSyncModal()">Live Link: Offline</button>
         <button class="btn btn-green" id="btn-copy-clean" onclick="copyCleanViewUrl()">Copy Clean URL</button>
         <a class="btn" id="link-open-clean" href="?overlay=true" target="_blank" rel="noopener">Preview &#8599;</a>
       </div>
@@ -739,7 +739,7 @@
         </div>
 
         <div class="clean-url-strip">
-          <label for="clean-url-input">Moblin Clean URL</label>
+          <label for="clean-url-input">Moblin Permanent URL</label>
           <input type="text" id="clean-url-input" readonly onclick="this.select()" />
           <button class="btn btn-green" onclick="copyCleanViewUrl()">Copy</button>
         </div>
@@ -818,6 +818,32 @@
     </main>
 
     <main id="view-setup" class="hidden">
+      <!-- NEW CARD: Permanent Fixed Room Name for Moblin -->
+      <section class="panel-card">
+        <div class="panel-title">
+          <span>Permanent Moblin Broadcast Room</span>
+          <span id="setup-room-status" style="color:var(--accent-amber);">OFFLINE</span>
+        </div>
+        <div class="form-row">
+          <label>Custom Fixed Room Name (Letters, Numbers, Hyphens — Keeps Your Moblin URL Identical Every Game)</label>
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="set-fixed-room" maxlength="32" placeholder="e.g. soo-greyhounds-red" />
+            <button class="btn btn-blue" onclick="applyFixedRoomFromSetup()">Save &amp; Connect</button>
+          </div>
+        </div>
+        <div class="list-item-row">
+          <span><strong>Auto-Connect Room on Page Load</strong> (recommended for game day)</span>
+          <input type="checkbox" id="chk-auto-connect" onchange="toggleAutoConnect(this.checked)" />
+        </div>
+        <div class="form-row" style="margin-top:8px;">
+          <label>Your Permanent Moblin Browser Widget URL (1920 &times; 1080)</label>
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="setup-clean-url" readonly onclick="this.select()" style="font-family:var(--font-mono);font-size:11px;" />
+            <button class="btn btn-green" onclick="copyCleanViewUrl()">Copy</button>
+          </div>
+        </div>
+      </section>
+
       <section class="panel-card">
         <div class="panel-title"><span>Scoreboard Mode &amp; Bottom Broadcast Ticker</span></div>
         <div class="form-row">
@@ -937,25 +963,31 @@
   </div>
 
   <!-- =========================================================
-       IPAD -> MOBLIN LIVE LINK MODAL (MQTT OVER SECURE WEBSOCKETS)
+       IPAD -> MOBLIN LIVE LINK MODAL (FIXED ROOM SUPPORT)
        ========================================================= -->
   <div class="modal-backdrop" id="sync-modal" onclick="if(event.target===this) closeSyncModal()">
     <div class="modal-card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <h3 style="font-size:15px;font-weight:800;">iPad Controller &rarr; iPhone Moblin Live Link (v5 WSS)</h3>
+        <h3 style="font-size:15px;font-weight:800;">Permanent Moblin Live Link (WSS)</h3>
         <button class="btn" onclick="closeSyncModal()">Close</button>
       </div>
       <p style="font-size:12px;color:var(--text-dim);line-height:1.5;margin-bottom:12px;">
-        v5 uses <strong>Secure WebSockets (MQTT/WSS)</strong> instead of WebRTC so iOS Moblin receives live score, bottom bar, and takeover updates reliably over Wi-Fi or cellular—even if Moblin reloads mid-game.
+        Set a custom fixed room name once so your <strong>Moblin Browser Widget URL</strong> never changes between games. Pick something unique to your team (e.g. <code>soo-u10aa-red-2026</code>).
       </p>
-      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-        <button class="btn btn-blue" onclick="startBroadcastHost()">Start Live Host Room</button>
-        <span id="sync-status-text" style="font-family:var(--font-mono);font-size:12px;align-self:center;color:var(--accent-green);">Not Hosting</span>
+      <div class="form-row">
+        <label>Fixed Room Name</label>
+        <div style="display:flex;gap:6px;">
+          <input type="text" id="modal-fixed-room" maxlength="32" placeholder="e.g. soo-u10aa-red" />
+          <button class="btn btn-blue" onclick="applyFixedRoomFromModal()">Connect</button>
+        </div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <span id="sync-status-text" style="font-family:var(--font-mono);font-size:12px;color:var(--accent-amber);">Not Connected</span>
       </div>
       <div class="form-row">
-        <label>Moblin Browser Widget URL (1920 &times; 1080)</label>
+        <label>Permanent Moblin Browser Widget URL (1920 &times; 1080)</label>
         <div style="display:flex;gap:6px;">
-          <input type="text" id="modal-moblin-url" readonly onclick="this.select()" />
+          <input type="text" id="modal-moblin-url" readonly onclick="this.select()" style="font-family:var(--font-mono);font-size:11px;" />
           <button class="btn btn-green" onclick="copyCleanViewUrl()">Copy</button>
         </div>
       </div>
@@ -986,7 +1018,7 @@
 
     function sanitizeRoomId(raw) {
       if (!raw || typeof raw !== 'string') return '';
-      return raw.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 32);
+      return raw.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 32);
     }
 
     function showOverlayToast(msg) {
@@ -1076,7 +1108,7 @@
     /* =========================================================
        APPLICATION STATE
        ========================================================= */
-    const STORAGE_KEY = 'hockey_broadcast_state_v5';
+    const STORAGE_KEY = 'hockey_broadcast_state_v6';
     const DEFAULT_POSITIONS = {
       scorebug: { x: 64, y: 958, scale: 1.0 },
       sponsor:  { x: 1608, y: 48, scale: 1.0 },
@@ -1084,6 +1116,8 @@
     };
 
     const defaultState = {
+      fixedRoomName: 'soo-greyhounds-red',
+      autoConnectHost: true,
       scorebugMode: 'compact',
       home: { shortName: 'SOO RED', fullName: 'SOO JR. GREYHOUNDS RED', color: '#c8102e', score: 0, sog: 0, pp: false, en: false, logoKey: 'home_logo' },
       away: { shortName: 'GUEST', fullName: 'VISITING TEAM', color: '#1d4ed8', score: 0, sog: 0, pp: false, en: false, logoKey: '' },
@@ -1122,19 +1156,20 @@
     let sponsorIndex = 0;
     let sponsorTimer = null;
 
-    // MQTT over Secure WebSockets (WSS) — 100% iOS WKWebView / Moblin Compatible
     const MQTT_BROKER_URL = 'wss://broker.emqx.io:8084/mqtt';
     let mqttClient = null;
-    let hostRoomId = '';
+    let hostRoomId = sanitizeRoomId(state.fixedRoomName || 'soo-greyhounds-red');
 
     function loadState() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('hockey_broadcast_state_v5');
         if (!raw) return JSON.parse(JSON.stringify(defaultState));
         const parsed = JSON.parse(raw);
         return {
           ...JSON.parse(JSON.stringify(defaultState)),
           ...parsed,
+          fixedRoomName: sanitizeRoomId(parsed.fixedRoomName || defaultState.fixedRoomName),
+          autoConnectHost: parsed.autoConnectHost !== undefined ? !!parsed.autoConnectHost : true,
           home: { ...defaultState.home, ...(parsed.home || {}) },
           away: { ...defaultState.away, ...(parsed.away || {}) },
           positions: {
@@ -1186,6 +1221,8 @@
         window.addEventListener('storage', (e) => {
           if (e.key === STORAGE_KEY) { state = loadState(); renderAll(); }
         });
+      } else if (state.autoConnectHost && hostRoomId) {
+        startBroadcastHost(hostRoomId);
       }
     }
 
@@ -1668,6 +1705,8 @@
     function renderSetupForm() {
       const bugModeSel = document.getElementById('set-bug-mode');
       if (!bugModeSel) return;
+      document.getElementById('set-fixed-room').value = state.fixedRoomName || hostRoomId;
+      document.getElementById('chk-auto-connect').checked = !!state.autoConnectHost;
       bugModeSel.value = state.scorebugMode || 'compact';
       document.getElementById('set-ticker-tag').value = state.ticker.tag || 'HOCKEY LIVE';
       document.getElementById('set-ticker-speed').value = state.ticker.speedSec || 26;
@@ -1688,7 +1727,35 @@
       document.getElementById('set-sponsor-tag').value = state.sponsorLoop.tag;
       document.getElementById('set-sponsor-interval').value = state.sponsorLoop.intervalSec;
       document.getElementById('chk-sponsor-backing').checked = !!state.sponsorLoop.backing;
+      updateCleanViewUrls();
       renderTickerList(); renderSponsorList(); renderCustomPadsList(); renderNumericCoords();
+    }
+
+    function applyFixedRoomFromSetup() {
+      const val = sanitizeRoomId(document.getElementById('set-fixed-room').value);
+      if (!val) { alert('Please enter a valid room name using letters, numbers, or hyphens.'); return; }
+      state.fixedRoomName = val;
+      hostRoomId = val;
+      saveState();
+      updateCleanViewUrls();
+      startBroadcastHost(val);
+    }
+
+    function applyFixedRoomFromModal() {
+      const val = sanitizeRoomId(document.getElementById('modal-fixed-room').value);
+      if (!val) { alert('Please enter a valid room name using letters, numbers, or hyphens.'); return; }
+      state.fixedRoomName = val;
+      hostRoomId = val;
+      saveState();
+      const setupInp = document.getElementById('set-fixed-room');
+      if (setupInp) setupInp.value = val;
+      updateCleanViewUrls();
+      startBroadcastHost(val);
+    }
+
+    function toggleAutoConnect(enabled) {
+      state.autoConnectHost = !!enabled;
+      saveState();
     }
 
     function updateTickerConfig(key, val) { state.ticker[key] = val; saveState(); renderBottomTicker(); publishState(); }
@@ -1773,23 +1840,24 @@
     function setNumericCoord(key, prop, val) { state.positions[key][prop] = Number(val); saveState(); applyElementPositions(); publishState(); }
 
     /* =========================================================
-       MQTT OVER SECURE WEBSOCKETS (WSS) — iOS MOBLIN RELIABLE SYNC
+       MQTT OVER SECURE WEBSOCKETS (WSS) — PERMANENT FIXED ROOM
        ========================================================= */
     function buildCleanViewUrl() {
       const url = new URL(window.location.href);
       url.search = '';
       url.searchParams.set('overlay', 'true');
-      if (hostRoomId) url.searchParams.set('room', sanitizeRoomId(hostRoomId));
+      const activeRoom = sanitizeRoomId(hostRoomId || state.fixedRoomName || 'soo-greyhounds-red');
+      if (activeRoom) url.searchParams.set('room', activeRoom);
       return url.toString();
     }
 
     function updateCleanViewUrls() {
       const cleanUrl = buildCleanViewUrl();
-      const stripInput = document.getElementById('clean-url-input');
-      const modalInput = document.getElementById('modal-moblin-url');
+      ['clean-url-input', 'modal-moblin-url', 'setup-clean-url'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = cleanUrl;
+      });
       const previewLink = document.getElementById('link-open-clean');
-      if (stripInput) stripInput.value = cleanUrl;
-      if (modalInput) modalInput.value = cleanUrl;
       if (previewLink) previewLink.href = cleanUrl;
     }
 
@@ -1805,20 +1873,45 @@
       }
     }
 
-    function openSyncModal() { updateCleanViewUrls(); document.getElementById('sync-modal').classList.add('open'); }
+    function openSyncModal() {
+      const modalInp = document.getElementById('modal-fixed-room');
+      if (modalInp) modalInp.value = state.fixedRoomName || hostRoomId;
+      updateCleanViewUrls();
+      document.getElementById('sync-modal').classList.add('open');
+    }
     function closeSyncModal() { document.getElementById('sync-modal').classList.remove('open'); }
 
-    function startBroadcastHost() {
+    function setLiveStatusUI(connected, labelText) {
+      const topBtn = document.getElementById('btn-sync-modal');
+      const modalStatus = document.getElementById('sync-status-text');
+      const setupStatus = document.getElementById('setup-room-status');
+      if (topBtn) {
+        topBtn.textContent = connected ? `LIVE: ${hostRoomId}` : 'Live Link: Offline';
+        topBtn.classList.toggle('btn-green', connected);
+      }
+      if (modalStatus) {
+        modalStatus.textContent = labelText;
+        modalStatus.style.color = connected ? 'var(--accent-green)' : 'var(--accent-amber)';
+      }
+      if (setupStatus) {
+        setupStatus.textContent = connected ? `LIVE (${hostRoomId})` : 'CONNECTING...';
+        setupStatus.style.color = connected ? 'var(--accent-green)' : 'var(--accent-amber)';
+      }
+    }
+
+    function startBroadcastHost(customRoom) {
       if (typeof mqtt === 'undefined') {
         alert('MQTT WebSocket library failed to load. Check internet connection.');
         return;
       }
-      if (!hostRoomId) {
-        hostRoomId = 'sjg-' + Math.random().toString(36).substring(2, 8);
-      }
-      if (mqttClient) { try { mqttClient.end(true); } catch (e) {} }
+      hostRoomId = sanitizeRoomId(customRoom || state.fixedRoomName || 'soo-greyhounds-red');
+      state.fixedRoomName = hostRoomId;
+      saveState();
+      updateCleanViewUrls();
 
-      document.getElementById('sync-status-text').textContent = 'Connecting WSS...';
+      if (mqttClient) { try { mqttClient.end(true); } catch (e) {} }
+      setLiveStatusUI(false, 'Connecting WSS...');
+
       mqttClient = mqtt.connect(MQTT_BROKER_URL, {
         clientId: 'host_' + hostRoomId + '_' + Math.random().toString(36).slice(2, 6),
         clean: true,
@@ -1826,11 +1919,13 @@
       });
 
       mqttClient.on('connect', () => {
-        document.getElementById('sync-status-text').textContent = `LIVE WSS ROOM: ${hostRoomId}`;
-        document.getElementById('btn-sync-modal').classList.add('btn-green');
-        updateCleanViewUrls();
+        setLiveStatusUI(true, `LIVE WSS ROOM: ${hostRoomId}`);
         publishState();
         mediaBlobCache.forEach((v, k) => publishMediaAsset(k, v));
+      });
+
+      mqttClient.on('reconnect', () => {
+        setLiveStatusUI(false, 'Reconnecting WSS...');
       });
     }
 
@@ -1846,7 +1941,6 @@
 
     function publishMediaAsset(key, dataUrl) {
       if (!mqttClient || !mqttClient.connected || !hostRoomId || !dataUrl) return;
-      // Publish logos/media up to 250KB directly with retain=true so Moblin gets them immediately on load
       if (dataUrl.length < 250000) {
         mqttClient.publish(`sjg-hockey/v5/${hostRoomId}/media/${key}`, dataUrl, { qos: 0, retain: true });
       }
