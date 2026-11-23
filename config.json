@@ -1,0 +1,114 @@
+{
+  "firebaseDbUrl": "",
+  "fixedRoomName": "soo-greyhounds-red",
+  "autoConnectHost": true,
+  "scorebugMode": "compact",
+  "showClock": true,
+  "home": {
+    "shortName": "SOO RED",
+    "fullName": "SOO JR. GREYHOUNDS RED",
+    "color": "#c8102e",
+    "logoPath": "./assets/home.png"
+  },
+  "away": {
+    "shortName": "GUEST",
+    "fullName": "VISITING TEAM",
+    "color": "#1d4ed8",
+    "logoPath": ""
+  },
+  "periodMinutes": 15,
+  "positions": {
+    "scorebug": {
+      "x": 64,
+      "y": 940,
+      "scale": 1.3
+    },
+    "sponsor": {
+      "x": 1608,
+      "y": 152,
+      "scale": 1.0
+    },
+    "banner": {
+      "x": 64,
+      "y": 48,
+      "scale": 1.0
+    },
+    "alert": {
+      "x": 1120,
+      "y": 48,
+      "scale": 0.92
+    }
+  },
+  "settings": {
+    "fadeMs": 300,
+    "goalBannerSec": 6,
+    "infoBannerSec": 6
+  },
+  "ticker": {
+    "tag": "HOCKEY LIVE",
+    "speedSec": 26,
+    "messages": [
+      "SOO JR. GREYHOUNDS RED LIVE BROADCAST",
+      "THANK YOU TO OUR TEAM SPONSORS & FAMILIES FOR SUPPORTING YOUTH HOCKEY",
+      "FOLLOW LIVE SCORE & SHOTS ON GOAL UPDATES ALL GAME LONG"
+    ]
+  },
+  "sponsorLoop": {
+    "enabled": true,
+    "tag": "PRESENTED BY",
+    "intervalSec": 8,
+    "backing": true,
+    "items": [
+      {
+        "id": "sp-1",
+        "name": "SOO JR. GREYHOUNDS HOCKEY",
+        "logoPath": "",
+        "mediaKey": ""
+      }
+    ]
+  },
+  "customAlert": {
+    "visible": false,
+    "badge": "NOTICE",
+    "title": "POOR CONNECTION - POOR QUALITY POSSIBLE",
+    "subtitle": "Arena signal fluctuating",
+    "color": "#d97706"
+  },
+  "fullScreenSlates": [
+    {
+      "id": "tk-goal-hype",
+      "title": "Full-Screen Goal Hype",
+      "kicker": "LIGHT THE LAMP",
+      "headline": "{HOME} GOAL!",
+      "subline": "{HOME} {HSCORE} \u2014 {AWAY} {ASCORE}",
+      "useHomeColor": true,
+      "bgColor": "#c8102e",
+      "showCrest": true,
+      "durationSec": 5
+    },
+    {
+      "id": "tk-intro",
+      "title": "Full-Screen Intro Open",
+      "kicker": "HOCKEY NIGHT BROADCAST",
+      "headline": "{HOME_FULL}",
+      "subline": "{HOME} VS {AWAY}",
+      "useHomeColor": true,
+      "bgColor": "#c8102e",
+      "showCrest": true,
+      "durationSec": 0
+    },
+    {
+      "id": "tk-intermission",
+      "title": "Intermission Slate",
+      "kicker": "{PERIOD} INTERMISSION",
+      "headline": "WE WILL BE RIGHT BACK",
+      "subline": "{HOME} {HSCORE}  |  {AWAY} {ASCORE}  \u2022  SOG {HSOG}-{ASOG}",
+      "useHomeColor": true,
+      "bgColor": "#c8102e",
+      "showCrest": true,
+      "durationSec": 0
+    }
+  ],
+  "youtubePads": [],
+  "customPads": []
+}
