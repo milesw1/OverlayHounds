@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://*.peerjs.com wss://*.peerjs.com https://0.peerjs.com wss://0.peerjs.com; object-src 'none'; base-uri 'self';" />
-  <title>1080p Hockey Broadcast Scorebug &amp; Live Producer Studio v2</title>
+  <title>1080p Hockey Broadcast Scorebug &amp; Live Producer Studio v3</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
@@ -42,25 +42,37 @@
     /* =========================================================
        CLEAN OVERLAY MODE (?overlay=true)
        ========================================================= */
+    html.overlay-mode,
     body.overlay-mode {
       background: transparent !important;
-      width: 1920px;
-      height: 1080px;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
     }
-    body.overlay-mode #studio-app { display: none !important; }
-    body.overlay-mode #broadcast-stage-wrapper {
+    body.overlay-mode #studio-app {
+      display: none !important;
+    }
+    body.overlay-mode #overlay-mount-root {
       position: fixed;
       inset: 0;
-      width: 1920px;
-      height: 1080px;
+      width: 100%;
+      height: 100%;
+      background: transparent !important;
+      z-index: 9999;
+      display: block !important;
+      overflow: hidden;
+    }
+    body.overlay-mode #broadcast-stage-wrapper {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       background: transparent !important;
       border: none !important;
       border-radius: 0 !important;
       box-shadow: none !important;
     }
     body.overlay-mode #broadcast-canvas {
-      transform: none !important;
       background: transparent !important;
       background-image: none !important;
     }
@@ -70,6 +82,30 @@
     body.overlay-mode .drag-outline {
       display: none !important;
     }
+
+    #overlay-mount-root {
+      display: none;
+    }
+
+    #overlay-toast {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.88);
+      color: #34d399;
+      border: 1px solid rgba(52, 211, 153, 0.45);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      z-index: 10000;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    #overlay-toast.show { opacity: 1; }
 
     /* =========================================================
        STUDIO LAYOUT (CONTROL MODE)
@@ -477,7 +513,6 @@
 
     /* =========================================================
        MODE B: OPTIONAL FULL-WIDTH BOTTOM BROADCAST BAR & TICKER
-       (1920 x 54px ESPN BottomLine / SportCam Style)
        ========================================================= */
     #bottom-bar-layer {
       position: absolute;
@@ -585,7 +620,6 @@
       color: #ffffff;
     }
 
-    /* Ticker / Crawl Section inside Bottom Bar */
     .bbar-ticker-label {
       display: flex;
       align-items: center;
@@ -1215,6 +1249,10 @@
   </style>
 </head>
 <body>
+  <!-- Full-screen mount target used ONLY when ?overlay=true is active -->
+  <div id="overlay-mount-root"></div>
+  <div id="overlay-toast"></div>
+
   <!-- =========================================================
        STUDIO CONTROL INTERFACE
        ========================================================= -->
@@ -1222,7 +1260,7 @@
     <header class="topbar">
       <div class="brand">
         <span class="brand-dot"></span>
-        <span>HOCKEY BROADCAST STUDIO</span>
+        <span>HOCKEY BROADCAST STUDIO v3</span>
       </div>
 
       <nav class="nav-tabs">
@@ -1257,7 +1295,7 @@
         </div>
 
         <div class="stage-aspect-box" id="stage-aspect-box">
-          <!-- Shared Broadcast Stage (Also used standalone in ?overlay=true) -->
+          <!-- Shared Broadcast Stage (Moved to #overlay-mount-root automatically in ?overlay=true) -->
           <div id="broadcast-stage-wrapper">
             <div id="broadcast-canvas">
               <div class="safe-guide"></div>
@@ -1455,7 +1493,7 @@
          TAB 2: SETUP & LAYOUT (ALL SETTINGS ON ONE CLEAN PAGE)
          ======================================================= -->
     <main id="view-setup" class="hidden">
-      <!-- Card 1: Scorebug Style & Bottom Broadcast Ticker (#10) -->
+      <!-- Card 1: Scorebug Style & Bottom Broadcast Ticker -->
       <section class="panel-card">
         <div class="panel-title"><span>Scoreboard Mode &amp; Bottom Broadcast Ticker</span></div>
         <div class="form-row">
@@ -1712,6 +1750,14 @@
       return raw.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 32);
     }
 
+    function showOverlayToast(msg) {
+      const el = document.getElementById('overlay-toast');
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 3200);
+    }
+
     /* =========================================================
        INDEXEDDB LARGE MEDIA STORE
        ========================================================= */
@@ -1836,7 +1882,7 @@
     };
 
     const defaultState = {
-      scorebugMode: 'compact', // 'compact' | 'bottom-bar' | 'ticker-only' | 'hidden'
+      scorebugMode: 'compact',
       home: {
         shortName: 'SOO RED',
         fullName: 'SOO JR. GREYHOUNDS RED',
@@ -1950,13 +1996,20 @@
     }
 
     /* =========================================================
-       INITIALIZATION & STAGE SCALER
+       INITIALIZATION & OVERLAY STAGE MOUNTING
        ========================================================= */
     const isOverlayMode = new URLSearchParams(window.location.search).get('overlay') === 'true';
 
     async function init() {
       if (isOverlayMode) {
+        document.documentElement.classList.add('overlay-mode');
         document.body.classList.add('overlay-mode');
+        // Move #broadcast-stage-wrapper out of hidden #studio-app into #overlay-mount-root
+        const stageWrapper = document.getElementById('broadcast-stage-wrapper');
+        const mountRoot = document.getElementById('overlay-mount-root');
+        if (stageWrapper && mountRoot) {
+          mountRoot.appendChild(stageWrapper);
+        }
       }
 
       await loadAllMediaAssets();
@@ -1974,14 +2027,35 @@
 
       if (isOverlayMode) {
         initOverlayReceiver();
+        window.addEventListener('storage', (e) => {
+          if (e.key === STORAGE_KEY) {
+            state = loadState();
+            renderAll();
+          }
+        });
       }
     }
 
     function setupStageScaler() {
-      const box = document.getElementById('stage-aspect-box');
       const canvas = document.getElementById('broadcast-canvas');
-      if (!box || !canvas || isOverlayMode) return;
+      if (!canvas) return;
 
+      if (isOverlayMode) {
+        // In Moblin (1920x1080), scale is 1.0 (1920 / 1920).
+        // In a smaller preview browser window (e.g. iPad/laptop), auto-fit 1920x1080 to the viewport so nothing is off-screen!
+        const rescaleOverlay = () => {
+          const vw = window.innerWidth || 1920;
+          const vh = window.innerHeight || 1080;
+          const scale = Math.min(vw / 1920, vh / 1080);
+          canvas.style.transform = `scale(${scale})`;
+        };
+        window.addEventListener('resize', rescaleOverlay);
+        rescaleOverlay();
+        return;
+      }
+
+      const box = document.getElementById('stage-aspect-box');
+      if (!box) return;
       const rescale = () => {
         const rect = box.getBoundingClientRect();
         if (rect.width > 0) {
@@ -1989,7 +2063,6 @@
           canvas.style.transform = `scale(${scale})`;
         }
       };
-
       const ro = new ResizeObserver(rescale);
       ro.observe(box);
       window.addEventListener('resize', rescale);
@@ -2503,7 +2576,6 @@
     function renderScorebug() {
       const timeFormatted = formatClock(state.clockRemainingSec);
 
-      // Compact Scorebug
       document.getElementById('bug-home-bar').style.background = state.home.color;
       document.getElementById('bug-home-logo').innerHTML = renderTeamLogoHtml(state.home, 38);
       document.getElementById('bug-home-name').textContent = state.home.shortName;
@@ -2523,7 +2595,6 @@
       document.getElementById('bug-period').textContent = state.period;
       document.getElementById('bug-time').textContent = timeFormatted;
 
-      // Full-Width Bottom Broadcast Bar
       document.getElementById('bbar-home-bar').style.background = state.home.color;
       document.getElementById('bbar-home-logo').innerHTML = renderTeamLogoHtml(state.home, 32);
       document.getElementById('bbar-home-name').textContent = state.home.shortName;
@@ -2554,7 +2625,6 @@
         : ['LIVE YOUTH HOCKEY BROADCAST'];
 
       const segmentHtml = msgs.map((m) => `<span>${escapeHTML(m)}</span><span class="sep">&#9670;</span>`).join('');
-      // Duplicate content twice for seamless -50% infinite CSS marquee loop
       trackEl.innerHTML = segmentHtml + segmentHtml;
     }
 
@@ -3188,38 +3258,52 @@
     function initOverlayReceiver() {
       const room = sanitizeRoomId(new URLSearchParams(window.location.search).get('room'));
       if (!room || typeof Peer === 'undefined') return;
-      const clientPeer = new Peer();
-      clientPeer.on('open', () => {
-        const conn = clientPeer.connect(room);
-        conn.on('data', (msg) => {
-          if (!msg || typeof msg !== 'object') return;
-          if (msg.type === 'CLOCK_TICK' && typeof msg.clockRemainingSec === 'number') {
-            state.clockRemainingSec = Math.max(0, msg.clockRemainingSec);
-            const formatted = formatClock(state.clockRemainingSec);
-            document.getElementById('bug-time').textContent = formatted;
-            document.getElementById('bbar-time').textContent = formatted;
-          } else if (msg.type === 'FULL_STATE' && msg.state && typeof msg.state === 'object') {
-            if (msg.mediaBundle && typeof msg.mediaBundle === 'object') {
-              Object.entries(msg.mediaBundle).forEach(([k, v]) => {
-                if (typeof k === 'string' && isSafeMediaUrl(v)) {
-                  mediaBlobCache.set(k, v);
-                }
-              });
+
+      const connectToHost = () => {
+        const clientPeer = new Peer();
+        clientPeer.on('open', () => {
+          const conn = clientPeer.connect(room, { reliable: true });
+          conn.on('open', () => {
+            showOverlayToast(`CONNECTED TO ROOM: ${room}`);
+          });
+          conn.on('data', (msg) => {
+            if (!msg || typeof msg !== 'object') return;
+            if (msg.type === 'CLOCK_TICK' && typeof msg.clockRemainingSec === 'number') {
+              state.clockRemainingSec = Math.max(0, msg.clockRemainingSec);
+              const formatted = formatClock(state.clockRemainingSec);
+              document.getElementById('bug-time').textContent = formatted;
+              document.getElementById('bbar-time').textContent = formatted;
+            } else if (msg.type === 'FULL_STATE' && msg.state && typeof msg.state === 'object') {
+              if (msg.mediaBundle && typeof msg.mediaBundle === 'object') {
+                Object.entries(msg.mediaBundle).forEach(([k, v]) => {
+                  if (typeof k === 'string' && isSafeMediaUrl(v)) {
+                    mediaBlobCache.set(k, v);
+                  }
+                });
+              }
+              state = {
+                ...state,
+                ...msg.state,
+                home: { ...state.home, ...(msg.state.home || {}) },
+                away: { ...state.away, ...(msg.state.away || {}) },
+                positions: { ...state.positions, ...(msg.state.positions || {}) },
+                settings: { ...state.settings, ...(msg.state.settings || {}) },
+                ticker: { ...state.ticker, ...(msg.state.ticker || {}) },
+                sponsorLoop: { ...state.sponsorLoop, ...(msg.state.sponsorLoop || {}) }
+              };
+              renderAll();
             }
-            state = {
-              ...state,
-              ...msg.state,
-              home: { ...state.home, ...(msg.state.home || {}) },
-              away: { ...state.away, ...(msg.state.away || {}) },
-              positions: { ...state.positions, ...(msg.state.positions || {}) },
-              settings: { ...state.settings, ...(msg.state.settings || {}) },
-              ticker: { ...state.ticker, ...(msg.state.ticker || {}) },
-              sponsorLoop: { ...state.sponsorLoop, ...(msg.state.sponsorLoop || {}) }
-            };
-            renderAll();
-          }
+          });
+          conn.on('close', () => {
+            setTimeout(() => {
+              try { clientPeer.destroy(); } catch (e) {}
+              connectToHost();
+            }, 2500);
+          });
         });
-      });
+      };
+
+      connectToHost();
     }
 
     window.addEventListener('DOMContentLoaded', init);
