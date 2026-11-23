@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://*.peerjs.com wss://*.peerjs.com https://0.peerjs.com wss://0.peerjs.com; object-src 'none'; base-uri 'self';" />
-  <title>1080p Hockey Broadcast Scorebug &amp; Live Producer Studio v4</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' wss://broker.emqx.io:8084 wss://broker.hivemq.com:8884; object-src 'none'; base-uri 'self';" />
+  <title>1080p Hockey Broadcast Scorebug &amp; Live Producer Studio v5</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js" crossorigin="anonymous"></script>
   <style>
     :root {
       --bg-app: #090c12;
@@ -47,7 +47,7 @@
       background: transparent !important;
       width: 100%;
       height: 100%;
-      overflow: hidden;
+      overflow: hidden !important;
     }
     body.overlay-mode #studio-app {
       display: none !important;
@@ -92,9 +92,9 @@
       top: 16px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.88);
+      background: rgba(15, 23, 42, 0.92);
       color: #34d399;
-      border: 1px solid rgba(52, 211, 153, 0.45);
+      border: 1px solid rgba(52, 211, 153, 0.5);
       padding: 6px 14px;
       border-radius: 999px;
       font-family: var(--font-mono);
@@ -108,7 +108,7 @@
     #overlay-toast.show { opacity: 1; }
 
     /* =========================================================
-       STUDIO LAYOUT (CONTROL MODE)
+       STUDIO LAYOUT (DESKTOP & IPAD LANDSCAPE)
        ========================================================= */
     #studio-app {
       display: flex;
@@ -119,15 +119,15 @@
     }
 
     .topbar {
-      height: 54px;
       min-height: 54px;
       background: #0d121c;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 14px;
+      padding: 8px 14px;
       gap: 10px;
+      flex-wrap: wrap;
       z-index: 40;
     }
 
@@ -181,7 +181,7 @@
     .top-actions {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
       flex-wrap: wrap;
     }
 
@@ -192,12 +192,12 @@
       font-family: var(--font-ui);
       font-weight: 700;
       font-size: 12px;
-      padding: 7px 11px;
+      padding: 7px 10px;
       border-radius: 7px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       transition: 0.14s;
       white-space: nowrap;
       text-decoration: none;
@@ -213,12 +213,12 @@
     .btn-amber { background: #78350f; border-color: #f59e0b; color: #fffbeb; }
 
     /* =========================================================
-       GAME MODE VIEW (NON-SCROLLING SPLIT WORKSPACE)
+       GAME MODE VIEW
        ========================================================= */
     #view-game {
       flex: 1;
       display: grid;
-      grid-template-columns: minmax(0, 1.45fr) minmax(350px, 1fr);
+      grid-template-columns: minmax(0, 1.45fr) minmax(340px, 1fr);
       gap: 12px;
       padding: 12px;
       overflow: hidden;
@@ -251,7 +251,7 @@
       position: relative;
       width: 100%;
       aspect-ratio: 16 / 9;
-      max-height: calc(100vh - 175px);
+      max-height: calc(100vh - 185px);
       margin: 0 auto;
       background: #06090f;
       border: 1px solid var(--border-hi);
@@ -268,6 +268,7 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 6px 10px;
+      flex-wrap: wrap;
     }
     .clean-url-strip label {
       font-size: 11px;
@@ -286,7 +287,65 @@
       font-size: 11px;
       padding: 5px 8px;
       border-radius: 5px;
-      min-width: 0;
+      min-width: 140px;
+    }
+
+    /* =========================================================
+       MOBILE / IPHONE RESPONSIVE FIX (NO OVERLAPPING)
+       ========================================================= */
+    @media (max-width: 960px) {
+      html:not(.overlay-mode),
+      body:not(.overlay-mode) {
+        height: auto;
+        min-height: 100%;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      #studio-app {
+        height: auto;
+        min-height: 100dvh;
+        overflow: visible;
+      }
+      .topbar {
+        padding: 10px;
+        gap: 8px;
+      }
+      .brand {
+        font-size: 13px;
+      }
+      .top-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .top-actions .btn {
+        font-size: 11px;
+        padding: 6px 8px;
+      }
+      #view-game {
+        grid-template-columns: 1fr;
+        overflow: visible;
+        padding: 10px;
+        gap: 10px;
+      }
+      .stage-aspect-box {
+        max-height: none;
+        width: 100%;
+      }
+      .producer-column {
+        overflow: visible;
+        padding-right: 0;
+      }
+      .teams-grid {
+        grid-template-columns: 1fr;
+      }
+      #view-setup {
+        grid-template-columns: 1fr;
+        overflow: visible;
+        padding: 10px;
+      }
+      .form-grid-2, .form-grid-3 {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* =========================================================
@@ -391,128 +450,25 @@
       box-shadow: 0 10px 28px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(255, 255, 255, 0.16);
       font-family: var(--font-tv);
     }
-
-    .bug-team {
-      display: flex;
-      align-items: center;
-      height: 100%;
-      position: relative;
-    }
-    .bug-color-bar {
-      width: 7px;
-      height: 100%;
-      flex-shrink: 0;
-    }
-    .bug-logo-wrap {
-      width: 48px;
-      height: 48px;
-      margin: 0 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .bug-logo-wrap img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
-    }
-    .bug-logo-fallback {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      font-size: 16px;
-      color: #fff;
-      border: 2px solid rgba(255,255,255,0.35);
-    }
-    .bug-info {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding-right: 12px;
-      min-width: 82px;
-    }
-    .bug-name {
-      font-size: 24px;
-      font-weight: 900;
-      line-height: 0.95;
-      letter-spacing: 0.03em;
-      color: #ffffff;
-      text-transform: uppercase;
-    }
-    .bug-sub {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 2px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 700;
-      color: #94a3b8;
-    }
-    .bug-badge {
-      padding: 1px 5px;
-      border-radius: 3px;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-    }
+    .bug-team { display: flex; align-items: center; height: 100%; position: relative; }
+    .bug-color-bar { width: 7px; height: 100%; flex-shrink: 0; }
+    .bug-logo-wrap { width: 48px; height: 48px; margin: 0 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .bug-logo-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
+    .bug-logo-fallback { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; color: #fff; border: 2px solid rgba(255,255,255,0.35); }
+    .bug-info { display: flex; flex-direction: column; justify-content: center; padding-right: 12px; min-width: 82px; }
+    .bug-name { font-size: 24px; font-weight: 900; line-height: 0.95; letter-spacing: 0.03em; color: #ffffff; text-transform: uppercase; }
+    .bug-sub { display: flex; align-items: center; gap: 6px; margin-top: 2px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: #94a3b8; }
+    .bug-badge { padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; }
     .badge-pp { background: #f59e0b; color: #090d16; }
     .badge-en { background: #ef4444; color: #fff; }
-
-    .bug-score {
-      width: 52px;
-      height: 100%;
-      background: #f8fafc;
-      color: #090d16;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 36px;
-      font-weight: 900;
-      line-height: 1;
-      border-left: 1px solid rgba(0,0,0,0.15);
-      border-right: 1px solid rgba(0,0,0,0.15);
-      transition: transform 0.2s, background-color 0.25s;
-    }
-    .bug-score.flash {
-      background: #fef08a;
-      transform: scale(1.08);
-    }
-
-    .bug-clock-box {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 0 16px;
-      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-      min-width: 112px;
-    }
-    .bug-period {
-      font-size: 14px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      color: #38bdf8;
-      line-height: 1;
-      text-transform: uppercase;
-    }
-    .bug-time {
-      font-family: var(--font-mono);
-      font-size: 24px;
-      font-weight: 800;
-      color: #ffffff;
-      line-height: 1.05;
-      margin-top: 2px;
-    }
+    .bug-score { width: 52px; height: 100%; background: #f8fafc; color: #090d16; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900; line-height: 1; border-left: 1px solid rgba(0,0,0,0.15); border-right: 1px solid rgba(0,0,0,0.15); transition: transform 0.2s, background-color 0.25s; }
+    .bug-score.flash { background: #fef08a; transform: scale(1.08); }
+    .bug-clock-box { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 16px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); min-width: 112px; }
+    .bug-period { font-size: 14px; font-weight: 800; letter-spacing: 0.08em; color: #38bdf8; line-height: 1; text-transform: uppercase; }
+    .bug-time { font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: #ffffff; line-height: 1.05; margin-top: 2px; }
 
     /* =========================================================
-       MODE B: OPTIONAL FULL-WIDTH BOTTOM BROADCAST BAR & TICKER
+       MODE B: FULL-WIDTH BOTTOM BROADCAST BAR & TICKER
        ========================================================= */
     #bottom-bar-layer {
       position: absolute;
@@ -530,737 +486,129 @@
       font-family: var(--font-tv);
       overflow: hidden;
     }
-    #bottom-bar-layer.active {
-      display: flex;
-    }
-
-    .bbar-score-cluster {
-      display: flex;
-      align-items: stretch;
-      flex-shrink: 0;
-      background: #0d121d;
-      border-right: 2px solid rgba(255, 255, 255, 0.16);
-    }
-    .bbar-team {
-      display: flex;
-      align-items: center;
-      padding: 0 12px;
-      gap: 9px;
-      position: relative;
-    }
-    .bbar-team-accent {
-      width: 6px;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      bottom: 0;
-    }
+    #bottom-bar-layer.active { display: flex; }
+    .bbar-score-cluster { display: flex; align-items: stretch; flex-shrink: 0; background: #0d121d; border-right: 2px solid rgba(255, 255, 255, 0.16); }
+    .bbar-team { display: flex; align-items: center; padding: 0 12px; gap: 9px; position: relative; }
+    .bbar-team-accent { width: 6px; height: 100%; position: absolute; top: 0; bottom: 0; }
     .bbar-team.home .bbar-team-accent { left: 0; }
     .bbar-team.away .bbar-team-accent { right: 0; }
-
-    .bbar-logo {
-      width: 38px;
-      height: 38px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .bbar-logo img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
-    .bbar-name {
-      font-size: 24px;
-      font-weight: 900;
-      letter-spacing: 0.03em;
-      color: #ffffff;
-      text-transform: uppercase;
-    }
-    .bbar-sog {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 700;
-      color: #94a3b8;
-    }
-    .bbar-score {
-      width: 48px;
-      height: 100%;
-      background: #f8fafc;
-      color: #090d16;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 34px;
-      font-weight: 900;
-      transition: background-color 0.25s;
-    }
-    .bbar-score.flash {
-      background: #fef08a;
-    }
-
-    .bbar-clock {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 18px;
-      background: #172033;
-      border-left: 1px solid rgba(255,255,255,0.12);
-    }
-    .bbar-period {
-      font-size: 18px;
-      font-weight: 900;
-      color: #38bdf8;
-      letter-spacing: 0.06em;
-    }
-    .bbar-time {
-      font-family: var(--font-mono);
-      font-size: 24px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-
-    .bbar-ticker-label {
-      display: flex;
-      align-items: center;
-      padding: 0 20px;
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: 0.07em;
-      color: #ffffff;
-      text-transform: uppercase;
-      flex-shrink: 0;
-      clip-path: polygon(0 0, 100% 0, 94% 100%, 0% 100%);
-      padding-right: 28px;
-    }
-
-    .bbar-marquee-viewport {
-      flex: 1;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      position: relative;
-      padding: 0 16px;
-    }
-    .bbar-marquee-track {
-      display: inline-flex;
-      align-items: center;
-      white-space: nowrap;
-      font-family: var(--font-ui);
-      font-size: 19px;
-      font-weight: 800;
-      letter-spacing: 0.02em;
-      color: #f1f5f9;
-      animation: tickerScroll var(--ticker-dur, 24s) linear infinite;
-    }
-    .bbar-marquee-track span.sep {
-      color: #ef4444;
-      margin: 0 24px;
-      font-weight: 900;
-    }
-    @keyframes tickerScroll {
-      0% { transform: translateX(0%); }
-      100% { transform: translateX(-50%); }
-    }
+    .bbar-logo { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; }
+    .bbar-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .bbar-name { font-size: 24px; font-weight: 900; letter-spacing: 0.03em; color: #ffffff; text-transform: uppercase; }
+    .bbar-sog { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: #94a3b8; }
+    .bbar-score { width: 48px; height: 100%; background: #f8fafc; color: #090d16; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 900; transition: background-color 0.25s; }
+    .bbar-score.flash { background: #fef08a; }
+    .bbar-clock { display: flex; align-items: center; gap: 10px; padding: 0 18px; background: #172033; border-left: 1px solid rgba(255,255,255,0.12); }
+    .bbar-period { font-size: 18px; font-weight: 900; color: #38bdf8; letter-spacing: 0.06em; }
+    .bbar-time { font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: #ffffff; }
+    .bbar-ticker-label { display: flex; align-items: center; padding: 0 28px 0 20px; font-size: 20px; font-weight: 900; letter-spacing: 0.07em; color: #ffffff; text-transform: uppercase; flex-shrink: 0; clip-path: polygon(0 0, 100% 0, 94% 100%, 0% 100%); }
+    .bbar-marquee-viewport { flex: 1; overflow: hidden; display: flex; align-items: center; position: relative; padding: 0 16px; }
+    .bbar-marquee-track { display: inline-flex; align-items: center; white-space: nowrap; font-family: var(--font-ui); font-size: 19px; font-weight: 800; letter-spacing: 0.02em; color: #f1f5f9; animation: tickerScroll var(--ticker-dur, 24s) linear infinite; }
+    .bbar-marquee-track span.sep { color: #ef4444; margin: 0 24px; font-weight: 900; }
+    @keyframes tickerScroll { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
 
     /* =========================================================
-       SPONSOR LOOP ROTATOR (ALWAYS-ON CORNER BUG)
+       SPONSOR LOOP, BANNERS & TAKEOVERS
        ========================================================= */
-    .sponsor-bug {
-      width: 248px;
-      height: 92px;
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 12px;
-      position: relative;
-      transition: opacity 0.35s ease;
-    }
-    .sponsor-bug.with-backing {
-      background: rgba(11, 15, 24, 0.86);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
-    }
-    .sponsor-tag {
-      font-family: var(--font-ui);
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      color: #94a3b8;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-    .sponsor-media {
-      max-width: 216px;
-      max-height: 58px;
-      object-fit: contain;
-    }
-    .sponsor-fallback-text {
-      font-family: var(--font-tv);
-      font-size: 24px;
-      font-weight: 900;
-      letter-spacing: 0.04em;
-      color: #f8fafc;
-      text-transform: uppercase;
-    }
+    .sponsor-bug { width: 248px; height: 92px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 12px; position: relative; transition: opacity 0.35s ease; }
+    .sponsor-bug.with-backing { background: rgba(11, 15, 24, 0.86); border: 1px solid rgba(255, 255, 255, 0.16); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55); }
+    .sponsor-tag { font-family: var(--font-ui); font-size: 9px; font-weight: 800; letter-spacing: 0.12em; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; }
+    .sponsor-media { max-width: 216px; max-height: 58px; object-fit: contain; }
+    .sponsor-fallback-text { font-family: var(--font-tv); font-size: 24px; font-weight: 900; letter-spacing: 0.04em; color: #f8fafc; text-transform: uppercase; }
 
-    /* =========================================================
-       TSN / ESPN LOWER & UPPER THIRD BANNERS
-       ========================================================= */
     #banner-node { z-index: 30; }
     #banner-node.inactive { pointer-events: none !important; }
+    .tv-banner-wrap { opacity: 0; transform: translateY(16px); transition: opacity var(--fade-ms, 300ms) ease, transform var(--fade-ms, 300ms) cubic-bezier(0.16, 1, 0.3, 1); }
+    .tv-banner-wrap.visible { opacity: 1; transform: translateY(0); }
 
-    .tv-banner-wrap {
-      opacity: 0;
-      transform: translateY(16px);
-      transition: opacity var(--fade-ms, 300ms) ease, transform var(--fade-ms, 300ms) cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .tv-banner-wrap.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .espn-goal-strip {
-      display: inline-flex;
-      align-items: center;
-      height: 76px;
-      background: linear-gradient(90deg, #0d131f 0%, #161f33 65%, #0d131f 100%);
-      border-radius: 6px;
-      overflow: hidden;
-      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.78), 0 0 0 1px rgba(255, 255, 255, 0.18);
-      font-family: var(--font-tv);
-      position: relative;
-    }
-    .espn-goal-strip::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.28) 50%, transparent 75%);
-      transform: translateX(-100%);
-      animation: sheenSweep 1.3s ease-out 0.15s forwards;
-      pointer-events: none;
-    }
+    .espn-goal-strip { display: inline-flex; align-items: center; height: 76px; background: linear-gradient(90deg, #0d131f 0%, #161f33 65%, #0d131f 100%); border-radius: 6px; overflow: hidden; box-shadow: 0 14px 36px rgba(0, 0, 0, 0.78), 0 0 0 1px rgba(255, 255, 255, 0.18); font-family: var(--font-tv); position: relative; }
+    .espn-goal-strip::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.28) 50%, transparent 75%); transform: translateX(-100%); animation: sheenSweep 1.3s ease-out 0.15s forwards; pointer-events: none; }
     @keyframes sheenSweep { to { transform: translateX(120%); } }
+    .goal-crest-box { width: 84px; height: 100%; display: flex; align-items: center; justify-content: center; padding: 8px; background: rgba(255, 255, 255, 0.06); }
+    .goal-crest-box img { max-width: 64px; max-height: 64px; object-fit: contain; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.65)); }
+    .goal-badge-skew { height: 100%; padding: 0 26px; display: flex; align-items: center; justify-content: center; font-size: 46px; font-weight: 900; font-style: italic; letter-spacing: 0.04em; color: #ffffff; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); margin: 0 -8px; text-shadow: 0 2px 10px rgba(0,0,0,0.45); }
+    .goal-details { padding: 0 26px 0 22px; display: flex; flex-direction: column; justify-content: center; }
+    .goal-team-title { font-size: 32px; font-weight: 900; letter-spacing: 0.03em; color: #ffffff; line-height: 0.95; text-transform: uppercase; }
+    .goal-meta-line { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: #cbd5e1; margin-top: 4px; letter-spacing: 0.03em; }
 
-    .goal-crest-box {
-      width: 84px;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px;
-      background: rgba(255, 255, 255, 0.06);
-    }
-    .goal-crest-box img {
-      max-width: 64px;
-      max-height: 64px;
-      object-fit: contain;
-      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.65));
-    }
+    .espn-info-strip { display: inline-flex; align-items: center; height: 64px; background: linear-gradient(180deg, #161d2b 0%, #0b0f18 100%); border-radius: 6px; overflow: hidden; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(255, 255, 255, 0.16); font-family: var(--font-tv); }
+    .info-pill-tag { height: 100%; padding: 0 18px; display: flex; align-items: center; font-size: 22px; font-weight: 900; letter-spacing: 0.06em; color: #fff; text-transform: uppercase; }
+    .info-body { padding: 0 22px; display: flex; align-items: center; gap: 16px; font-size: 28px; font-weight: 800; color: #f8fafc; letter-spacing: 0.02em; }
+    .info-body img { height: 44px; width: 44px; object-fit: contain; }
+    .custom-banner-media { max-width: 1400px; max-height: 420px; object-fit: contain; display: block; }
 
-    .goal-badge-skew {
-      height: 100%;
-      padding: 0 26px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 46px;
-      font-weight: 900;
-      font-style: italic;
-      letter-spacing: 0.04em;
-      color: #ffffff;
-      clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
-      margin: 0 -8px;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.45);
-    }
-
-    .goal-details {
-      padding: 0 26px 0 22px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-    .goal-team-title {
-      font-size: 32px;
-      font-weight: 900;
-      letter-spacing: 0.03em;
-      color: #ffffff;
-      line-height: 0.95;
-      text-transform: uppercase;
-    }
-    .goal-meta-line {
-      font-family: var(--font-mono);
-      font-size: 13px;
-      font-weight: 700;
-      color: #cbd5e1;
-      margin-top: 4px;
-      letter-spacing: 0.03em;
-    }
-
-    .espn-info-strip {
-      display: inline-flex;
-      align-items: center;
-      height: 64px;
-      background: linear-gradient(180deg, #161d2b 0%, #0b0f18 100%);
-      border-radius: 6px;
-      overflow: hidden;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(255, 255, 255, 0.16);
-      font-family: var(--font-tv);
-    }
-    .info-pill-tag {
-      height: 100%;
-      padding: 0 18px;
-      display: flex;
-      align-items: center;
-      font-size: 22px;
-      font-weight: 900;
-      letter-spacing: 0.06em;
-      color: #fff;
-      text-transform: uppercase;
-    }
-    .info-body {
-      padding: 0 22px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      font-size: 28px;
-      font-weight: 800;
-      color: #f8fafc;
-      letter-spacing: 0.02em;
-    }
-    .info-body img {
-      height: 44px;
-      width: 44px;
-      object-fit: contain;
-    }
-
-    .custom-banner-media {
-      max-width: 1400px;
-      max-height: 420px;
-      object-fit: contain;
-      display: block;
-    }
-
-    /* =========================================================
-       FULL-SCREEN 1920x1080 TAKEOVER LAYER
-       ========================================================= */
-    #takeover-layer {
-      position: absolute;
-      inset: 0;
-      width: 1920px;
-      height: 1080px;
-      z-index: 60;
-      display: none;
-      pointer-events: none;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity var(--fade-ms, 350ms) ease;
-    }
+    #takeover-layer { position: absolute; inset: 0; width: 1920px; height: 1080px; z-index: 60; display: none; pointer-events: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--fade-ms, 350ms) ease; }
     #takeover-layer.active { display: flex; }
     #takeover-layer.visible { opacity: 1; }
-
-    .takeover-media {
-      width: 1920px;
-      height: 1080px;
-      object-fit: cover;
-    }
-
-    .takeover-slate {
-      width: 1920px;
-      height: 1080px;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(circle at 50% 42%, var(--tk-color, #b91c1c) 0%, #090d16 74%);
-      overflow: hidden;
-      font-family: var(--font-tv);
-    }
-    .takeover-slate::before {
-      content: '';
-      position: absolute;
-      inset: -40%;
-      background: repeating-linear-gradient(
-        -35deg,
-        rgba(255,255,255,0.03) 0px,
-        rgba(255,255,255,0.03) 24px,
-        transparent 24px,
-        transparent 56px
-      );
-      animation: bgDrift 18s linear infinite;
-    }
-    @keyframes bgDrift {
-      from { transform: translateX(0); }
-      to { transform: translateX(112px); }
-    }
-
-    .takeover-crest {
-      width: 310px;
-      height: 310px;
-      object-fit: contain;
-      z-index: 2;
-      filter: drop-shadow(0 22px 48px rgba(0, 0, 0, 0.75));
-      animation: crestFloat 3.6s ease-in-out infinite;
-    }
-    @keyframes crestFloat {
-      0%, 100% { transform: scale(1) translateY(0); }
-      50% { transform: scale(1.04) translateY(-10px); }
-    }
-
-    .takeover-kicker {
-      z-index: 2;
-      margin-top: 26px;
-      padding: 6px 22px;
-      background: rgba(255, 255, 255, 0.14);
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      border-radius: 999px;
-      font-size: 26px;
-      font-weight: 800;
-      letter-spacing: 0.16em;
-      color: #f8fafc;
-      text-transform: uppercase;
-    }
-    .takeover-headline {
-      z-index: 2;
-      margin-top: 12px;
-      font-size: 108px;
-      font-weight: 900;
-      font-style: italic;
-      line-height: 0.95;
-      letter-spacing: 0.03em;
-      color: #ffffff;
-      text-transform: uppercase;
-      text-shadow: 0 10px 32px rgba(0, 0, 0, 0.7);
-    }
-    .takeover-subline {
-      z-index: 2;
-      margin-top: 14px;
-      font-family: var(--font-mono);
-      font-size: 32px;
-      font-weight: 800;
-      color: #e2e8f0;
-      letter-spacing: 0.06em;
-    }
+    .takeover-media { width: 1920px; height: 1080px; object-fit: cover; }
+    .takeover-slate { width: 1920px; height: 1080px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 42%, var(--tk-color, #b91c1c) 0%, #090d16 74%); overflow: hidden; font-family: var(--font-tv); }
+    .takeover-slate::before { content: ''; position: absolute; inset: -40%; background: repeating-linear-gradient(-35deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 24px, transparent 24px, transparent 56px); animation: bgDrift 18s linear infinite; }
+    @keyframes bgDrift { from { transform: translateX(0); } to { transform: translateX(112px); } }
+    .takeover-crest { width: 310px; height: 310px; object-fit: contain; z-index: 2; filter: drop-shadow(0 22px 48px rgba(0, 0, 0, 0.75)); animation: crestFloat 3.6s ease-in-out infinite; }
+    @keyframes crestFloat { 0%, 100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.04) translateY(-10px); } }
+    .takeover-kicker { z-index: 2; margin-top: 26px; padding: 6px 22px; background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.28); border-radius: 999px; font-size: 26px; font-weight: 800; letter-spacing: 0.16em; color: #f8fafc; text-transform: uppercase; }
+    .takeover-headline { z-index: 2; margin-top: 12px; font-size: 108px; font-weight: 900; font-style: italic; line-height: 0.95; letter-spacing: 0.03em; color: #ffffff; text-transform: uppercase; text-shadow: 0 10px 32px rgba(0, 0, 0, 0.7); }
+    .takeover-subline { z-index: 2; margin-top: 14px; font-family: var(--font-mono); font-size: 32px; font-weight: 800; color: #e2e8f0; letter-spacing: 0.06em; }
 
     /* =========================================================
-       RIGHT PRODUCER DECK
+       RIGHT PRODUCER DECK & SETUP
        ========================================================= */
-    .producer-column {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      min-height: 0;
-      overflow-y: auto;
-      padding-right: 2px;
-    }
-
-    .panel-card {
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 11px 12px;
-    }
-    .panel-title {
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--text-dim);
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .teams-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .team-box {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 9px;
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-    }
-    .team-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-weight: 800;
-      font-size: 13px;
-    }
-    .team-score-big {
-      font-family: var(--font-tv);
-      font-size: 30px;
-      font-weight: 900;
-      line-height: 1;
-    }
-    .goal-btn-row {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 6px;
-    }
-    .btn-goal {
-      background: #dc2626;
-      border: 1px solid #f87171;
-      color: #fff;
-      font-weight: 800;
-      font-size: 13px;
-      padding: 9px 8px;
-      border-radius: 7px;
-      cursor: pointer;
-    }
+    .producer-column { display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow-y: auto; padding-right: 2px; }
+    .panel-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; padding: 11px 12px; }
+    .panel-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-dim); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+    .teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .team-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 9px; display: flex; flex-direction: column; gap: 7px; }
+    .team-header { display: flex; align-items: center; justify-content: space-between; font-weight: 800; font-size: 13px; }
+    .team-score-big { font-family: var(--font-tv); font-size: 30px; font-weight: 900; line-height: 1; }
+    .goal-btn-row { display: grid; grid-template-columns: 2fr 1fr; gap: 6px; }
+    .btn-goal { background: #dc2626; border: 1px solid #f87171; color: #fff; font-weight: 800; font-size: 13px; padding: 9px 8px; border-radius: 7px; cursor: pointer; }
     .btn-goal:active { transform: scale(0.97); }
-    .mini-stats-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 4px;
-      font-size: 11px;
-    }
-    .pill-toggle {
-      padding: 4px 7px;
-      border-radius: 5px;
-      border: 1px solid var(--border);
-      background: var(--bg-input);
-      color: var(--text-dim);
-      font-weight: 800;
-      font-size: 10px;
-      cursor: pointer;
-    }
+    .mini-stats-row { display: flex; align-items: center; justify-content: space-between; gap: 4px; font-size: 11px; }
+    .pill-toggle { padding: 4px 7px; border-radius: 5px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-dim); font-weight: 800; font-size: 10px; cursor: pointer; }
     .pill-toggle.active-pp { background: #f59e0b; color: #090d16; border-color: #fbbf24; }
     .pill-toggle.active-en { background: #ef4444; color: #fff; border-color: #f87171; }
-
-    .clock-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .period-pills {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-    }
-    .period-pill {
-      padding: 5px 8px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--bg-card);
-      color: var(--text-dim);
-      font-weight: 800;
-      font-size: 11px;
-      cursor: pointer;
-    }
-    .period-pill.active {
-      background: var(--accent-blue);
-      color: #fff;
-      border-color: #60a5fa;
-    }
-    .clock-controls {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .clock-readout {
-      font-family: var(--font-mono);
-      font-size: 18px;
-      font-weight: 800;
-      padding: 4px 10px;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      min-width: 78px;
-      text-align: center;
-    }
-
-    .pads-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 7px;
-    }
-    .pad-btn {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 10px;
-      text-align: left;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      transition: 0.14s;
-      position: relative;
-    }
+    .clock-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    .period-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+    .period-pill { padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-dim); font-weight: 800; font-size: 11px; cursor: pointer; }
+    .period-pill.active { background: var(--accent-blue); color: #fff; border-color: #60a5fa; }
+    .clock-controls { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .clock-readout { font-family: var(--font-mono); font-size: 18px; font-weight: 800; padding: 4px 10px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; min-width: 78px; text-align: center; }
+    .pads-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+    .pad-btn { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; text-align: left; cursor: pointer; display: flex; flex-direction: column; gap: 3px; transition: 0.14s; position: relative; }
     .pad-btn:hover { border-color: var(--border-hi); background: #1d263b; }
-    .pad-btn.live-now {
-      border-color: #ef4444;
-      background: rgba(239, 68, 68, 0.18);
-      box-shadow: 0 0 0 1px #ef4444;
-    }
-    .pad-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-    }
-    .pad-label {
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .pad-badge {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      font-weight: 800;
-      padding: 2px 5px;
-      border-radius: 4px;
-      background: rgba(59, 130, 246, 0.2);
-      color: #93c5fd;
-      flex-shrink: 0;
-    }
-    .pad-badge.static {
-      background: rgba(245, 158, 11, 0.22);
-      color: #fcd34d;
-    }
-    .pad-sub {
-      font-size: 10px;
-      color: var(--text-dim);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .pad-btn.live-now { border-color: #ef4444; background: rgba(239, 68, 68, 0.18); box-shadow: 0 0 0 1px #ef4444; }
+    .pad-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .pad-label { font-size: 12px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pad-badge { font-family: var(--font-mono); font-size: 9px; font-weight: 800; padding: 2px 5px; border-radius: 4px; background: rgba(59, 130, 246, 0.2); color: #93c5fd; flex-shrink: 0; }
+    .pad-badge.static { background: rgba(245, 158, 11, 0.22); color: #fcd34d; }
+    .pad-sub { font-size: 10px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* =========================================================
-       SETUP & LAYOUT VIEW
-       ========================================================= */
-    #view-setup {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-      gap: 14px;
-      align-content: start;
-    }
+    #view-setup { flex: 1; overflow-y: auto; padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 14px; align-content: start; }
     #view-setup.hidden { display: none; }
+    .form-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+    .form-row label { font-size: 11px; font-weight: 700; color: var(--text-dim); }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    input[type="text"], input[type="number"], select { width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: var(--text); font-family: var(--font-ui); font-size: 12px; padding: 7px 9px; border-radius: 6px; }
+    input[type="color"] { width: 100%; height: 34px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-input); cursor: pointer; }
+    .logo-preview-box { width: 56px; height: 56px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+    .logo-preview-box img { max-width: 48px; max-height: 48px; object-fit: contain; }
+    .list-item-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 7px; padding: 7px 9px; margin-bottom: 6px; font-size: 12px; }
 
-    .form-row {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-bottom: 10px;
-    }
-    .form-row label {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-dim);
-    }
-    .form-grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    .form-grid-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-    }
-    input[type="text"], input[type="number"], select {
-      width: 100%;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-family: var(--font-ui);
-      font-size: 12px;
-      padding: 7px 9px;
-      border-radius: 6px;
-    }
-    input[type="color"] {
-      width: 100%;
-      height: 34px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: var(--bg-input);
-      cursor: pointer;
-    }
-    .logo-preview-box {
-      width: 56px;
-      height: 56px;
-      border-radius: 8px;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-    .logo-preview-box img {
-      max-width: 48px;
-      max-height: 48px;
-      object-fit: contain;
-    }
-
-    .list-item-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 7px;
-      padding: 7px 9px;
-      margin-bottom: 6px;
-      font-size: 12px;
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.72);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-      padding: 16px;
-    }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.72); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
     .modal-backdrop.open { display: flex; }
-    .modal-card {
-      background: var(--bg-panel);
-      border: 1px solid var(--border-hi);
-      border-radius: 12px;
-      max-width: 480px;
-      width: 100%;
-      padding: 18px;
-    }
+    .modal-card { background: var(--bg-panel); border: 1px solid var(--border-hi); border-radius: 12px; max-width: 480px; width: 100%; padding: 18px; }
   </style>
 </head>
 <body>
-  <!-- Full-screen mount target used ONLY when ?overlay=true is active -->
   <div id="overlay-mount-root"></div>
   <div id="overlay-toast"></div>
 
-  <!-- =========================================================
-       STUDIO CONTROL INTERFACE
-       ========================================================= -->
   <div id="studio-app">
     <header class="topbar">
       <div class="brand">
         <span class="brand-dot"></span>
-        <span>HOCKEY BROADCAST STUDIO v4</span>
+        <span>HOCKEY BROADCAST STUDIO v5</span>
       </div>
 
       <nav class="nav-tabs">
@@ -1269,44 +617,38 @@
       </nav>
 
       <div class="top-actions">
-        <button class="btn btn-blue" id="btn-bug-mode-cycle" onclick="cycleScorebugMode()" title="Switch between Compact Scorebug, Full-Width Bottom Broadcast Bar + Ticker, Both, or Hidden">Layout: Compact Bug</button>
+        <button class="btn btn-blue" id="btn-bug-mode-cycle" onclick="cycleScorebugMode()">Layout: Compact Bug</button>
         <button class="btn" id="btn-sponsor-toggle" onclick="toggleSponsorLoop()">Sponsor Loop: ON</button>
         <button class="btn" id="btn-sync-modal" onclick="openSyncModal()">iPad &rarr; Moblin Link</button>
-        <button class="btn btn-green" id="btn-copy-clean" onclick="copyCleanViewUrl()">Copy Clean View URL</button>
+        <button class="btn btn-green" id="btn-copy-clean" onclick="copyCleanViewUrl()">Copy Clean URL</button>
         <a class="btn" id="link-open-clean" href="?overlay=true" target="_blank" rel="noopener">Preview &#8599;</a>
       </div>
     </header>
 
-    <!-- =======================================================
-         TAB 1: GAME MODE
-         ======================================================= -->
     <main id="view-game">
-      <!-- Left: Interactive 1920x1080 Broadcast Stage -->
       <section class="stage-column">
         <div class="stage-toolbar">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <button class="btn" id="btn-lock-layout" onclick="toggleLayoutLock()">Layout: Unlocked (Drag/Resize)</button>
-            <button class="btn" onclick="resetDefaultPositions()">Reset Positions</button>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <button class="btn" id="btn-lock-layout" onclick="toggleLayoutLock()">Layout: Unlocked</button>
+            <button class="btn" onclick="resetDefaultPositions()">Reset Pos</button>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span id="stage-coords-readout" style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);">1920&times;1080 Canvas</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span id="stage-coords-readout" style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);">1920&times;1080</span>
             <button class="btn btn-red" onclick="clearAllLiveOverlays()">CUT TO LIVE</button>
           </div>
         </div>
 
         <div class="stage-aspect-box" id="stage-aspect-box">
-          <!-- Shared Broadcast Stage (Moved to #overlay-mount-root automatically in ?overlay=true) -->
           <div id="broadcast-stage-wrapper">
             <div id="broadcast-canvas">
               <div class="safe-guide"></div>
               <div class="snap-guide v" id="snap-v"></div>
               <div class="snap-guide h" id="snap-h"></div>
 
-              <!-- 1A. Mode A: Draggable & Resizable Compact Scorebug -->
+              <!-- 1A. Compact Scorebug -->
               <div class="draggable-graphic" id="scorebug-node" data-target="scorebug">
                 <div class="drag-outline"></div>
                 <div class="tv-scorebug" id="scorebug-inner">
-                  <!-- Home Team -->
                   <div class="bug-team">
                     <div class="bug-color-bar" id="bug-home-bar" style="background:#c8102e;"></div>
                     <div class="bug-logo-wrap" id="bug-home-logo"></div>
@@ -1320,8 +662,6 @@
                     </div>
                     <div class="bug-score" id="bug-home-score">0</div>
                   </div>
-
-                  <!-- Away Team -->
                   <div class="bug-team">
                     <div class="bug-score" id="bug-away-score">0</div>
                     <div class="bug-info" style="padding-left:12px;padding-right:6px;text-align:right;">
@@ -1335,8 +675,6 @@
                     <div class="bug-logo-wrap" id="bug-away-logo"></div>
                     <div class="bug-color-bar" id="bug-away-bar" style="background:#1d4ed8;"></div>
                   </div>
-
-                  <!-- Period & Clock -->
                   <div class="bug-clock-box">
                     <div class="bug-period" id="bug-period">1ST</div>
                     <div class="bug-time" id="bug-time">15:00</div>
@@ -1345,7 +683,7 @@
                 <div class="resize-handle" data-resize="scorebug"></div>
               </div>
 
-              <!-- 1B. Mode B: Optional Full-Width Bottom Broadcast Bar & Ticker (1920x54) -->
+              <!-- 1B. Full-Width Bottom Broadcast Bar & Ticker -->
               <div id="bottom-bar-layer">
                 <div class="bbar-score-cluster" id="bbar-score-cluster">
                   <div class="bbar-team home">
@@ -1357,7 +695,6 @@
                     </div>
                   </div>
                   <div class="bbar-score" id="bbar-home-score">0</div>
-
                   <div class="bbar-score" id="bbar-away-score" style="border-left:1px solid #cbd5e1;">0</div>
                   <div class="bbar-team away">
                     <div style="text-align:right;">
@@ -1367,20 +704,18 @@
                     <div class="bbar-logo" id="bbar-away-logo"></div>
                     <div class="bbar-team-accent" id="bbar-away-bar" style="background:#1d4ed8;"></div>
                   </div>
-
                   <div class="bbar-clock">
                     <span class="bbar-period" id="bbar-period">1ST</span>
                     <span class="bbar-time" id="bbar-time">15:00</span>
                   </div>
                 </div>
-
                 <div class="bbar-ticker-label" id="bbar-ticker-tag" style="background:#c8102e;">HOCKEY LIVE</div>
                 <div class="bbar-marquee-viewport">
                   <div class="bbar-marquee-track" id="bbar-marquee-track"></div>
                 </div>
               </div>
 
-              <!-- 2. Always-On Sponsor Loop Rotator -->
+              <!-- 2. Sponsor Loop -->
               <div class="draggable-graphic" id="sponsor-node" data-target="sponsor">
                 <div class="drag-outline"></div>
                 <div class="sponsor-bug with-backing" id="sponsor-bug-inner">
@@ -1390,37 +725,33 @@
                 <div class="resize-handle" data-resize="sponsor"></div>
               </div>
 
-              <!-- 3. Active Lower / Upper Third Banner -->
+              <!-- 3. Active Banner -->
               <div class="draggable-graphic inactive" id="banner-node" data-target="banner">
                 <div class="drag-outline"></div>
                 <div class="tv-banner-wrap" id="banner-inner"></div>
                 <div class="resize-handle" data-resize="banner"></div>
               </div>
 
-              <!-- 4. Full-Screen 1920x1080 Takeover Layer -->
+              <!-- 4. Full-Screen Takeover -->
               <div id="takeover-layer"></div>
             </div>
           </div>
         </div>
 
-        <!-- Always-visible Clean View URL Copy Strip for Moblin -->
         <div class="clean-url-strip">
-          <label for="clean-url-input">Moblin Clean View URL</label>
+          <label for="clean-url-input">Moblin Clean URL</label>
           <input type="text" id="clean-url-input" readonly onclick="this.select()" />
           <button class="btn btn-green" onclick="copyCleanViewUrl()">Copy</button>
         </div>
       </section>
 
-      <!-- Right: Compact Live Game Controls & Trigger Pads -->
       <aside class="producer-column">
-        <!-- Scoreboard Controls -->
         <div class="panel-card">
           <div class="panel-title">
             <span>Live Scoreboard</span>
             <button class="btn" style="padding:3px 8px;font-size:11px;" onclick="resetGameStats()">Reset Game</button>
           </div>
           <div class="teams-grid">
-            <!-- Home Controls -->
             <div class="team-box">
               <div class="team-header">
                 <span id="ctrl-home-label">SOO RED</span>
@@ -1439,7 +770,6 @@
               </div>
             </div>
 
-            <!-- Away Controls -->
             <div class="team-box">
               <div class="team-header">
                 <span id="ctrl-away-label">GUEST</span>
@@ -1460,7 +790,6 @@
           </div>
         </div>
 
-        <!-- Period & Game Clock -->
         <div class="panel-card">
           <div class="panel-title">
             <span>Period &amp; Game Clock</span>
@@ -1478,7 +807,6 @@
           </div>
         </div>
 
-        <!-- One-Tap Overlay & Full-Screen Takeover Pads -->
         <div class="panel-card" style="flex:1;min-height:0;overflow-y:auto;">
           <div class="panel-title">
             <span>One-Tap Graphics &amp; Full-Screen Takeovers</span>
@@ -1489,11 +817,7 @@
       </aside>
     </main>
 
-    <!-- =======================================================
-         TAB 2: SETUP & LAYOUT (ALL SETTINGS ON ONE CLEAN PAGE)
-         ======================================================= -->
     <main id="view-setup" class="hidden">
-      <!-- Card 1: Scorebug Style & Bottom Broadcast Ticker -->
       <section class="panel-card">
         <div class="panel-title"><span>Scoreboard Mode &amp; Bottom Broadcast Ticker</span></div>
         <div class="form-row">
@@ -1516,192 +840,115 @@
           </div>
         </div>
         <div class="form-row">
-          <label>Add Bottom Ticker Headline / Sponsor Shoutout / Schedule Note</label>
+          <label>Add Bottom Ticker Headline / Sponsor Shoutout</label>
           <div style="display:flex;gap:6px;">
-            <input type="text" id="new-ticker-msg" placeholder="e.g. U10 AA SOO JR. GREYHOUNDS • NEXT GAME 4:30 PM RINK 1" />
+            <input type="text" id="new-ticker-msg" placeholder="e.g. U10 AA SOO JR. GREYHOUNDS • NEXT GAME 4:30 PM" />
             <button class="btn btn-blue" onclick="addTickerMessage()">+ Add</button>
           </div>
         </div>
         <div id="ticker-list-container" style="max-height:130px;overflow-y:auto;"></div>
       </section>
 
-      <!-- Card 2: Teams & Crests -->
       <section class="panel-card">
         <div class="panel-title"><span>Teams, Colors &amp; Crests</span></div>
         <div class="form-grid-2">
-          <!-- Home Team -->
           <div>
-            <div class="form-row">
-              <label>Home Team (Scorebug)</label>
-              <input type="text" id="set-home-short" maxlength="16" oninput="updateTeamConfig('home', 'shortName', this.value)" />
-            </div>
-            <div class="form-row">
-              <label>Home Full Name (Goal Banner)</label>
-              <input type="text" id="set-home-full" maxlength="36" oninput="updateTeamConfig('home', 'fullName', this.value)" />
-            </div>
-            <div class="form-row">
-              <label>Home Accent Color</label>
-              <input type="color" id="set-home-color" onchange="updateTeamConfig('home', 'color', this.value)" />
-            </div>
+            <div class="form-row"><label>Home Team (Scorebug)</label><input type="text" id="set-home-short" maxlength="16" oninput="updateTeamConfig('home', 'shortName', this.value)" /></div>
+            <div class="form-row"><label>Home Full Name</label><input type="text" id="set-home-full" maxlength="36" oninput="updateTeamConfig('home', 'fullName', this.value)" /></div>
+            <div class="form-row"><label>Home Color</label><input type="color" id="set-home-color" onchange="updateTeamConfig('home', 'color', this.value)" /></div>
             <div class="form-row">
               <label>Home Crest Logo</label>
               <div style="display:flex;align-items:center;gap:8px;">
                 <div class="logo-preview-box" id="prev-home-logo"></div>
-                <label class="btn" style="cursor:pointer;">
-                  Upload PNG/WebP
-                  <input type="file" accept="image/*" style="display:none;" onchange="handleLogoUpload(event, 'home')" />
-                </label>
+                <label class="btn" style="cursor:pointer;">Upload PNG/WebP<input type="file" accept="image/*" style="display:none;" onchange="handleLogoUpload(event, 'home')" /></label>
               </div>
             </div>
           </div>
-
-          <!-- Away Team -->
           <div>
-            <div class="form-row">
-              <label>Away Team (Scorebug)</label>
-              <input type="text" id="set-away-short" maxlength="16" oninput="updateTeamConfig('away', 'shortName', this.value)" />
-            </div>
-            <div class="form-row">
-              <label>Away Full Name (Goal Banner)</label>
-              <input type="text" id="set-away-full" maxlength="36" oninput="updateTeamConfig('away', 'fullName', this.value)" />
-            </div>
-            <div class="form-row">
-              <label>Away Accent Color</label>
-              <input type="color" id="set-away-color" onchange="updateTeamConfig('away', 'color', this.value)" />
-            </div>
+            <div class="form-row"><label>Away Team (Scorebug)</label><input type="text" id="set-away-short" maxlength="16" oninput="updateTeamConfig('away', 'shortName', this.value)" /></div>
+            <div class="form-row"><label>Away Full Name</label><input type="text" id="set-away-full" maxlength="36" oninput="updateTeamConfig('away', 'fullName', this.value)" /></div>
+            <div class="form-row"><label>Away Color</label><input type="color" id="set-away-color" onchange="updateTeamConfig('away', 'color', this.value)" /></div>
             <div class="form-row">
               <label>Away Crest Logo</label>
               <div style="display:flex;align-items:center;gap:8px;">
                 <div class="logo-preview-box" id="prev-away-logo"></div>
-                <label class="btn" style="cursor:pointer;">
-                  Upload PNG/WebP
-                  <input type="file" accept="image/*" style="display:none;" onchange="handleLogoUpload(event, 'away')" />
-                </label>
+                <label class="btn" style="cursor:pointer;">Upload PNG/WebP<input type="file" accept="image/*" style="display:none;" onchange="handleLogoUpload(event, 'away')" /></label>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Card 3: Clock, Timers & Static Hold Rules -->
       <section class="panel-card">
         <div class="panel-title"><span>Clock &amp; Overlay Timer Rules</span></div>
         <div class="form-grid-2">
           <div class="form-row">
-            <label>Period Length (Minutes)</label>
+            <label>Period Length</label>
             <select id="set-period-mins" onchange="setPeriodMinutes(this.value)">
-              <option value="10">10:00</option>
-              <option value="12">12:00</option>
-              <option value="15" selected>15:00</option>
-              <option value="20">20:00</option>
+              <option value="10">10:00</option><option value="12">12:00</option><option value="15" selected>15:00</option><option value="20">20:00</option>
             </select>
           </div>
-          <div class="form-row">
-            <label>Fade Transition (ms)</label>
-            <input type="number" id="set-fade-ms" min="0" max="2000" step="50" onchange="updateSetting('fadeMs', Number(this.value))" />
-          </div>
+          <div class="form-row"><label>Fade Transition (ms)</label><input type="number" id="set-fade-ms" min="0" max="2000" step="50" onchange="updateSetting('fadeMs', Number(this.value))" /></div>
         </div>
-
         <div class="form-grid-2">
-          <div class="form-row">
-            <label>Goal Strip Duration (sec)</label>
-            <input type="number" id="set-goal-sec" min="2" max="30" onchange="updateSetting('goalBannerSec', Number(this.value))" />
-          </div>
-          <div class="form-row">
-            <label>Info Strip Duration (sec)</label>
-            <input type="number" id="set-info-sec" min="2" max="30" onchange="updateSetting('infoBannerSec', Number(this.value))" />
-          </div>
+          <div class="form-row"><label>Goal Strip Duration (sec)</label><input type="number" id="set-goal-sec" min="2" max="30" onchange="updateSetting('goalBannerSec', Number(this.value))" /></div>
+          <div class="form-row"><label>Info Strip Duration (sec)</label><input type="number" id="set-info-sec" min="2" max="30" onchange="updateSetting('infoBannerSec', Number(this.value))" /></div>
         </div>
-
         <div class="form-row">
-          <label>Intro &amp; Intermission Full-Screen Behavior</label>
-          <div class="list-item-row">
-            <span><strong>Intro Open</strong> stays static until toggled off</span>
-            <input type="checkbox" id="chk-intro-static" onchange="updateStaticDefault('tk-intro', this.checked)" />
-          </div>
-          <div class="list-item-row">
-            <span><strong>Intermission Slate</strong> stays static until toggled off</span>
-            <input type="checkbox" id="chk-intermission-static" onchange="updateStaticDefault('tk-intermission', this.checked)" />
-          </div>
+          <label>Intro &amp; Intermission Behavior</label>
+          <div class="list-item-row"><span><strong>Intro Open</strong> stays static until off</span><input type="checkbox" id="chk-intro-static" onchange="updateStaticDefault('tk-intro', this.checked)" /></div>
+          <div class="list-item-row"><span><strong>Intermission Slate</strong> stays static until off</span><input type="checkbox" id="chk-intermission-static" onchange="updateStaticDefault('tk-intermission', this.checked)" /></div>
         </div>
       </section>
 
-      <!-- Card 4: Always-On Sponsor Loop Rotator -->
       <section class="panel-card">
         <div class="panel-title"><span>Always-On Sponsor Loop Rotator</span></div>
         <div class="form-grid-2">
-          <div class="form-row">
-            <label>Header Label</label>
-            <input type="text" id="set-sponsor-tag" maxlength="24" oninput="updateSponsorConfig('tag', this.value)" />
-          </div>
-          <div class="form-row">
-            <label>Rotate Every (Seconds)</label>
-            <input type="number" id="set-sponsor-interval" min="3" max="120" onchange="updateSponsorConfig('intervalSec', Number(this.value))" />
-          </div>
+          <div class="form-row"><label>Header Label</label><input type="text" id="set-sponsor-tag" maxlength="24" oninput="updateSponsorConfig('tag', this.value)" /></div>
+          <div class="form-row"><label>Rotate Every (Sec)</label><input type="number" id="set-sponsor-interval" min="3" max="120" onchange="updateSponsorConfig('intervalSec', Number(this.value))" /></div>
         </div>
-        <div class="list-item-row">
-          <span>Show dark TV-pill backing behind sponsor logos</span>
-          <input type="checkbox" id="chk-sponsor-backing" checked onchange="updateSponsorConfig('backing', this.checked)" />
-        </div>
+        <div class="list-item-row"><span>Show dark TV-pill backing</span><input type="checkbox" id="chk-sponsor-backing" checked onchange="updateSponsorConfig('backing', this.checked)" /></div>
         <div class="form-row" style="margin-top:8px;">
-          <label>Add Sponsor Logo (PNG, WebP, SVG) or Text Sponsor</label>
+          <label>Add Sponsor Logo or Text</label>
           <div style="display:flex;gap:6px;">
-            <input type="text" id="new-sponsor-name" placeholder="Sponsor Name (e.g. Soo Arena)" />
+            <input type="text" id="new-sponsor-name" placeholder="Sponsor Name" />
             <button class="btn btn-blue" onclick="addTextSponsor()">+ Text</button>
-            <label class="btn" style="cursor:pointer;">
-              + Logo
-              <input type="file" accept="image/*" multiple style="display:none;" onchange="handleSponsorUpload(event)" />
-            </label>
+            <label class="btn" style="cursor:pointer;">+ Logo<input type="file" accept="image/*" multiple style="display:none;" onchange="handleSponsorUpload(event)" /></label>
           </div>
         </div>
         <div id="sponsor-list-container" style="max-height:140px;overflow-y:auto;"></div>
       </section>
 
-      <!-- Card 5: Custom Full-Screen Takeovers & Coordinates -->
       <section class="panel-card">
         <div class="panel-title"><span>Custom Media &amp; 1920&times;1080 Coordinates</span></div>
         <div class="form-row">
-          <label>Upload Custom Graphic or Full-Screen Takeover (.webm, .webp, .apng, .png, .mp4)</label>
+          <label>Upload Custom Graphic or Full-Screen Takeover (.webm, .webp, .png, .mp4)</label>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <input type="text" id="custom-pad-title" placeholder="Pad Label (e.g. Hype Intro)" style="flex:1;min-width:130px;" />
-            <select id="custom-pad-mode" style="width:auto;">
-              <option value="takeover">Full-Screen 1080p</option>
-              <option value="banner">Overlay Graphic</option>
-            </select>
-            <select id="custom-pad-hold" style="width:auto;">
-              <option value="static">Static Until Off</option>
-              <option value="6">Auto-Hide 6s</option>
-              <option value="10">Auto-Hide 10s</option>
-            </select>
-            <label class="btn btn-blue" style="cursor:pointer;">
-              Upload File
-              <input type="file" accept="video/webm,video/mp4,image/webp,image/png,image/apng,image/gif" style="display:none;" onchange="handleCustomPadUpload(event)" />
-            </label>
+            <input type="text" id="custom-pad-title" placeholder="Pad Label" style="flex:1;min-width:120px;" />
+            <select id="custom-pad-mode" style="width:auto;"><option value="takeover">Full-Screen 1080p</option><option value="banner">Overlay Graphic</option></select>
+            <select id="custom-pad-hold" style="width:auto;"><option value="static">Static Until Off</option><option value="6">Auto-Hide 6s</option><option value="10">Auto-Hide 10s</option></select>
+            <label class="btn btn-blue" style="cursor:pointer;">Upload File<input type="file" accept="video/webm,video/mp4,image/webp,image/png,image/apng,image/gif" style="display:none;" onchange="handleCustomPadUpload(event)" /></label>
           </div>
         </div>
         <div id="custom-pads-list" style="max-height:110px;overflow-y:auto;margin-bottom:10px;"></div>
-
-        <div class="form-row">
-          <label>Fine-Tune 1920&times;1080 Element Positions (X, Y, Scale %)</label>
-          <div class="form-grid-3" id="numeric-coords-grid"></div>
-        </div>
+        <div class="form-row"><label>Fine-Tune Positions (X, Y, Scale %)</label><div class="form-grid-3" id="numeric-coords-grid"></div></div>
       </section>
     </main>
   </div>
 
   <!-- =========================================================
-       IPAD -> MOBLIN SYNC MODAL
+       IPAD -> MOBLIN LIVE LINK MODAL (MQTT OVER SECURE WEBSOCKETS)
        ========================================================= -->
   <div class="modal-backdrop" id="sync-modal" onclick="if(event.target===this) closeSyncModal()">
     <div class="modal-card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <h3 style="font-size:15px;font-weight:800;">iPad Controller &rarr; iPhone Moblin Live Link</h3>
+        <h3 style="font-size:15px;font-weight:800;">iPad Controller &rarr; iPhone Moblin Live Link (v5 WSS)</h3>
         <button class="btn" onclick="closeSyncModal()">Close</button>
       </div>
       <p style="font-size:12px;color:var(--text-dim);line-height:1.5;margin-bottom:12px;">
-        Start a live broadcast room on this device, then copy the generated <strong>Clean View URL</strong> into Moblin&rsquo;s <strong>1920&times;1080 Browser Widget</strong> on your iPhone. Uses chunked iOS-safe WebRTC transport so scores, bottom bar, and takeovers sync reliably.
+        v5 uses <strong>Secure WebSockets (MQTT/WSS)</strong> instead of WebRTC so iOS Moblin receives live score, bottom bar, and takeover updates reliably over Wi-Fi or cellular—even if Moblin reloads mid-game.
       </p>
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
         <button class="btn btn-blue" onclick="startBroadcastHost()">Start Live Host Room</button>
         <span id="sync-status-text" style="font-family:var(--font-mono);font-size:12px;align-self:center;color:var(--accent-green);">Not Hosting</span>
       </div>
@@ -1721,28 +968,20 @@
        ========================================================= */
     function escapeHTML(str) {
       if (str === null || str === undefined) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     function isSafeMediaUrl(url) {
       if (!url || typeof url !== 'string') return false;
       const trimmed = url.trim();
-      if (trimmed.startsWith('blob:')) return true;
-      if (trimmed.startsWith('./') || trimmed.startsWith('../') || trimmed.startsWith('/')) return true;
+      if (trimmed.startsWith('blob:') || trimmed.startsWith('./') || trimmed.startsWith('../') || trimmed.startsWith('/')) return true;
       if (trimmed.startsWith('data:')) {
         return /^data:(image\/(png|jpeg|jpg|webp|gif|apng)|video\/(webm|mp4));base64,[a-zA-Z0-9+/=]+$/i.test(trimmed);
       }
       try {
         const parsed = new URL(trimmed, window.location.origin);
         return parsed.protocol === 'https:' || parsed.protocol === 'http:';
-      } catch (e) {
-        return false;
-      }
+      } catch (e) { return false; }
     }
 
     function sanitizeRoomId(raw) {
@@ -1770,9 +1009,7 @@
         const req = indexedDB.open(DB_NAME, 1);
         req.onupgradeneeded = () => {
           const db = req.result;
-          if (!db.objectStoreNames.contains(STORE_NAME)) {
-            db.createObjectStore(STORE_NAME);
-          }
+          if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
         };
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
@@ -1783,8 +1020,7 @@
       mediaBlobCache.set(key, dataUrl);
       try {
         const db = await openMediaDB();
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        tx.objectStore(STORE_NAME).put(dataUrl, key);
+        db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).put(dataUrl, key);
       } catch (e) {}
     }
 
@@ -1792,8 +1028,7 @@
       try {
         const db = await openMediaDB();
         return await new Promise((resolve) => {
-          const tx = db.transaction(STORE_NAME, 'readonly');
-          const store = tx.objectStore(STORE_NAME);
+          const store = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME);
           const keysReq = store.getAllKeys();
           keysReq.onsuccess = () => {
             const keys = keysReq.result || [];
@@ -1802,9 +1037,7 @@
             keys.forEach((k) => {
               const g = store.get(k);
               g.onsuccess = () => {
-                if (g.result && isSafeMediaUrl(g.result)) {
-                  mediaBlobCache.set(k, g.result);
-                }
+                if (g.result && isSafeMediaUrl(g.result)) mediaBlobCache.set(k, g.result);
                 if (--remaining === 0) resolve();
               };
               g.onerror = () => { if (--remaining === 0) resolve(); };
@@ -1812,69 +1045,38 @@
           };
           keysReq.onerror = () => resolve();
         });
-      } catch (e) {
-        return;
-      }
+      } catch (e) { return; }
     }
 
     async function deleteMediaAsset(key) {
       mediaBlobCache.delete(key);
       try {
         const db = await openMediaDB();
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        tx.objectStore(STORE_NAME).delete(key);
+        db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).delete(key);
       } catch (e) {}
     }
 
     function createDefaultCrestPngDataUrl() {
       const c = document.createElement('canvas');
-      c.width = 256;
-      c.height = 256;
+      c.width = 256; c.height = 256;
       const ctx = c.getContext('2d');
       ctx.fillStyle = '#c8102e';
+      ctx.beginPath(); ctx.arc(128, 128, 120, 0, Math.PI * 2); ctx.fill();
+      ctx.lineWidth = 6; ctx.strokeStyle = '#ffffff'; ctx.stroke();
+      ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
+      ctx.font = '900 36px "Barlow Condensed", Arial, sans-serif'; ctx.fillText('SOO', 128, 60);
       ctx.beginPath();
-      ctx.arc(128, 128, 120, 0, Math.PI * 2);
+      ctx.moveTo(28, 114); ctx.quadraticCurveTo(85, 102, 148, 96); ctx.lineTo(188, 92); ctx.lineTo(224, 102); ctx.lineTo(214, 112); ctx.lineTo(184, 112); ctx.lineTo(170, 124); ctx.lineTo(202, 142); ctx.lineTo(194, 148); ctx.lineTo(154, 128); ctx.lineTo(104, 128); ctx.lineTo(64, 148); ctx.lineTo(54, 142); ctx.lineTo(82, 122); ctx.lineTo(28, 120); ctx.closePath();
       ctx.fill();
-      ctx.lineWidth = 6;
-      ctx.strokeStyle = '#ffffff';
-      ctx.stroke();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
-      ctx.font = '900 36px "Barlow Condensed", Arial, sans-serif';
-      ctx.fillText('SOO', 128, 60);
-
-      ctx.beginPath();
-      ctx.moveTo(28, 114);
-      ctx.quadraticCurveTo(85, 102, 148, 96);
-      ctx.lineTo(188, 92);
-      ctx.lineTo(224, 102);
-      ctx.lineTo(214, 112);
-      ctx.lineTo(184, 112);
-      ctx.lineTo(170, 124);
-      ctx.lineTo(202, 142);
-      ctx.lineTo(194, 148);
-      ctx.lineTo(154, 128);
-      ctx.lineTo(104, 128);
-      ctx.lineTo(64, 148);
-      ctx.lineTo(54, 142);
-      ctx.lineTo(82, 122);
-      ctx.lineTo(28, 120);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.font = '900 22px "Barlow Condensed", Arial, sans-serif';
-      ctx.fillText('JR.', 128, 168);
-      ctx.font = '900 26px "Barlow Condensed", Arial, sans-serif';
-      ctx.fillText('GREYHOUNDS', 128, 204);
+      ctx.font = '900 22px "Barlow Condensed", Arial, sans-serif'; ctx.fillText('JR.', 128, 168);
+      ctx.font = '900 26px "Barlow Condensed", Arial, sans-serif'; ctx.fillText('GREYHOUNDS', 128, 204);
       return c.toDataURL('image/png');
     }
 
     /* =========================================================
        APPLICATION STATE
        ========================================================= */
-    const STORAGE_KEY = 'hockey_broadcast_state_v4';
-
+    const STORAGE_KEY = 'hockey_broadcast_state_v5';
     const DEFAULT_POSITIONS = {
       scorebug: { x: 64, y: 958, scale: 1.0 },
       sponsor:  { x: 1608, y: 48, scale: 1.0 },
@@ -1883,41 +1085,16 @@
 
     const defaultState = {
       scorebugMode: 'compact',
-      home: {
-        shortName: 'SOO RED',
-        fullName: 'SOO JR. GREYHOUNDS RED',
-        color: '#c8102e',
-        score: 0,
-        sog: 0,
-        pp: false,
-        en: false,
-        logoKey: 'home_logo'
-      },
-      away: {
-        shortName: 'GUEST',
-        fullName: 'VISITING TEAM',
-        color: '#1d4ed8',
-        score: 0,
-        sog: 0,
-        pp: false,
-        en: false,
-        logoKey: ''
-      },
+      home: { shortName: 'SOO RED', fullName: 'SOO JR. GREYHOUNDS RED', color: '#c8102e', score: 0, sog: 0, pp: false, en: false, logoKey: 'home_logo' },
+      away: { shortName: 'GUEST', fullName: 'VISITING TEAM', color: '#1d4ed8', score: 0, sog: 0, pp: false, en: false, logoKey: '' },
       period: '1ST',
       periodMinutes: 15,
       clockRemainingSec: 900,
       clockRunning: false,
       layoutLocked: false,
       positions: JSON.parse(JSON.stringify(DEFAULT_POSITIONS)),
-      settings: {
-        fadeMs: 300,
-        goalBannerSec: 6,
-        infoBannerSec: 6
-      },
-      staticTakeoverDefaults: {
-        'tk-intro': true,
-        'tk-intermission': true
-      },
+      settings: { fadeMs: 300, goalBannerSec: 6, infoBannerSec: 6 },
+      staticTakeoverDefaults: { 'tk-intro': true, 'tk-intermission': true },
       ticker: {
         tag: 'HOCKEY LIVE',
         speedSec: 26,
@@ -1928,14 +1105,8 @@
         ]
       },
       sponsorLoop: {
-        enabled: true,
-        tag: 'PRESENTED BY',
-        intervalSec: 8,
-        backing: true,
-        items: [
-          { id: 'sp-1', name: 'SOO JR. GREYHOUNDS HOCKEY', mediaKey: '' },
-          { id: 'sp-2', name: 'NORTHERN ARENA BROADCAST', mediaKey: '' }
-        ]
+        enabled: true, tag: 'PRESENTED BY', intervalSec: 8, backing: true,
+        items: [{ id: 'sp-1', name: 'SOO JR. GREYHOUNDS HOCKEY', mediaKey: '' }]
       },
       customPads: [],
       activeBanner: null,
@@ -1951,9 +1122,10 @@
     let sponsorIndex = 0;
     let sponsorTimer = null;
 
-    let peer = null;
+    // MQTT over Secure WebSockets (WSS) — 100% iOS WKWebView / Moblin Compatible
+    const MQTT_BROKER_URL = 'wss://broker.emqx.io:8084/mqtt';
+    let mqttClient = null;
     let hostRoomId = '';
-    let clientConnections = [];
 
     function loadState() {
       try {
@@ -1978,26 +1150,15 @@
           activeBanner: null,
           activeTakeover: null
         };
-      } catch (e) {
-        return JSON.parse(JSON.stringify(defaultState));
-      }
+      } catch (e) { return JSON.parse(JSON.stringify(defaultState)); }
     }
 
     function saveState() {
       try {
-        const persistable = {
-          ...state,
-          clockRunning: false,
-          activeBanner: null,
-          activeTakeover: null
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, clockRunning: false, activeBanner: null, activeTakeover: null }));
       } catch (e) {}
     }
 
-    /* =========================================================
-       INITIALIZATION & OVERLAY STAGE MOUNTING
-       ========================================================= */
     const isOverlayMode = new URLSearchParams(window.location.search).get('overlay') === 'true';
 
     async function init() {
@@ -2006,16 +1167,12 @@
         document.body.classList.add('overlay-mode');
         const stageWrapper = document.getElementById('broadcast-stage-wrapper');
         const mountRoot = document.getElementById('overlay-mount-root');
-        if (stageWrapper && mountRoot) {
-          mountRoot.appendChild(stageWrapper);
-        }
+        if (stageWrapper && mountRoot) mountRoot.appendChild(stageWrapper);
       }
 
       await loadAllMediaAssets();
-
       if (!mediaBlobCache.has('home_logo')) {
-        const pngData = createDefaultCrestPngDataUrl();
-        await saveMediaAsset('home_logo', pngData);
+        await saveMediaAsset('home_logo', createDefaultCrestPngDataUrl());
       }
 
       setupStageScaler();
@@ -2027,10 +1184,7 @@
       if (isOverlayMode) {
         initOverlayReceiver();
         window.addEventListener('storage', (e) => {
-          if (e.key === STORAGE_KEY) {
-            state = loadState();
-            renderAll();
-          }
+          if (e.key === STORAGE_KEY) { state = loadState(); renderAll(); }
         });
       }
     }
@@ -2038,17 +1192,14 @@
     function setupStageScaler() {
       const canvas = document.getElementById('broadcast-canvas');
       if (!canvas) return;
-
       if (isOverlayMode) {
         const rescaleOverlay = () => {
           const vw = window.innerWidth;
           const vh = window.innerHeight;
-          // In Moblin 1920x1080 widget (or before WKWebView reports innerWidth), keep 1:1 native scale
           if (!vw || !vh || vw >= 1900) {
             canvas.style.transform = 'scale(1)';
           } else {
-            const scale = Math.min(vw / 1920, vh / 1080);
-            canvas.style.transform = `scale(${scale})`;
+            canvas.style.transform = `scale(${Math.min(vw / 1920, vh / 1080)})`;
           }
         };
         window.addEventListener('resize', rescaleOverlay);
@@ -2060,20 +1211,13 @@
       if (!box) return;
       const rescale = () => {
         const rect = box.getBoundingClientRect();
-        if (rect.width > 0) {
-          const scale = rect.width / 1920;
-          canvas.style.transform = `scale(${scale})`;
-        }
+        if (rect.width > 0) canvas.style.transform = `scale(${rect.width / 1920})`;
       };
-      const ro = new ResizeObserver(rescale);
-      ro.observe(box);
+      new ResizeObserver(rescale).observe(box);
       window.addEventListener('resize', rescale);
       rescale();
     }
 
-    /* =========================================================
-       SCOREBOARD MODE SWITCHER
-       ========================================================= */
     const BUG_MODE_ORDER = ['compact', 'bottom-bar', 'ticker-only', 'hidden'];
     const BUG_MODE_LABELS = {
       'compact': 'Layout: Compact Bug',
@@ -2084,15 +1228,14 @@
 
     function cycleScorebugMode() {
       const idx = BUG_MODE_ORDER.indexOf(state.scorebugMode);
-      const next = BUG_MODE_ORDER[(idx + 1) % BUG_MODE_ORDER.length];
-      setScorebugMode(next);
+      setScorebugMode(BUG_MODE_ORDER[(idx + 1) % BUG_MODE_ORDER.length]);
     }
 
     function setScorebugMode(mode) {
       state.scorebugMode = BUG_MODE_ORDER.includes(mode) ? mode : 'compact';
       saveState();
       renderAll();
-      broadcastStateOnly();
+      publishState();
     }
 
     function applyScorebugModeVisibility() {
@@ -2100,31 +1243,20 @@
       const bottomBarEl = document.getElementById('bottom-bar-layer');
       const bbarScoreCluster = document.getElementById('bbar-score-cluster');
       const cycleBtn = document.getElementById('btn-bug-mode-cycle');
-
       const m = state.scorebugMode || 'compact';
       if (cycleBtn) cycleBtn.textContent = BUG_MODE_LABELS[m] || 'Layout: Compact Bug';
-
-      if (compactEl) {
-        compactEl.style.display = (m === 'compact') ? 'block' : 'none';
-      }
+      if (compactEl) compactEl.style.display = (m === 'compact') ? 'block' : 'none';
       if (bottomBarEl) {
-        const showBar = (m === 'bottom-bar' || m === 'ticker-only');
-        bottomBarEl.classList.toggle('active', showBar);
-        if (bbarScoreCluster) {
-          bbarScoreCluster.style.display = (m === 'bottom-bar') ? 'flex' : 'none';
-        }
+        bottomBarEl.classList.toggle('active', m === 'bottom-bar' || m === 'ticker-only');
+        if (bbarScoreCluster) bbarScoreCluster.style.display = (m === 'bottom-bar') ? 'flex' : 'none';
       }
     }
 
-    /* =========================================================
-       DRAG & DROP + CORNER RESIZE
-       ========================================================= */
     function setupDragAndResize() {
       if (isOverlayMode) return;
       const box = document.getElementById('stage-aspect-box');
       const snapV = document.getElementById('snap-v');
       const snapH = document.getElementById('snap-h');
-
       let interaction = null;
 
       document.querySelectorAll('.draggable-graphic').forEach((el) => {
@@ -2132,23 +1264,10 @@
           if (state.layoutLocked) return;
           const target = el.dataset.target;
           if (target === 'banner' && !state.activeBanner) return;
-
-          e.preventDefault();
-          e.stopPropagation();
-
+          e.preventDefault(); e.stopPropagation();
           const isResize = e.target.classList.contains('resize-handle');
           const pos = state.positions[target];
-          interaction = {
-            mode: isResize ? 'resize' : 'drag',
-            target,
-            startX: e.clientX,
-            startY: e.clientY,
-            origX: pos.x,
-            origY: pos.y,
-            origScale: pos.scale,
-            elWidth: el.offsetWidth,
-            elHeight: el.offsetHeight
-          };
+          interaction = { mode: isResize ? 'resize' : 'drag', target, startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y, origScale: pos.scale, elWidth: el.offsetWidth, elHeight: el.offsetHeight };
           el.classList.add('is-dragging');
           el.setPointerCapture(e.pointerId);
         });
@@ -2166,45 +1285,29 @@
         if (interaction.mode === 'drag') {
           let nx = Math.round(interaction.origX + dx);
           let ny = Math.round(interaction.origY + dy);
-
           const centerX = nx + (interaction.elWidth * pos.scale) / 2;
           const centerY = ny + (interaction.elHeight * pos.scale) / 2;
-          let snappedV = false;
-          let snappedH = false;
-
-          if (Math.abs(centerX - 960) < 16) {
-            nx = Math.round(960 - (interaction.elWidth * pos.scale) / 2);
-            snappedV = true;
-          }
-          if (Math.abs(centerY - 540) < 16) {
-            ny = Math.round(540 - (interaction.elHeight * pos.scale) / 2);
-            snappedH = true;
-          }
-
+          let snappedV = false, snappedH = false;
+          if (Math.abs(centerX - 960) < 16) { nx = Math.round(960 - (interaction.elWidth * pos.scale) / 2); snappedV = true; }
+          if (Math.abs(centerY - 540) < 16) { ny = Math.round(540 - (interaction.elHeight * pos.scale) / 2); snappedH = true; }
           snapV.style.display = snappedV ? 'block' : 'none';
           snapH.style.display = snappedH ? 'block' : 'none';
-
           pos.x = Math.max(-100, Math.min(1880, nx));
           pos.y = Math.max(-50, Math.min(1040, ny));
         } else {
-          const delta = Math.max(dx, dy);
-          const nextScale = Math.max(0.45, Math.min(2.4, +(interaction.origScale + delta / 260).toFixed(2)));
-          pos.scale = nextScale;
+          pos.scale = Math.max(0.45, Math.min(2.4, +(interaction.origScale + Math.max(dx, dy) / 260).toFixed(2)));
         }
-
         applyElementPositions();
-        updateCoordsReadout(interaction.target);
       });
 
       window.addEventListener('pointerup', () => {
         if (!interaction) return;
         document.querySelectorAll('.draggable-graphic').forEach((el) => el.classList.remove('is-dragging'));
-        snapV.style.display = 'none';
-        snapH.style.display = 'none';
+        snapV.style.display = 'none'; snapH.style.display = 'none';
         interaction = null;
         saveState();
         renderNumericCoords();
-        broadcastStateOnly();
+        publishState();
       });
     }
 
@@ -2218,110 +1321,34 @@
       });
     }
 
-    function updateCoordsReadout(target) {
-      const readout = document.getElementById('stage-coords-readout');
-      const p = state.positions[target];
-      if (readout && p) {
-        readout.textContent = `${target.toUpperCase()}: X ${p.x}, Y ${p.y} (${Math.round(p.scale * 100)}%)`;
-      }
-    }
+    function toggleLayoutLock() { state.layoutLocked = !state.layoutLocked; saveState(); renderAll(); }
+    function resetDefaultPositions() { state.positions = JSON.parse(JSON.stringify(DEFAULT_POSITIONS)); saveState(); applyElementPositions(); renderNumericCoords(); publishState(); }
 
-    function toggleLayoutLock() {
-      state.layoutLocked = !state.layoutLocked;
-      saveState();
-      renderAll();
-    }
-
-    function resetDefaultPositions() {
-      state.positions = JSON.parse(JSON.stringify(DEFAULT_POSITIONS));
-      saveState();
-      applyElementPositions();
-      renderNumericCoords();
-      broadcastStateOnly();
-    }
-
-    /* =========================================================
-       GAME ACTIONS
-       ========================================================= */
     function scoreGoal(side) {
       state[side].score += 1;
-      saveState();
-      renderScorebug();
-      renderGameControls();
-
+      saveState(); renderScorebug(); renderGameControls();
       ['bug', 'bbar'].forEach((prefix) => {
         const cell = document.getElementById(`${prefix}-${side}-score`);
-        if (cell) {
-          cell.classList.add('flash');
-          setTimeout(() => cell.classList.remove('flash'), 650);
-        }
+        if (cell) { cell.classList.add('flash'); setTimeout(() => cell.classList.remove('flash'), 650); }
       });
-
-      triggerBanner({
-        id: `goal-${side}`,
-        type: 'goal',
-        side,
-        durationSec: state.settings.goalBannerSec
-      });
-      broadcastStateOnly();
+      triggerBanner({ id: `goal-${side}`, type: 'goal', side, durationSec: state.settings.goalBannerSec });
+      publishState();
     }
 
-    function adjustScore(side, delta) {
-      state[side].score = Math.max(0, state[side].score + delta);
-      saveState();
-      renderScorebug();
-      renderGameControls();
-      broadcastStateOnly();
-    }
-
-    function adjustSog(side, delta) {
-      state[side].sog = Math.max(0, state[side].sog + delta);
-      saveState();
-      renderScorebug();
-      renderGameControls();
-      broadcastStateOnly();
-    }
-
-    function toggleFlag(side, flag) {
-      state[side][flag] = !state[side][flag];
-      saveState();
-      renderScorebug();
-      renderGameControls();
-      broadcastStateOnly();
-    }
-
-    function setPeriod(p) {
-      state.period = p;
-      saveState();
-      renderScorebug();
-      renderGameControls();
-      broadcastStateOnly();
-    }
+    function adjustScore(side, delta) { state[side].score = Math.max(0, state[side].score + delta); saveState(); renderScorebug(); renderGameControls(); publishState(); }
+    function adjustSog(side, delta) { state[side].sog = Math.max(0, state[side].sog + delta); saveState(); renderScorebug(); renderGameControls(); publishState(); }
+    function toggleFlag(side, flag) { state[side][flag] = !state[side][flag]; saveState(); renderScorebug(); renderGameControls(); publishState(); }
+    function setPeriod(p) { state.period = p; saveState(); renderScorebug(); renderGameControls(); publishState(); }
 
     function resetGameStats() {
-      state.home.score = 0;
-      state.home.sog = 0;
-      state.home.pp = false;
-      state.home.en = false;
-      state.away.score = 0;
-      state.away.sog = 0;
-      state.away.pp = false;
-      state.away.en = false;
-      state.period = '1ST';
-      resetClock();
-      saveState();
-      renderAll();
-      broadcastStateOnly();
+      state.home.score = 0; state.home.sog = 0; state.home.pp = false; state.home.en = false;
+      state.away.score = 0; state.away.sog = 0; state.away.pp = false; state.away.en = false;
+      state.period = '1ST'; resetClock(); saveState(); renderAll(); publishState();
     }
 
-    /* =========================================================
-       DRIFT-FREE DELTA-TIME GAME CLOCK
-       ========================================================= */
     function formatClock(totalSec) {
       const clamped = Math.max(0, Math.ceil(totalSec));
-      const m = Math.floor(clamped / 60);
-      const s = clamped % 60;
-      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      return `${String(Math.floor(clamped / 60)).padStart(2, '0')}:${String(clamped % 60).padStart(2, '0')}`;
     }
 
     function toggleClock() {
@@ -2334,7 +1361,7 @@
         clockRafId = null;
       }
       renderGameControls();
-      broadcastStateOnly();
+      publishState();
     }
 
     function tickClock(now) {
@@ -2342,7 +1369,6 @@
       const dt = (now - lastPerfTimestamp) / 1000;
       lastPerfTimestamp = now;
       state.clockRemainingSec = Math.max(0, state.clockRemainingSec - dt);
-
       const whole = Math.ceil(state.clockRemainingSec);
       if (whole !== lastRenderedWholeSec) {
         lastRenderedWholeSec = whole;
@@ -2351,14 +1377,10 @@
         document.getElementById('bbar-time').textContent = formatted;
         const ctrlClock = document.getElementById('ctrl-clock-time');
         if (ctrlClock) ctrlClock.textContent = formatted;
-        broadcastClockTick();
+        publishClockTick();
       }
-
       if (state.clockRemainingSec <= 0) {
-        state.clockRunning = false;
-        renderGameControls();
-        broadcastStateOnly();
-        return;
+        state.clockRunning = false; renderGameControls(); publishState(); return;
       }
       clockRafId = requestAnimationFrame(tickClock);
     }
@@ -2371,8 +1393,7 @@
       document.getElementById('bbar-time').textContent = formatted;
       const ctrlClock = document.getElementById('ctrl-clock-time');
       if (ctrlClock) ctrlClock.textContent = formatted;
-      saveState();
-      broadcastStateOnly();
+      saveState(); publishState();
     }
 
     function resetClock() {
@@ -2385,107 +1406,37 @@
       document.getElementById('bbar-time').textContent = formatted;
       const ctrlClock = document.getElementById('ctrl-clock-time');
       if (ctrlClock) ctrlClock.textContent = formatted;
-      renderGameControls();
-      saveState();
-      broadcastStateOnly();
+      renderGameControls(); saveState(); publishState();
     }
 
-    /* =========================================================
-       BANNERS & FULL-SCREEN 1920x1080 TAKEOVERS
-       ========================================================= */
     function getBuiltInPads() {
       return [
-        {
-          id: 'goal-home',
-          kind: 'banner',
-          type: 'goal',
-          side: 'home',
-          title: `${state.home.shortName} Goal Strip`,
-          subtitle: 'Upper/Lower Third Stinger',
-          durationSec: state.settings.goalBannerSec
-        },
-        {
-          id: 'goal-away',
-          kind: 'banner',
-          type: 'goal',
-          side: 'away',
-          title: `${state.away.shortName} Goal Strip`,
-          subtitle: 'Upper/Lower Third Stinger',
-          durationSec: state.settings.goalBannerSec
-        },
-        {
-          id: 'strip-matchup',
-          kind: 'banner',
-          type: 'matchup',
-          title: 'Matchup Strip',
-          subtitle: 'Crests + Current Score',
-          durationSec: state.settings.infoBannerSec
-        },
-        {
-          id: 'strip-sog',
-          kind: 'banner',
-          type: 'sog',
-          title: 'Shots on Goal Bar',
-          subtitle: 'Live SOG Comparison',
-          durationSec: state.settings.infoBannerSec
-        },
-        {
-          id: 'tk-goal-hype',
-          kind: 'takeover',
-          type: 'slate',
-          variant: 'goal-hype',
-          title: 'Full-Screen Goal Hype',
-          subtitle: '1080p Home Crest Takeover',
-          durationSec: 5
-        },
-        {
-          id: 'tk-intro',
-          kind: 'takeover',
-          type: 'slate',
-          variant: 'intro',
-          title: 'Full-Screen Intro Open',
-          subtitle: 'Broadcast Pregame Slate',
-          durationSec: state.staticTakeoverDefaults['tk-intro'] ? 0 : 8
-        },
-        {
-          id: 'tk-intermission',
-          kind: 'takeover',
-          type: 'slate',
-          variant: 'intermission',
-          title: 'Intermission Slate',
-          subtitle: 'Full-Screen Break Graphic',
-          durationSec: state.staticTakeoverDefaults['tk-intermission'] ? 0 : 10
-        }
+        { id: 'goal-home', kind: 'banner', type: 'goal', side: 'home', title: `${state.home.shortName} Goal Strip`, subtitle: 'Upper/Lower Third', durationSec: state.settings.goalBannerSec },
+        { id: 'goal-away', kind: 'banner', type: 'goal', side: 'away', title: `${state.away.shortName} Goal Strip`, subtitle: 'Upper/Lower Third', durationSec: state.settings.goalBannerSec },
+        { id: 'strip-matchup', kind: 'banner', type: 'matchup', title: 'Matchup Strip', subtitle: 'Crests + Score', durationSec: state.settings.infoBannerSec },
+        { id: 'strip-sog', kind: 'banner', type: 'sog', title: 'Shots on Goal Bar', subtitle: 'Live SOG', durationSec: state.settings.infoBannerSec },
+        { id: 'tk-goal-hype', kind: 'takeover', type: 'slate', variant: 'goal-hype', title: 'Full-Screen Goal Hype', subtitle: '1080p Home Crest', durationSec: 5 },
+        { id: 'tk-intro', kind: 'takeover', type: 'slate', variant: 'intro', title: 'Full-Screen Intro Open', subtitle: 'Pregame Slate', durationSec: state.staticTakeoverDefaults['tk-intro'] ? 0 : 8 },
+        { id: 'tk-intermission', kind: 'takeover', type: 'slate', variant: 'intermission', title: 'Intermission Slate', subtitle: 'Break Graphic', durationSec: state.staticTakeoverDefaults['tk-intermission'] ? 0 : 10 }
       ];
     }
 
     function activatePad(pad) {
       if (pad.kind === 'takeover') {
-        if (state.activeTakeover && state.activeTakeover.id === pad.id) {
-          clearTakeover();
-        } else {
-          triggerTakeover(pad);
-        }
+        if (state.activeTakeover && state.activeTakeover.id === pad.id) clearTakeover();
+        else triggerTakeover(pad);
       } else {
-        if (state.activeBanner && state.activeBanner.id === pad.id) {
-          clearBanner();
-        } else {
-          triggerBanner(pad);
-        }
+        if (state.activeBanner && state.activeBanner.id === pad.id) clearBanner();
+        else triggerBanner(pad);
       }
     }
 
     function triggerBanner(bannerObj) {
       if (bannerTimeout) clearTimeout(bannerTimeout);
       state.activeBanner = bannerObj;
-      renderActiveBanner();
-      renderTriggerPads();
-      broadcastStateOnly();
-
+      renderActiveBanner(); renderTriggerPads(); publishState();
       if (bannerObj.durationSec && bannerObj.durationSec > 0) {
-        bannerTimeout = setTimeout(() => {
-          clearBanner();
-        }, bannerObj.durationSec * 1000);
+        bannerTimeout = setTimeout(() => clearBanner(), bannerObj.durationSec * 1000);
       }
     }
 
@@ -2498,22 +1449,16 @@
         state.activeBanner = null;
         if (inner) inner.innerHTML = '';
         if (node) node.classList.add('inactive');
-        renderTriggerPads();
-        broadcastStateOnly();
+        renderTriggerPads(); publishState();
       }, state.settings.fadeMs || 300);
     }
 
     function triggerTakeover(tkObj) {
       if (takeoverTimeout) clearTimeout(takeoverTimeout);
       state.activeTakeover = tkObj;
-      renderActiveTakeover();
-      renderTriggerPads();
-      broadcastStateOnly();
-
+      renderActiveTakeover(); renderTriggerPads(); publishState();
       if (tkObj.durationSec && tkObj.durationSec > 0) {
-        takeoverTimeout = setTimeout(() => {
-          clearTakeover();
-        }, tkObj.durationSec * 1000);
+        takeoverTimeout = setTimeout(() => clearTakeover(), tkObj.durationSec * 1000);
       }
     }
 
@@ -2523,61 +1468,30 @@
       if (layer) layer.classList.remove('visible');
       setTimeout(() => {
         state.activeTakeover = null;
-        if (layer) {
-          layer.classList.remove('active');
-          layer.innerHTML = '';
-        }
-        renderTriggerPads();
-        broadcastStateOnly();
+        if (layer) { layer.classList.remove('active'); layer.innerHTML = ''; }
+        renderTriggerPads(); publishState();
       }, state.settings.fadeMs || 300);
     }
 
-    function clearAllLiveOverlays() {
-      clearBanner();
-      clearTakeover();
-    }
+    function clearAllLiveOverlays() { clearBanner(); clearTakeover(); }
 
-    /* =========================================================
-       RENDERING FUNCTIONS (XSS-SAFE)
-       ========================================================= */
     function renderAll() {
       document.documentElement.style.setProperty('--fade-ms', `${state.settings.fadeMs}ms`);
       const lockBtn = document.getElementById('btn-lock-layout');
-      if (lockBtn) {
-        lockBtn.textContent = state.layoutLocked ? 'Layout: Locked' : 'Layout: Unlocked (Drag/Resize)';
-        lockBtn.classList.toggle('btn-amber', state.layoutLocked);
-      }
+      if (lockBtn) { lockBtn.textContent = state.layoutLocked ? 'Layout: Locked' : 'Layout: Unlocked'; lockBtn.classList.toggle('btn-amber', state.layoutLocked); }
       const spBtn = document.getElementById('btn-sponsor-toggle');
-      if (spBtn) {
-        spBtn.textContent = state.sponsorLoop.enabled ? 'Sponsor Loop: ON' : 'Sponsor Loop: OFF';
-        spBtn.classList.toggle('btn-green', state.sponsorLoop.enabled);
-      }
-
-      applyScorebugModeVisibility();
-      applyElementPositions();
-      renderScorebug();
-      renderBottomTicker();
-      renderSponsorLoop();
-      renderActiveBanner();
-      renderActiveTakeover();
-      renderGameControls();
-      renderTriggerPads();
-      renderSetupForm();
+      if (spBtn) { spBtn.textContent = state.sponsorLoop.enabled ? 'Sponsor Loop: ON' : 'Sponsor Loop: OFF'; spBtn.classList.toggle('btn-green', state.sponsorLoop.enabled); }
+      applyScorebugModeVisibility(); applyElementPositions(); renderScorebug(); renderBottomTicker(); renderSponsorLoop(); renderActiveBanner(); renderActiveTakeover(); renderGameControls(); renderTriggerPads(); renderSetupForm();
     }
 
     function renderTeamLogoHtml(teamObj, sizePx = 38) {
       const dataUrl = teamObj.logoKey ? mediaBlobCache.get(teamObj.logoKey) : '';
-      if (dataUrl && isSafeMediaUrl(dataUrl)) {
-        return `<img src="${dataUrl}" alt="${escapeHTML(teamObj.shortName)}" />`;
-      }
-      const initials = escapeHTML((teamObj.shortName || 'TM').slice(0, 3));
-      const bg = escapeHTML(teamObj.color || '#334155');
-      return `<div class="bug-logo-fallback" style="background:${bg};width:${sizePx}px;height:${sizePx}px;">${initials}</div>`;
+      if (dataUrl && isSafeMediaUrl(dataUrl)) return `<img src="${dataUrl}" alt="${escapeHTML(teamObj.shortName)}" />`;
+      return `<div class="bug-logo-fallback" style="background:${escapeHTML(teamObj.color || '#334155')};width:${sizePx}px;height:${sizePx}px;">${escapeHTML((teamObj.shortName || 'TM').slice(0, 3))}</div>`;
     }
 
     function renderScorebug() {
       const timeFormatted = formatClock(state.clockRemainingSec);
-
       document.getElementById('bug-home-bar').style.background = state.home.color;
       document.getElementById('bug-home-logo').innerHTML = renderTeamLogoHtml(state.home, 38);
       document.getElementById('bug-home-name').textContent = state.home.shortName;
@@ -2593,7 +1507,6 @@
       document.getElementById('bug-away-sog').textContent = `SOG ${state.away.sog}`;
       document.getElementById('bug-away-pp').style.display = state.away.pp ? 'inline-block' : 'none';
       document.getElementById('bug-away-en').style.display = state.away.en ? 'inline-block' : 'none';
-
       document.getElementById('bug-period').textContent = state.period;
       document.getElementById('bug-time').textContent = timeFormatted;
 
@@ -2608,7 +1521,6 @@
       document.getElementById('bbar-away-name').textContent = state.away.shortName;
       document.getElementById('bbar-away-sog').textContent = `SOG ${state.away.sog}${state.away.pp ? ' • PP' : ''}${state.away.en ? ' • EN' : ''}`;
       document.getElementById('bbar-away-score').textContent = state.away.score;
-
       document.getElementById('bbar-period').textContent = state.period;
       document.getElementById('bbar-time').textContent = timeFormatted;
     }
@@ -2617,15 +1529,10 @@
       const tagEl = document.getElementById('bbar-ticker-tag');
       const trackEl = document.getElementById('bbar-marquee-track');
       if (!tagEl || !trackEl) return;
-
       tagEl.textContent = state.ticker.tag || 'HOCKEY LIVE';
       tagEl.style.background = state.home.color || '#c8102e';
       trackEl.style.setProperty('--ticker-dur', `${Math.max(10, state.ticker.speedSec || 26)}s`);
-
-      const msgs = (state.ticker.messages && state.ticker.messages.length)
-        ? state.ticker.messages
-        : ['LIVE YOUTH HOCKEY BROADCAST'];
-
+      const msgs = (state.ticker.messages && state.ticker.messages.length) ? state.ticker.messages : ['LIVE YOUTH HOCKEY BROADCAST'];
       const segmentHtml = msgs.map((m) => `<span>${escapeHTML(m)}</span><span class="sep">&#9670;</span>`).join('');
       trackEl.innerHTML = segmentHtml + segmentHtml;
     }
@@ -2636,33 +1543,23 @@
       const tagEl = document.getElementById('sponsor-tag-text');
       const slotEl = document.getElementById('sponsor-slot-content');
       if (!node || !inner || !slotEl) return;
-
       const items = state.sponsorLoop.items || [];
-      if (!state.sponsorLoop.enabled || items.length === 0) {
-        node.style.display = 'none';
-        return;
-      }
+      if (!state.sponsorLoop.enabled || items.length === 0) { node.style.display = 'none'; return; }
       node.style.display = 'block';
       inner.classList.toggle('with-backing', !!state.sponsorLoop.backing);
       tagEl.textContent = state.sponsorLoop.tag || 'PRESENTED BY';
-
       const item = items[sponsorIndex % items.length];
       const imgData = item.mediaKey ? mediaBlobCache.get(item.mediaKey) : '';
-      if (imgData && isSafeMediaUrl(imgData)) {
-        slotEl.innerHTML = `<img class="sponsor-media" src="${imgData}" alt="${escapeHTML(item.name)}" />`;
-      } else {
-        slotEl.innerHTML = `<div class="sponsor-fallback-text">${escapeHTML(item.name)}</div>`;
-      }
+      slotEl.innerHTML = (imgData && isSafeMediaUrl(imgData))
+        ? `<img class="sponsor-media" src="${imgData}" alt="${escapeHTML(item.name)}" />`
+        : `<div class="sponsor-fallback-text">${escapeHTML(item.name)}</div>`;
     }
 
     function startSponsorTimer() {
       if (sponsorTimer) clearInterval(sponsorTimer);
       sponsorTimer = setInterval(() => {
         const items = state.sponsorLoop.items || [];
-        if (state.sponsorLoop.enabled && items.length > 1) {
-          sponsorIndex = (sponsorIndex + 1) % items.length;
-          renderSponsorLoop();
-        }
+        if (state.sponsorLoop.enabled && items.length > 1) { sponsorIndex = (sponsorIndex + 1) % items.length; renderSponsorLoop(); }
       }, Math.max(3, state.sponsorLoop.intervalSec || 8) * 1000);
     }
 
@@ -2670,71 +1567,25 @@
       const node = document.getElementById('banner-node');
       const inner = document.getElementById('banner-inner');
       if (!node || !inner) return;
-
       const b = state.activeBanner;
-      if (!b) {
-        node.classList.add('inactive');
-        inner.classList.remove('visible');
-        inner.innerHTML = '';
-        return;
-      }
-
+      if (!b) { node.classList.add('inactive'); inner.classList.remove('visible'); inner.innerHTML = ''; return; }
       node.classList.remove('inactive');
       let html = '';
-
       if (b.type === 'goal') {
         const tm = b.side === 'away' ? state.away : state.home;
         const logoUrl = tm.logoKey ? mediaBlobCache.get(tm.logoKey) : '';
-        const logoImg = logoUrl && isSafeMediaUrl(logoUrl)
-          ? `<img src="${logoUrl}" alt="${escapeHTML(tm.shortName)}" />`
-          : `<div class="bug-logo-fallback" style="background:${escapeHTML(tm.color)};width:52px;height:52px;font-size:22px;">${escapeHTML(tm.shortName.slice(0,3))}</div>`;
-
-        html = `
-          <div class="espn-goal-strip">
-            <div class="goal-crest-box">${logoImg}</div>
-            <div class="goal-badge-skew" style="background:${escapeHTML(tm.color)};">GOAL!</div>
-            <div class="goal-details">
-              <div class="goal-team-title">${escapeHTML(tm.fullName)}</div>
-              <div class="goal-meta-line">${escapeHTML(state.home.shortName)} ${state.home.score} &ndash; ${escapeHTML(state.away.shortName)} ${state.away.score} &bull; ${escapeHTML(state.period)} (${formatClock(state.clockRemainingSec)})</div>
-            </div>
-          </div>`;
+        const logoImg = (logoUrl && isSafeMediaUrl(logoUrl)) ? `<img src="${logoUrl}" alt="" />` : `<div class="bug-logo-fallback" style="background:${escapeHTML(tm.color)};width:52px;height:52px;font-size:22px;">${escapeHTML(tm.shortName.slice(0,3))}</div>`;
+        html = `<div class="espn-goal-strip"><div class="goal-crest-box">${logoImg}</div><div class="goal-badge-skew" style="background:${escapeHTML(tm.color)};">GOAL!</div><div class="goal-details"><div class="goal-team-title">${escapeHTML(tm.fullName)}</div><div class="goal-meta-line">${escapeHTML(state.home.shortName)} ${state.home.score} &ndash; ${escapeHTML(state.away.shortName)} ${state.away.score} &bull; ${escapeHTML(state.period)} (${formatClock(state.clockRemainingSec)})</div></div></div>`;
       } else if (b.type === 'matchup') {
         const hUrl = state.home.logoKey ? mediaBlobCache.get(state.home.logoKey) : '';
         const aUrl = state.away.logoKey ? mediaBlobCache.get(state.away.logoKey) : '';
-        html = `
-          <div class="espn-info-strip">
-            <div class="info-pill-tag" style="background:${escapeHTML(state.home.color)};">LIVE HOCKEY</div>
-            <div class="info-body">
-              ${hUrl && isSafeMediaUrl(hUrl) ? `<img src="${hUrl}" alt="" />` : ''}
-              <span>${escapeHTML(state.home.fullName)} (${state.home.score})</span>
-              <span style="color:#64748b;">VS</span>
-              <span>${escapeHTML(state.away.fullName)} (${state.away.score})</span>
-              ${aUrl && isSafeMediaUrl(aUrl) ? `<img src="${aUrl}" alt="" />` : ''}
-            </div>
-          </div>`;
+        html = `<div class="espn-info-strip"><div class="info-pill-tag" style="background:${escapeHTML(state.home.color)};">LIVE HOCKEY</div><div class="info-body">${hUrl && isSafeMediaUrl(hUrl) ? `<img src="${hUrl}" alt="" />` : ''}<span>${escapeHTML(state.home.fullName)} (${state.home.score})</span><span style="color:#64748b;">VS</span><span>${escapeHTML(state.away.fullName)} (${state.away.score})</span>${aUrl && isSafeMediaUrl(aUrl) ? `<img src="${aUrl}" alt="" />` : ''}</div></div>`;
       } else if (b.type === 'sog') {
-        html = `
-          <div class="espn-info-strip">
-            <div class="info-pill-tag" style="background:#0284c7;">SHOTS ON GOAL</div>
-            <div class="info-body">
-              <span>${escapeHTML(state.home.shortName)}: <strong style="color:#38bdf8;">${state.home.sog}</strong></span>
-              <span style="color:#475569;">|</span>
-              <span>${escapeHTML(state.away.shortName)}: <strong style="color:#38bdf8;">${state.away.sog}</strong></span>
-              <span style="color:#475569;">|</span>
-              <span style="font-size:22px;color:#94a3b8;">${escapeHTML(state.period)}</span>
-            </div>
-          </div>`;
+        html = `<div class="espn-info-strip"><div class="info-pill-tag" style="background:#0284c7;">SHOTS ON GOAL</div><div class="info-body"><span>${escapeHTML(state.home.shortName)}: <strong style="color:#38bdf8;">${state.home.sog}</strong></span><span style="color:#475569;">|</span><span>${escapeHTML(state.away.shortName)}: <strong style="color:#38bdf8;">${state.away.sog}</strong></span><span style="color:#475569;">|</span><span style="font-size:22px;color:#94a3b8;">${escapeHTML(state.period)}</span></div></div>`;
       } else if (b.type === 'customMedia' && b.mediaKey) {
         const mUrl = mediaBlobCache.get(b.mediaKey);
-        if (mUrl && isSafeMediaUrl(mUrl)) {
-          if (b.isVideo) {
-            html = `<video class="custom-banner-media" src="${mUrl}" autoplay loop muted playsinline></video>`;
-          } else {
-            html = `<img class="custom-banner-media" src="${mUrl}" alt="${escapeHTML(b.title)}" />`;
-          }
-        }
+        if (mUrl && isSafeMediaUrl(mUrl)) html = b.isVideo ? `<video class="custom-banner-media" src="${mUrl}" autoplay loop muted playsinline></video>` : `<img class="custom-banner-media" src="${mUrl}" alt="" />`;
       }
-
       inner.innerHTML = html;
       requestAnimationFrame(() => inner.classList.add('visible'));
     }
@@ -2743,51 +1594,19 @@
       const layer = document.getElementById('takeover-layer');
       if (!layer) return;
       const tk = state.activeTakeover;
-      if (!tk) {
-        layer.classList.remove('visible', 'active');
-        layer.innerHTML = '';
-        return;
-      }
-
+      if (!tk) { layer.classList.remove('visible', 'active'); layer.innerHTML = ''; return; }
       let html = '';
       if (tk.type === 'customMedia' && tk.mediaKey) {
         const mUrl = mediaBlobCache.get(tk.mediaKey);
-        if (mUrl && isSafeMediaUrl(mUrl)) {
-          if (tk.isVideo) {
-            html = `<video class="takeover-media" src="${mUrl}" autoplay loop muted playsinline></video>`;
-          } else {
-            html = `<img class="takeover-media" src="${mUrl}" alt="${escapeHTML(tk.title)}" />`;
-          }
-        }
+        if (mUrl && isSafeMediaUrl(mUrl)) html = tk.isVideo ? `<video class="takeover-media" src="${mUrl}" autoplay loop muted playsinline></video>` : `<img class="takeover-media" src="${mUrl}" alt="" />`;
       } else {
         const homeLogo = state.home.logoKey ? mediaBlobCache.get(state.home.logoKey) : '';
-        const logoTag = homeLogo && isSafeMediaUrl(homeLogo)
-          ? `<img class="takeover-crest" src="${homeLogo}" alt="${escapeHTML(state.home.fullName)}" />`
-          : '';
-
-        let kicker = 'HOCKEY NIGHT BROADCAST';
-        let headline = state.home.fullName;
-        let subline = `${state.home.shortName} VS ${state.away.shortName}`;
-
-        if (tk.variant === 'goal-hype') {
-          kicker = 'LIGHT THE LAMP';
-          headline = `${state.home.shortName} GOAL!`;
-          subline = `${state.home.shortName} ${state.home.score} — ${state.away.shortName} ${state.away.score}`;
-        } else if (tk.variant === 'intermission') {
-          kicker = `${state.period} INTERMISSION`;
-          headline = 'WE WILL BE RIGHT BACK';
-          subline = `${state.home.shortName} ${state.home.score}  |  ${state.away.shortName} ${state.away.score}  •  SOG ${state.home.sog}-${state.away.sog}`;
-        }
-
-        html = `
-          <div class="takeover-slate" style="--tk-color:${escapeHTML(state.home.color)};">
-            ${logoTag}
-            <div class="takeover-kicker">${escapeHTML(kicker)}</div>
-            <div class="takeover-headline">${escapeHTML(headline)}</div>
-            <div class="takeover-subline">${escapeHTML(subline)}</div>
-          </div>`;
+        const logoTag = (homeLogo && isSafeMediaUrl(homeLogo)) ? `<img class="takeover-crest" src="${homeLogo}" alt="" />` : '';
+        let kicker = 'HOCKEY NIGHT BROADCAST', headline = state.home.fullName, subline = `${state.home.shortName} VS ${state.away.shortName}`;
+        if (tk.variant === 'goal-hype') { kicker = 'LIGHT THE LAMP'; headline = `${state.home.shortName} GOAL!`; subline = `${state.home.shortName} ${state.home.score} — ${state.away.shortName} ${state.away.score}`; }
+        else if (tk.variant === 'intermission') { kicker = `${state.period} INTERMISSION`; headline = 'WE WILL BE RIGHT BACK'; subline = `${state.home.shortName} ${state.home.score}  |  ${state.away.shortName} ${state.away.score}  •  SOG ${state.home.sog}-${state.away.sog}`; }
+        html = `<div class="takeover-slate" style="--tk-color:${escapeHTML(state.home.color)};">${logoTag}<div class="takeover-kicker">${escapeHTML(kicker)}</div><div class="takeover-headline">${escapeHTML(headline)}</div><div class="takeover-subline">${escapeHTML(subline)}</div></div>`;
       }
-
       layer.innerHTML = html;
       layer.classList.add('active');
       requestAnimationFrame(() => layer.classList.add('visible'));
@@ -2801,13 +1620,11 @@
       document.getElementById('ctrl-home-sog').textContent = state.home.sog;
       document.getElementById('btn-home-pp').classList.toggle('active-pp', state.home.pp);
       document.getElementById('btn-home-en').classList.toggle('active-en', state.home.en);
-
       document.getElementById('ctrl-away-label').textContent = state.away.shortName;
       document.getElementById('ctrl-away-score').textContent = state.away.score;
       document.getElementById('ctrl-away-sog').textContent = state.away.sog;
       document.getElementById('btn-away-pp').classList.toggle('active-pp', state.away.pp);
       document.getElementById('btn-away-en').classList.toggle('active-en', state.away.en);
-
       document.getElementById('ctrl-clock-time').textContent = formatClock(state.clockRemainingSec);
       const clockBtn = document.getElementById('btn-clock-toggle');
       const statusLbl = document.getElementById('clock-status-label');
@@ -2818,41 +1635,21 @@
         statusLbl.textContent = state.clockRunning ? 'RUNNING' : 'STOPPED';
         statusLbl.style.color = state.clockRunning ? 'var(--accent-green)' : 'var(--accent-amber)';
       }
-
-      const periods = ['1ST', '2ND', '3RD', 'OT', 'SO', 'INT', 'FINAL'];
       const pillsEl = document.getElementById('period-pills');
-      if (pillsEl) {
-        pillsEl.innerHTML = periods.map((p) => `
-          <button class="period-pill ${state.period === p ? 'active' : ''}" onclick="setPeriod('${p}')">${p}</button>
-        `).join('');
-      }
+      if (pillsEl) pillsEl.innerHTML = ['1ST', '2ND', '3RD', 'OT', 'SO', 'INT', 'FINAL'].map((p) => `<button class="period-pill ${state.period === p ? 'active' : ''}" onclick="setPeriod('${p}')">${p}</button>`).join('');
     }
 
     function renderTriggerPads() {
       const grid = document.getElementById('trigger-pads-grid');
       const liveBadge = document.getElementById('live-overlay-badge');
       if (!grid) return;
-
       const allPads = [...getBuiltInPads(), ...(state.customPads || [])];
       const activeId = (state.activeTakeover && state.activeTakeover.id) || (state.activeBanner && state.activeBanner.id) || null;
-
-      if (liveBadge) {
-        liveBadge.textContent = activeId ? 'ON AIR' : 'READY';
-        liveBadge.style.color = activeId ? 'var(--accent)' : 'var(--text-dim)';
-      }
-
+      if (liveBadge) { liveBadge.textContent = activeId ? 'ON AIR' : 'READY'; liveBadge.style.color = activeId ? 'var(--accent)' : 'var(--text-dim)'; }
       grid.innerHTML = allPads.map((pad, idx) => {
         const isLive = activeId === pad.id;
         const isStatic = !pad.durationSec || pad.durationSec <= 0;
-        const badgeText = isLive ? 'LIVE' : (isStatic ? 'STATIC' : `${pad.durationSec}s`);
-        return `
-          <button class="pad-btn ${isLive ? 'live-now' : ''}" onclick="triggerPadByIndex(${idx})">
-            <div class="pad-top">
-              <span class="pad-label">${escapeHTML(pad.title)}</span>
-              <span class="pad-badge ${isStatic ? 'static' : ''}">${badgeText}</span>
-            </div>
-            <span class="pad-sub">${escapeHTML(pad.subtitle || (pad.kind === 'takeover' ? 'Full-Screen 1080p' : 'Overlay Strip'))}</span>
-          </button>`;
+        return `<button class="pad-btn ${isLive ? 'live-now' : ''}" onclick="triggerPadByIndex(${idx})"><div class="pad-top"><span class="pad-label">${escapeHTML(pad.title)}</span><span class="pad-badge ${isStatic ? 'static' : ''}">${isLive ? 'LIVE' : (isStatic ? 'STATIC' : pad.durationSec + 's')}</span></div><span class="pad-sub">${escapeHTML(pad.subtitle || 'Overlay')}</span></button>`;
       }).join('');
     }
 
@@ -2861,9 +1658,6 @@
       if (allPads[idx]) activatePad(allPads[idx]);
     }
 
-    /* =========================================================
-       SETUP & LAYOUT FORM HANDLERS
-       ========================================================= */
     function switchTab(tab) {
       document.querySelectorAll('.nav-tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
       document.getElementById('view-game').classList.toggle('hidden', tab !== 'game');
@@ -2877,200 +1671,74 @@
       bugModeSel.value = state.scorebugMode || 'compact';
       document.getElementById('set-ticker-tag').value = state.ticker.tag || 'HOCKEY LIVE';
       document.getElementById('set-ticker-speed').value = state.ticker.speedSec || 26;
-
       document.getElementById('set-home-short').value = state.home.shortName;
       document.getElementById('set-home-full').value = state.home.fullName;
       document.getElementById('set-home-color').value = state.home.color;
       document.getElementById('prev-home-logo').innerHTML = renderTeamLogoHtml(state.home, 38);
-
       document.getElementById('set-away-short').value = state.away.shortName;
       document.getElementById('set-away-full').value = state.away.fullName;
       document.getElementById('set-away-color').value = state.away.color;
       document.getElementById('prev-away-logo').innerHTML = renderTeamLogoHtml(state.away, 38);
-
       document.getElementById('set-period-mins').value = String(state.periodMinutes);
       document.getElementById('set-fade-ms').value = state.settings.fadeMs;
       document.getElementById('set-goal-sec').value = state.settings.goalBannerSec;
       document.getElementById('set-info-sec').value = state.settings.infoBannerSec;
-
       document.getElementById('chk-intro-static').checked = !!state.staticTakeoverDefaults['tk-intro'];
       document.getElementById('chk-intermission-static').checked = !!state.staticTakeoverDefaults['tk-intermission'];
-
       document.getElementById('set-sponsor-tag').value = state.sponsorLoop.tag;
       document.getElementById('set-sponsor-interval').value = state.sponsorLoop.intervalSec;
       document.getElementById('chk-sponsor-backing').checked = !!state.sponsorLoop.backing;
-
-      renderTickerList();
-      renderSponsorList();
-      renderCustomPadsList();
-      renderNumericCoords();
+      renderTickerList(); renderSponsorList(); renderCustomPadsList(); renderNumericCoords();
     }
 
-    function updateTickerConfig(key, val) {
-      state.ticker[key] = val;
-      saveState();
-      renderBottomTicker();
-      broadcastStateOnly();
-    }
-
-    function addTickerMessage() {
-      const input = document.getElementById('new-ticker-msg');
-      const txt = (input.value || '').trim();
-      if (!txt) return;
-      state.ticker.messages.push(txt);
-      input.value = '';
-      saveState();
-      renderBottomTicker();
-      renderTickerList();
-      broadcastStateOnly();
-    }
-
-    function removeTickerMessage(idx) {
-      state.ticker.messages.splice(idx, 1);
-      saveState();
-      renderBottomTicker();
-      renderTickerList();
-      broadcastStateOnly();
-    }
-
-    function renderTickerList() {
-      const el = document.getElementById('ticker-list-container');
-      if (!el) return;
-      el.innerHTML = (state.ticker.messages || []).map((msg, idx) => `
-        <div class="list-item-row">
-          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(msg)}</span>
-          <button class="btn btn-red" style="padding:3px 7px;font-size:10px;" onclick="removeTickerMessage(${idx})">Remove</button>
-        </div>
-      `).join('');
-    }
-
-    function updateTeamConfig(side, field, val) {
-      state[side][field] = val;
-      saveState();
-      renderScorebug();
-      renderBottomTicker();
-      renderGameControls();
-      renderTriggerPads();
-      broadcastStateOnly();
-    }
-
-    function updateSetting(key, val) {
-      state.settings[key] = val;
-      document.documentElement.style.setProperty('--fade-ms', `${state.settings.fadeMs}ms`);
-      saveState();
-      renderTriggerPads();
-      broadcastStateOnly();
-    }
-
-    function setPeriodMinutes(mins) {
-      state.periodMinutes = Number(mins) || 15;
-      resetClock();
-    }
-
-    function updateStaticDefault(id, isStatic) {
-      state.staticTakeoverDefaults[id] = isStatic;
-      saveState();
-      renderTriggerPads();
-    }
+    function updateTickerConfig(key, val) { state.ticker[key] = val; saveState(); renderBottomTicker(); publishState(); }
+    function addTickerMessage() { const inp = document.getElementById('new-ticker-msg'); const txt = (inp.value || '').trim(); if (!txt) return; state.ticker.messages.push(txt); inp.value = ''; saveState(); renderBottomTicker(); renderTickerList(); publishState(); }
+    function removeTickerMessage(idx) { state.ticker.messages.splice(idx, 1); saveState(); renderBottomTicker(); renderTickerList(); publishState(); }
+    function renderTickerList() { const el = document.getElementById('ticker-list-container'); if (el) el.innerHTML = (state.ticker.messages || []).map((msg, idx) => `<div class="list-item-row"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(msg)}</span><button class="btn btn-red" style="padding:3px 7px;font-size:10px;" onclick="removeTickerMessage(${idx})">Remove</button></div>`).join(''); }
+    function updateTeamConfig(side, field, val) { state[side][field] = val; saveState(); renderScorebug(); renderBottomTicker(); renderGameControls(); renderTriggerPads(); publishState(); }
+    function updateSetting(key, val) { state.settings[key] = val; document.documentElement.style.setProperty('--fade-ms', `${state.settings.fadeMs}ms`); saveState(); renderTriggerPads(); publishState(); }
+    function setPeriodMinutes(mins) { state.periodMinutes = Number(mins) || 15; resetClock(); }
+    function updateStaticDefault(id, isStatic) { state.staticTakeoverDefaults[id] = isStatic; saveState(); renderTriggerPads(); }
 
     function handleLogoUpload(e, side) {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = async () => {
+      reader.onload = () => {
         const img = new Image();
         img.onload = async () => {
-          const maxDim = 240;
-          const ratio = Math.min(1, maxDim / Math.max(img.width, img.height));
-          const c = document.createElement('canvas');
-          c.width = Math.round(img.width * ratio);
-          c.height = Math.round(img.height * ratio);
+          const ratio = Math.min(1, 200 / Math.max(img.width, img.height));
+          const c = document.createElement('canvas'); c.width = Math.round(img.width * ratio); c.height = Math.round(img.height * ratio);
           c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
           const cleanPng = c.toDataURL('image/png');
           const key = `${side}_logo`;
           await saveMediaAsset(key, cleanPng);
           state[side].logoKey = key;
-          saveState();
-          renderAll();
-          broadcastStateOnly();
-          broadcastSingleMediaAsset(key, cleanPng);
+          saveState(); renderAll(); publishState(); publishMediaAsset(key, cleanPng);
         };
         img.src = reader.result;
       };
       reader.readAsDataURL(file);
     }
 
-    function toggleSponsorLoop() {
-      state.sponsorLoop.enabled = !state.sponsorLoop.enabled;
-      saveState();
-      renderAll();
-      broadcastStateOnly();
-    }
-
-    function updateSponsorConfig(key, val) {
-      state.sponsorLoop[key] = val;
-      saveState();
-      renderSponsorLoop();
-      startSponsorTimer();
-      broadcastStateOnly();
-    }
-
-    function addTextSponsor() {
-      const input = document.getElementById('new-sponsor-name');
-      const name = (input.value || '').trim();
-      if (!name) return;
-      state.sponsorLoop.items.push({ id: `sp-${Date.now()}`, name, mediaKey: '' });
-      input.value = '';
-      saveState();
-      renderSponsorLoop();
-      renderSponsorList();
-      broadcastStateOnly();
-    }
-
+    function toggleSponsorLoop() { state.sponsorLoop.enabled = !state.sponsorLoop.enabled; saveState(); renderAll(); publishState(); }
+    function updateSponsorConfig(key, val) { state.sponsorLoop[key] = val; saveState(); renderSponsorLoop(); startSponsorTimer(); publishState(); }
+    function addTextSponsor() { const inp = document.getElementById('new-sponsor-name'); const name = (inp.value || '').trim(); if (!name) return; state.sponsorLoop.items.push({ id: `sp-${Date.now()}`, name, mediaKey: '' }); inp.value = ''; saveState(); renderSponsorLoop(); renderSponsorList(); publishState(); }
     function handleSponsorUpload(e) {
-      const files = Array.from(e.target.files || []);
-      files.forEach((file, i) => {
+      Array.from(e.target.files || []).forEach((file, i) => {
         const reader = new FileReader();
         reader.onload = async () => {
           if (!isSafeMediaUrl(reader.result)) return;
           const key = `sponsor_${Date.now()}_${i}`;
           await saveMediaAsset(key, reader.result);
-          state.sponsorLoop.items.push({
-            id: key,
-            name: file.name.replace(/\.[^.]+$/, ''),
-            mediaKey: key
-          });
-          saveState();
-          renderSponsorLoop();
-          renderSponsorList();
-          broadcastStateOnly();
-          broadcastSingleMediaAsset(key, reader.result);
+          state.sponsorLoop.items.push({ id: key, name: file.name.replace(/\.[^.]+$/, ''), mediaKey: key });
+          saveState(); renderSponsorLoop(); renderSponsorList(); publishState(); publishMediaAsset(key, reader.result);
         };
         reader.readAsDataURL(file);
       });
     }
-
-    async function removeSponsor(idx) {
-      const item = state.sponsorLoop.items[idx];
-      if (item && item.mediaKey) await deleteMediaAsset(item.mediaKey);
-      state.sponsorLoop.items.splice(idx, 1);
-      sponsorIndex = 0;
-      saveState();
-      renderSponsorLoop();
-      renderSponsorList();
-      broadcastStateOnly();
-    }
-
-    function renderSponsorList() {
-      const el = document.getElementById('sponsor-list-container');
-      if (!el) return;
-      el.innerHTML = (state.sponsorLoop.items || []).map((item, idx) => `
-        <div class="list-item-row">
-          <span>${escapeHTML(item.name)} ${item.mediaKey ? '(Logo)' : '(Text)'}</span>
-          <button class="btn btn-red" style="padding:3px 7px;font-size:10px;" onclick="removeSponsor(${idx})">Remove</button>
-        </div>
-      `).join('');
-    }
+    async function removeSponsor(idx) { const item = state.sponsorLoop.items[idx]; if (item && item.mediaKey) await deleteMediaAsset(item.mediaKey); state.sponsorLoop.items.splice(idx, 1); sponsorIndex = 0; saveState(); renderSponsorLoop(); renderSponsorList(); publishState(); }
+    function renderSponsorList() { const el = document.getElementById('sponsor-list-container'); if (el) el.innerHTML = (state.sponsorLoop.items || []).map((item, idx) => `<div class="list-item-row"><span>${escapeHTML(item.name)}</span><button class="btn btn-red" style="padding:3px 7px;font-size:10px;" onclick="removeSponsor(${idx})">Remove</button></div>`).join(''); }
 
     function handleCustomPadUpload(e) {
       const file = e.target.files && e.target.files[0];
@@ -3081,103 +1749,37 @@
       const durationSec = holdVal === 'static' ? 0 : Number(holdVal);
       const title = (titleInput.value || '').trim() || file.name.replace(/\.[^.]+$/, '');
       const isVideo = file.type.startsWith('video/');
-
       const reader = new FileReader();
       reader.onload = async () => {
-        if (!isSafeMediaUrl(reader.result)) {
-          alert('Unsupported media type. Please upload WebM, MP4, WebP, PNG, APNG, or GIF.');
-          return;
-        }
+        if (!isSafeMediaUrl(reader.result)) return alert('Unsupported file format.');
         const key = `custom_${Date.now()}`;
         await saveMediaAsset(key, reader.result);
-        state.customPads.push({
-          id: key,
-          kind: mode,
-          type: 'customMedia',
-          title,
-          subtitle: isVideo ? 'Custom Video Loop' : 'Custom Graphic',
-          mediaKey: key,
-          isVideo,
-          durationSec
-        });
+        state.customPads.push({ id: key, kind: mode, type: 'customMedia', title, subtitle: isVideo ? 'Video Loop' : 'Graphic', mediaKey: key, isVideo, durationSec });
         titleInput.value = '';
-        saveState();
-        renderTriggerPads();
-        renderCustomPadsList();
-        broadcastSingleMediaAsset(key, reader.result);
+        saveState(); renderTriggerPads(); renderCustomPadsList(); publishMediaAsset(key, reader.result);
       };
       reader.readAsDataURL(file);
     }
-
-    async function removeCustomPad(idx) {
-      const pad = state.customPads[idx];
-      if (pad && pad.mediaKey) await deleteMediaAsset(pad.mediaKey);
-      state.customPads.splice(idx, 1);
-      saveState();
-      renderTriggerPads();
-      renderCustomPadsList();
-    }
-
-    function renderCustomPadsList() {
-      const el = document.getElementById('custom-pads-list');
-      if (!el) return;
-      el.innerHTML = (state.customPads || []).map((p, idx) => `
-        <div class="list-item-row">
-          <span><strong>${escapeHTML(p.title)}</strong> (${p.kind === 'takeover' ? 'Full-Screen' : 'Overlay'} &bull; ${p.durationSec ? p.durationSec + 's' : 'Static'})</span>
-          <button class="btn btn-red" style="padding:3px 7px;font-size:10px;" onclick="removeCustomPad(${idx})">Delete</button>
-        </div>
-      `).join('');
-    }
-
+    async function removeCustomPad(idx) { const pad = state.customPads[idx]; if (pad && pad.mediaKey) await deleteMediaAsset(pad.mediaKey); state.customPads.splice(idx, 1); saveState(); renderTriggerPads(); renderCustomPadsList(); }
+    function renderCustomPadsList() { const el = document.getElementById('custom-pads-list'); if (el) el.innerHTML = (state.customPads || []).map((p, idx) => `<div class="list-item-row"><span><strong>${escapeHTML(p.title)}</strong></span><button class="btn btn-red" style="padding:3px 7px;font-size:10px;" onclick="removeCustomPad(${idx})">Delete</button></div>`).join(''); }
     function renderNumericCoords() {
       const grid = document.getElementById('numeric-coords-grid');
       if (!grid) return;
-      const targets = [
-        { key: 'scorebug', label: 'Compact Bug' },
-        { key: 'sponsor', label: 'Sponsor Loop' },
-        { key: 'banner', label: 'Banner Strip' }
-      ];
-      grid.innerHTML = targets.map((t) => {
+      grid.innerHTML = [{ key: 'scorebug', label: 'Compact Bug' }, { key: 'sponsor', label: 'Sponsor Loop' }, { key: 'banner', label: 'Banner Strip' }].map((t) => {
         const p = state.positions[t.key];
-        return `
-          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:7px;">
-            <div style="font-size:11px;font-weight:800;margin-bottom:5px;">${t.label}</div>
-            <div style="display:flex;flex-direction:column;gap:4px;">
-              <input type="number" value="${p.x}" onchange="setNumericCoord('${t.key}','x',this.value)" title="X" />
-              <input type="number" value="${p.y}" onchange="setNumericCoord('${t.key}','y',this.value)" title="Y" />
-              <input type="number" value="${Math.round(p.scale * 100)}" min="45" max="240" onchange="setNumericCoord('${t.key}','scale',this.value/100)" title="Scale %" />
-            </div>
-          </div>`;
+        return `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:7px;"><div style="font-size:11px;font-weight:800;margin-bottom:5px;">${t.label}</div><div style="display:flex;flex-direction:column;gap:4px;"><input type="number" value="${p.x}" onchange="setNumericCoord('${t.key}','x',this.value)" /><input type="number" value="${p.y}" onchange="setNumericCoord('${t.key}','y',this.value)" /><input type="number" value="${Math.round(p.scale * 100)}" min="45" max="240" onchange="setNumericCoord('${t.key}','scale',this.value/100)" /></div></div>`;
       }).join('');
     }
-
-    function setNumericCoord(key, prop, val) {
-      state.positions[key][prop] = Number(val);
-      saveState();
-      applyElementPositions();
-      broadcastStateOnly();
-    }
+    function setNumericCoord(key, prop, val) { state.positions[key][prop] = Number(val); saveState(); applyElementPositions(); publishState(); }
 
     /* =========================================================
-       CLEAN VIEW URL & iOS-SAFE CHUNKED WEBRTC SYNC
+       MQTT OVER SECURE WEBSOCKETS (WSS) — iOS MOBLIN RELIABLE SYNC
        ========================================================= */
-    const PEER_CONFIG = {
-      config: {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-          { urls: 'stun:stun.cloudflare.com:3478' }
-        ]
-      }
-    };
-
     function buildCleanViewUrl() {
       const url = new URL(window.location.href);
       url.search = '';
       url.searchParams.set('overlay', 'true');
-      if (hostRoomId) {
-        url.searchParams.set('room', sanitizeRoomId(hostRoomId));
-      }
+      if (hostRoomId) url.searchParams.set('room', sanitizeRoomId(hostRoomId));
       return url.toString();
     }
 
@@ -3196,203 +1798,114 @@
       try {
         await navigator.clipboard.writeText(cleanUrl);
         const btn = document.getElementById('btn-copy-clean');
-        if (btn) {
-          const orig = btn.textContent;
-          btn.textContent = 'Copied Clean URL!';
-          setTimeout(() => (btn.textContent = orig), 1800);
-        }
+        if (btn) { const orig = btn.textContent; btn.textContent = 'Copied!'; setTimeout(() => (btn.textContent = orig), 1800); }
       } catch (e) {
         const input = document.getElementById('clean-url-input');
-        if (input) {
-          input.select();
-          document.execCommand('copy');
-        }
+        if (input) { input.select(); document.execCommand('copy'); }
       }
     }
 
-    function openSyncModal() {
-      updateCleanViewUrls();
-      document.getElementById('sync-modal').classList.add('open');
-    }
-    function closeSyncModal() {
-      document.getElementById('sync-modal').classList.remove('open');
-    }
+    function openSyncModal() { updateCleanViewUrls(); document.getElementById('sync-modal').classList.add('open'); }
+    function closeSyncModal() { document.getElementById('sync-modal').classList.remove('open'); }
 
     function startBroadcastHost() {
-      if (typeof Peer === 'undefined') {
-        alert('PeerJS signaling library is offline. Local single-device mode still works normally.');
+      if (typeof mqtt === 'undefined') {
+        alert('MQTT WebSocket library failed to load. Check internet connection.');
         return;
       }
-      const randomRoom = 'sjg-' + Math.random().toString(36).substring(2, 8);
-      peer = new Peer(randomRoom, PEER_CONFIG);
-      peer.on('open', (id) => {
-        hostRoomId = sanitizeRoomId(id);
-        document.getElementById('sync-status-text').textContent = `LIVE ROOM: ${hostRoomId}`;
+      if (!hostRoomId) {
+        hostRoomId = 'sjg-' + Math.random().toString(36).substring(2, 8);
+      }
+      if (mqttClient) { try { mqttClient.end(true); } catch (e) {} }
+
+      document.getElementById('sync-status-text').textContent = 'Connecting WSS...';
+      mqttClient = mqtt.connect(MQTT_BROKER_URL, {
+        clientId: 'host_' + hostRoomId + '_' + Math.random().toString(36).slice(2, 6),
+        clean: true,
+        reconnectPeriod: 2000
+      });
+
+      mqttClient.on('connect', () => {
+        document.getElementById('sync-status-text').textContent = `LIVE WSS ROOM: ${hostRoomId}`;
         document.getElementById('btn-sync-modal').classList.add('btn-green');
         updateCleanViewUrls();
-      });
-      peer.on('connection', (conn) => {
-        clientConnections.push(conn);
-        const syncClient = () => {
-          sendStateOnlyToConn(conn);
-          sendAllMediaChunkedToConn(conn);
-        };
-        conn.on('open', syncClient);
-        conn.on('data', (msg) => {
-          if (msg && msg.type === 'REQUEST_STATE') {
-            syncClient();
-          }
-        });
-        conn.on('close', () => {
-          clientConnections = clientConnections.filter((c) => c !== conn);
-        });
+        publishState();
+        mediaBlobCache.forEach((v, k) => publishMediaAsset(k, v));
       });
     }
 
-    // Small < 4KB JSON payload so iOS WKWebView SCTP DataChannel NEVER drops state/layout/takeovers
-    function sendStateOnlyToConn(conn) {
-      if (!conn || !conn.open) return;
-      try {
-        conn.send({
-          type: 'STATE_SYNC',
-          state
-        });
-      } catch (e) {}
+    function publishState() {
+      if (!mqttClient || !mqttClient.connected || !hostRoomId) return;
+      mqttClient.publish(`sjg-hockey/v5/${hostRoomId}/state`, JSON.stringify(state), { qos: 0, retain: true });
     }
 
-    // Send each media asset in 12KB chunks so iOS Safari/WKWebView never chokes on large DataChannel frames
-    function sendChunkedAssetToConn(conn, key, dataUrl) {
-      if (!conn || !conn.open || !dataUrl) return;
-      const CHUNK_SIZE = 12000;
-      const total = Math.ceil(dataUrl.length / CHUNK_SIZE);
-      for (let i = 0; i < total; i++) {
-        try {
-          conn.send({
-            type: 'MEDIA_CHUNK',
-            key,
-            index: i,
-            total,
-            chunk: dataUrl.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
-          });
-        } catch (e) {
-          break;
-        }
+    function publishClockTick() {
+      if (!mqttClient || !mqttClient.connected || !hostRoomId) return;
+      mqttClient.publish(`sjg-hockey/v5/${hostRoomId}/clock`, JSON.stringify({ clockRemainingSec: state.clockRemainingSec }), { qos: 0, retain: false });
+    }
+
+    function publishMediaAsset(key, dataUrl) {
+      if (!mqttClient || !mqttClient.connected || !hostRoomId || !dataUrl) return;
+      // Publish logos/media up to 250KB directly with retain=true so Moblin gets them immediately on load
+      if (dataUrl.length < 250000) {
+        mqttClient.publish(`sjg-hockey/v5/${hostRoomId}/media/${key}`, dataUrl, { qos: 0, retain: true });
       }
-    }
-
-    function sendAllMediaChunkedToConn(conn) {
-      mediaBlobCache.forEach((v, k) => {
-        sendChunkedAssetToConn(conn, k, v);
-      });
-    }
-
-    function broadcastSingleMediaAsset(key, dataUrl) {
-      if (!clientConnections.length) return;
-      clientConnections.forEach((conn) => sendChunkedAssetToConn(conn, key, dataUrl));
-    }
-
-    function broadcastStateOnly() {
-      if (!clientConnections.length) return;
-      clientConnections.forEach((conn) => sendStateOnlyToConn(conn));
-    }
-
-    function broadcastClockTick() {
-      if (!clientConnections.length) return;
-      clientConnections.forEach((conn) => {
-        if (conn && conn.open) {
-          try {
-            conn.send({
-              type: 'CLOCK_TICK',
-              clockRemainingSec: state.clockRemainingSec
-            });
-          } catch (e) {}
-        }
-      });
     }
 
     function initOverlayReceiver() {
       const room = sanitizeRoomId(new URLSearchParams(window.location.search).get('room'));
-      if (!room || typeof Peer === 'undefined') return;
+      if (!room || typeof mqtt === 'undefined') return;
 
-      const incomingChunks = new Map(); // key -> { total, parts: [] }
+      const client = mqtt.connect(MQTT_BROKER_URL, {
+        clientId: 'moblin_' + Math.random().toString(36).slice(2, 9),
+        clean: true,
+        reconnectPeriod: 2000
+      });
 
-      const connectToHost = () => {
-        const clientPeer = new Peer(PEER_CONFIG);
-        let requestRetryTimer = null;
-        let receivedInitialState = false;
+      client.on('connect', () => {
+        showOverlayToast(`LIVE SYNCED: ${room}`);
+        client.subscribe(`sjg-hockey/v5/${room}/state`);
+        client.subscribe(`sjg-hockey/v5/${room}/clock`);
+        client.subscribe(`sjg-hockey/v5/${room}/media/+`);
+      });
 
-        clientPeer.on('open', () => {
-          const conn = clientPeer.connect(room, { reliable: true });
-
-          conn.on('open', () => {
-            showOverlayToast(`CONNECTED: ${room}`);
-            conn.send({ type: 'REQUEST_STATE' });
-            // Retry requesting state every 2s until initial STATE_SYNC arrives on iOS WKWebView
-            requestRetryTimer = setInterval(() => {
-              if (!receivedInitialState && conn.open) {
-                conn.send({ type: 'REQUEST_STATE' });
-              } else if (receivedInitialState) {
-                clearInterval(requestRetryTimer);
-              }
-            }, 2000);
-          });
-
-          conn.on('data', (msg) => {
-            if (!msg || typeof msg !== 'object') return;
-
-            if (msg.type === 'CLOCK_TICK' && typeof msg.clockRemainingSec === 'number') {
-              state.clockRemainingSec = Math.max(0, msg.clockRemainingSec);
+      client.on('message', (topic, payloadBuf) => {
+        const text = payloadBuf.toString();
+        if (topic.endsWith('/clock')) {
+          try {
+            const data = JSON.parse(text);
+            if (typeof data.clockRemainingSec === 'number') {
+              state.clockRemainingSec = Math.max(0, data.clockRemainingSec);
               const formatted = formatClock(state.clockRemainingSec);
               document.getElementById('bug-time').textContent = formatted;
               document.getElementById('bbar-time').textContent = formatted;
-            } else if (msg.type === 'STATE_SYNC' && msg.state && typeof msg.state === 'object') {
-              receivedInitialState = true;
+            }
+          } catch (e) {}
+        } else if (topic.endsWith('/state')) {
+          try {
+            const incoming = JSON.parse(text);
+            if (incoming && typeof incoming === 'object') {
               state = {
                 ...state,
-                ...msg.state,
-                home: { ...state.home, ...(msg.state.home || {}) },
-                away: { ...state.away, ...(msg.state.away || {}) },
-                positions: { ...state.positions, ...(msg.state.positions || {}) },
-                settings: { ...state.settings, ...(msg.state.settings || {}) },
-                ticker: { ...state.ticker, ...(msg.state.ticker || {}) },
-                sponsorLoop: { ...state.sponsorLoop, ...(msg.state.sponsorLoop || {}) }
+                ...incoming,
+                home: { ...state.home, ...(incoming.home || {}) },
+                away: { ...state.away, ...(incoming.away || {}) },
+                positions: { ...state.positions, ...(incoming.positions || {}) },
+                settings: { ...state.settings, ...(incoming.settings || {}) },
+                ticker: { ...state.ticker, ...(incoming.ticker || {}) },
+                sponsorLoop: { ...state.sponsorLoop, ...(incoming.sponsorLoop || {}) }
               };
               renderAll();
-            } else if (msg.type === 'MEDIA_CHUNK' && typeof msg.key === 'string') {
-              if (!incomingChunks.has(msg.key)) {
-                incomingChunks.set(msg.key, { total: msg.total, parts: new Array(msg.total) });
-              }
-              const entry = incomingChunks.get(msg.key);
-              entry.parts[msg.index] = msg.chunk;
-              if (entry.parts.filter((p) => typeof p === 'string').length === entry.total) {
-                const fullDataUrl = entry.parts.join('');
-                incomingChunks.delete(msg.key);
-                if (isSafeMediaUrl(fullDataUrl)) {
-                  mediaBlobCache.set(msg.key, fullDataUrl);
-                  renderAll();
-                }
-              }
             }
-          });
-
-          conn.on('close', () => {
-            if (requestRetryTimer) clearInterval(requestRetryTimer);
-            setTimeout(() => {
-              try { clientPeer.destroy(); } catch (e) {}
-              connectToHost();
-            }, 2500);
-          });
-        });
-
-        clientPeer.on('error', () => {
-          setTimeout(() => {
-            try { clientPeer.destroy(); } catch (e) {}
-            connectToHost();
-          }, 3000);
-        });
-      };
-
-      connectToHost();
+          } catch (e) {}
+        } else if (topic.includes('/media/')) {
+          const key = topic.split('/media/')[1];
+          if (key && isSafeMediaUrl(text)) {
+            mediaBlobCache.set(key, text);
+            renderAll();
+          }
+        }
+      });
     }
 
     window.addEventListener('DOMContentLoaded', init);
