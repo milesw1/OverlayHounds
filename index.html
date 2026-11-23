@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://*.peerjs.com wss://*.peerjs.com https://0.peerjs.com wss://0.peerjs.com; object-src 'none'; base-uri 'self';" />
-  <title>1080p Hockey Broadcast Scorebug &amp; Live Producer Studio v3</title>
+  <title>1080p Hockey Broadcast Scorebug &amp; Live Producer Studio v4</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
@@ -1260,7 +1260,7 @@
     <header class="topbar">
       <div class="brand">
         <span class="brand-dot"></span>
-        <span>HOCKEY BROADCAST STUDIO v3</span>
+        <span>HOCKEY BROADCAST STUDIO v4</span>
       </div>
 
       <nav class="nav-tabs">
@@ -1699,7 +1699,7 @@
         <button class="btn" onclick="closeSyncModal()">Close</button>
       </div>
       <p style="font-size:12px;color:var(--text-dim);line-height:1.5;margin-bottom:12px;">
-        Start a live broadcast room on this device, then copy the generated <strong>Clean View URL</strong> into Moblin&rsquo;s <strong>1920&times;1080 Browser Widget</strong> on your iPhone. Every score, clock tick, bottom ticker update, and banner tap updates live over WebRTC.
+        Start a live broadcast room on this device, then copy the generated <strong>Clean View URL</strong> into Moblin&rsquo;s <strong>1920&times;1080 Browser Widget</strong> on your iPhone. Uses chunked iOS-safe WebRTC transport so scores, bottom bar, and takeovers sync reliably.
       </p>
       <div style="display:flex;gap:8px;margin-bottom:12px;">
         <button class="btn btn-blue" onclick="startBroadcastHost()">Start Live Host Room</button>
@@ -2004,7 +2004,6 @@
       if (isOverlayMode) {
         document.documentElement.classList.add('overlay-mode');
         document.body.classList.add('overlay-mode');
-        // Move #broadcast-stage-wrapper out of hidden #studio-app into #overlay-mount-root
         const stageWrapper = document.getElementById('broadcast-stage-wrapper');
         const mountRoot = document.getElementById('overlay-mount-root');
         if (stageWrapper && mountRoot) {
@@ -2041,13 +2040,16 @@
       if (!canvas) return;
 
       if (isOverlayMode) {
-        // In Moblin (1920x1080), scale is 1.0 (1920 / 1920).
-        // In a smaller preview browser window (e.g. iPad/laptop), auto-fit 1920x1080 to the viewport so nothing is off-screen!
         const rescaleOverlay = () => {
-          const vw = window.innerWidth || 1920;
-          const vh = window.innerHeight || 1080;
-          const scale = Math.min(vw / 1920, vh / 1080);
-          canvas.style.transform = `scale(${scale})`;
+          const vw = window.innerWidth;
+          const vh = window.innerHeight;
+          // In Moblin 1920x1080 widget (or before WKWebView reports innerWidth), keep 1:1 native scale
+          if (!vw || !vh || vw >= 1900) {
+            canvas.style.transform = 'scale(1)';
+          } else {
+            const scale = Math.min(vw / 1920, vh / 1080);
+            canvas.style.transform = `scale(${scale})`;
+          }
         };
         window.addEventListener('resize', rescaleOverlay);
         rescaleOverlay();
@@ -2070,7 +2072,7 @@
     }
 
     /* =========================================================
-       SCOREBOARD MODE SWITCHER (COMPACT VS FULL-WIDTH BOTTOM BAR)
+       SCOREBOARD MODE SWITCHER
        ========================================================= */
     const BUG_MODE_ORDER = ['compact', 'bottom-bar', 'ticker-only', 'hidden'];
     const BUG_MODE_LABELS = {
@@ -2090,7 +2092,7 @@
       state.scorebugMode = BUG_MODE_ORDER.includes(mode) ? mode : 'compact';
       saveState();
       renderAll();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function applyScorebugModeVisibility() {
@@ -2115,7 +2117,7 @@
     }
 
     /* =========================================================
-       DRAG & DROP + CORNER RESIZE ON 1920x1080 STAGE
+       DRAG & DROP + CORNER RESIZE
        ========================================================= */
     function setupDragAndResize() {
       if (isOverlayMode) return;
@@ -2202,7 +2204,7 @@
         interaction = null;
         saveState();
         renderNumericCoords();
-        broadcastFullState();
+        broadcastStateOnly();
       });
     }
 
@@ -2235,11 +2237,11 @@
       saveState();
       applyElementPositions();
       renderNumericCoords();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     /* =========================================================
-       GAME ACTIONS (SCORE, SOG, CLOCK, PERIOD, BANNERS, TAKEOVERS)
+       GAME ACTIONS
        ========================================================= */
     function scoreGoal(side) {
       state[side].score += 1;
@@ -2261,7 +2263,7 @@
         side,
         durationSec: state.settings.goalBannerSec
       });
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function adjustScore(side, delta) {
@@ -2269,7 +2271,7 @@
       saveState();
       renderScorebug();
       renderGameControls();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function adjustSog(side, delta) {
@@ -2277,7 +2279,7 @@
       saveState();
       renderScorebug();
       renderGameControls();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function toggleFlag(side, flag) {
@@ -2285,7 +2287,7 @@
       saveState();
       renderScorebug();
       renderGameControls();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function setPeriod(p) {
@@ -2293,7 +2295,7 @@
       saveState();
       renderScorebug();
       renderGameControls();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function resetGameStats() {
@@ -2309,7 +2311,7 @@
       resetClock();
       saveState();
       renderAll();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     /* =========================================================
@@ -2332,7 +2334,7 @@
         clockRafId = null;
       }
       renderGameControls();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function tickClock(now) {
@@ -2355,7 +2357,7 @@
       if (state.clockRemainingSec <= 0) {
         state.clockRunning = false;
         renderGameControls();
-        broadcastFullState();
+        broadcastStateOnly();
         return;
       }
       clockRafId = requestAnimationFrame(tickClock);
@@ -2370,7 +2372,7 @@
       const ctrlClock = document.getElementById('ctrl-clock-time');
       if (ctrlClock) ctrlClock.textContent = formatted;
       saveState();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function resetClock() {
@@ -2385,7 +2387,7 @@
       if (ctrlClock) ctrlClock.textContent = formatted;
       renderGameControls();
       saveState();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     /* =========================================================
@@ -2478,7 +2480,7 @@
       state.activeBanner = bannerObj;
       renderActiveBanner();
       renderTriggerPads();
-      broadcastFullState();
+      broadcastStateOnly();
 
       if (bannerObj.durationSec && bannerObj.durationSec > 0) {
         bannerTimeout = setTimeout(() => {
@@ -2497,7 +2499,7 @@
         if (inner) inner.innerHTML = '';
         if (node) node.classList.add('inactive');
         renderTriggerPads();
-        broadcastFullState();
+        broadcastStateOnly();
       }, state.settings.fadeMs || 300);
     }
 
@@ -2506,7 +2508,7 @@
       state.activeTakeover = tkObj;
       renderActiveTakeover();
       renderTriggerPads();
-      broadcastFullState();
+      broadcastStateOnly();
 
       if (tkObj.durationSec && tkObj.durationSec > 0) {
         takeoverTimeout = setTimeout(() => {
@@ -2526,7 +2528,7 @@
           layer.innerHTML = '';
         }
         renderTriggerPads();
-        broadcastFullState();
+        broadcastStateOnly();
       }, state.settings.fadeMs || 300);
     }
 
@@ -2908,7 +2910,7 @@
       state.ticker[key] = val;
       saveState();
       renderBottomTicker();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function addTickerMessage() {
@@ -2920,7 +2922,7 @@
       saveState();
       renderBottomTicker();
       renderTickerList();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function removeTickerMessage(idx) {
@@ -2928,7 +2930,7 @@
       saveState();
       renderBottomTicker();
       renderTickerList();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function renderTickerList() {
@@ -2949,7 +2951,7 @@
       renderBottomTicker();
       renderGameControls();
       renderTriggerPads();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function updateSetting(key, val) {
@@ -2957,7 +2959,7 @@
       document.documentElement.style.setProperty('--fade-ms', `${state.settings.fadeMs}ms`);
       saveState();
       renderTriggerPads();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function setPeriodMinutes(mins) {
@@ -2978,7 +2980,7 @@
       reader.onload = async () => {
         const img = new Image();
         img.onload = async () => {
-          const maxDim = 320;
+          const maxDim = 240;
           const ratio = Math.min(1, maxDim / Math.max(img.width, img.height));
           const c = document.createElement('canvas');
           c.width = Math.round(img.width * ratio);
@@ -2990,7 +2992,8 @@
           state[side].logoKey = key;
           saveState();
           renderAll();
-          broadcastFullState();
+          broadcastStateOnly();
+          broadcastSingleMediaAsset(key, cleanPng);
         };
         img.src = reader.result;
       };
@@ -3001,7 +3004,7 @@
       state.sponsorLoop.enabled = !state.sponsorLoop.enabled;
       saveState();
       renderAll();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function updateSponsorConfig(key, val) {
@@ -3009,7 +3012,7 @@
       saveState();
       renderSponsorLoop();
       startSponsorTimer();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function addTextSponsor() {
@@ -3021,7 +3024,7 @@
       saveState();
       renderSponsorLoop();
       renderSponsorList();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function handleSponsorUpload(e) {
@@ -3040,7 +3043,8 @@
           saveState();
           renderSponsorLoop();
           renderSponsorList();
-          broadcastFullState();
+          broadcastStateOnly();
+          broadcastSingleMediaAsset(key, reader.result);
         };
         reader.readAsDataURL(file);
       });
@@ -3054,7 +3058,7 @@
       saveState();
       renderSponsorLoop();
       renderSponsorList();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     function renderSponsorList() {
@@ -3100,6 +3104,7 @@
         saveState();
         renderTriggerPads();
         renderCustomPadsList();
+        broadcastSingleMediaAsset(key, reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -3150,12 +3155,22 @@
       state.positions[key][prop] = Number(val);
       saveState();
       applyElementPositions();
-      broadcastFullState();
+      broadcastStateOnly();
     }
 
     /* =========================================================
-       CLEAN VIEW URL & IPAD -> IPHONE MOBLIN WEBRTC SYNC
+       CLEAN VIEW URL & iOS-SAFE CHUNKED WEBRTC SYNC
        ========================================================= */
+    const PEER_CONFIG = {
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun.cloudflare.com:3478' }
+        ]
+      }
+    };
+
     function buildCleanViewUrl() {
       const url = new URL(window.location.href);
       url.search = '';
@@ -3209,7 +3224,7 @@
         return;
       }
       const randomRoom = 'sjg-' + Math.random().toString(36).substring(2, 8);
-      peer = new Peer(randomRoom);
+      peer = new Peer(randomRoom, PEER_CONFIG);
       peer.on('open', (id) => {
         hostRoomId = sanitizeRoomId(id);
         document.getElementById('sync-status-text').textContent = `LIVE ROOM: ${hostRoomId}`;
@@ -3218,8 +3233,15 @@
       });
       peer.on('connection', (conn) => {
         clientConnections.push(conn);
-        conn.on('open', () => {
-          sendFullPayloadToConn(conn);
+        const syncClient = () => {
+          sendStateOnlyToConn(conn);
+          sendAllMediaChunkedToConn(conn);
+        };
+        conn.on('open', syncClient);
+        conn.on('data', (msg) => {
+          if (msg && msg.type === 'REQUEST_STATE') {
+            syncClient();
+          }
         });
         conn.on('close', () => {
           clientConnections = clientConnections.filter((c) => c !== conn);
@@ -3227,30 +3249,63 @@
       });
     }
 
-    function sendFullPayloadToConn(conn) {
+    // Small < 4KB JSON payload so iOS WKWebView SCTP DataChannel NEVER drops state/layout/takeovers
+    function sendStateOnlyToConn(conn) {
       if (!conn || !conn.open) return;
-      const mediaBundle = {};
-      mediaBlobCache.forEach((v, k) => { mediaBundle[k] = v; });
-      conn.send({
-        type: 'FULL_STATE',
-        state,
-        mediaBundle
+      try {
+        conn.send({
+          type: 'STATE_SYNC',
+          state
+        });
+      } catch (e) {}
+    }
+
+    // Send each media asset in 12KB chunks so iOS Safari/WKWebView never chokes on large DataChannel frames
+    function sendChunkedAssetToConn(conn, key, dataUrl) {
+      if (!conn || !conn.open || !dataUrl) return;
+      const CHUNK_SIZE = 12000;
+      const total = Math.ceil(dataUrl.length / CHUNK_SIZE);
+      for (let i = 0; i < total; i++) {
+        try {
+          conn.send({
+            type: 'MEDIA_CHUNK',
+            key,
+            index: i,
+            total,
+            chunk: dataUrl.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+          });
+        } catch (e) {
+          break;
+        }
+      }
+    }
+
+    function sendAllMediaChunkedToConn(conn) {
+      mediaBlobCache.forEach((v, k) => {
+        sendChunkedAssetToConn(conn, k, v);
       });
     }
 
-    function broadcastFullState() {
+    function broadcastSingleMediaAsset(key, dataUrl) {
       if (!clientConnections.length) return;
-      clientConnections.forEach((conn) => sendFullPayloadToConn(conn));
+      clientConnections.forEach((conn) => sendChunkedAssetToConn(conn, key, dataUrl));
+    }
+
+    function broadcastStateOnly() {
+      if (!clientConnections.length) return;
+      clientConnections.forEach((conn) => sendStateOnlyToConn(conn));
     }
 
     function broadcastClockTick() {
       if (!clientConnections.length) return;
       clientConnections.forEach((conn) => {
         if (conn && conn.open) {
-          conn.send({
-            type: 'CLOCK_TICK',
-            clockRemainingSec: state.clockRemainingSec
-          });
+          try {
+            conn.send({
+              type: 'CLOCK_TICK',
+              clockRemainingSec: state.clockRemainingSec
+            });
+          } catch (e) {}
         }
       });
     }
@@ -3259,28 +3314,39 @@
       const room = sanitizeRoomId(new URLSearchParams(window.location.search).get('room'));
       if (!room || typeof Peer === 'undefined') return;
 
+      const incomingChunks = new Map(); // key -> { total, parts: [] }
+
       const connectToHost = () => {
-        const clientPeer = new Peer();
+        const clientPeer = new Peer(PEER_CONFIG);
+        let requestRetryTimer = null;
+        let receivedInitialState = false;
+
         clientPeer.on('open', () => {
           const conn = clientPeer.connect(room, { reliable: true });
+
           conn.on('open', () => {
-            showOverlayToast(`CONNECTED TO ROOM: ${room}`);
+            showOverlayToast(`CONNECTED: ${room}`);
+            conn.send({ type: 'REQUEST_STATE' });
+            // Retry requesting state every 2s until initial STATE_SYNC arrives on iOS WKWebView
+            requestRetryTimer = setInterval(() => {
+              if (!receivedInitialState && conn.open) {
+                conn.send({ type: 'REQUEST_STATE' });
+              } else if (receivedInitialState) {
+                clearInterval(requestRetryTimer);
+              }
+            }, 2000);
           });
+
           conn.on('data', (msg) => {
             if (!msg || typeof msg !== 'object') return;
+
             if (msg.type === 'CLOCK_TICK' && typeof msg.clockRemainingSec === 'number') {
               state.clockRemainingSec = Math.max(0, msg.clockRemainingSec);
               const formatted = formatClock(state.clockRemainingSec);
               document.getElementById('bug-time').textContent = formatted;
               document.getElementById('bbar-time').textContent = formatted;
-            } else if (msg.type === 'FULL_STATE' && msg.state && typeof msg.state === 'object') {
-              if (msg.mediaBundle && typeof msg.mediaBundle === 'object') {
-                Object.entries(msg.mediaBundle).forEach(([k, v]) => {
-                  if (typeof k === 'string' && isSafeMediaUrl(v)) {
-                    mediaBlobCache.set(k, v);
-                  }
-                });
-              }
+            } else if (msg.type === 'STATE_SYNC' && msg.state && typeof msg.state === 'object') {
+              receivedInitialState = true;
               state = {
                 ...state,
                 ...msg.state,
@@ -3292,14 +3358,37 @@
                 sponsorLoop: { ...state.sponsorLoop, ...(msg.state.sponsorLoop || {}) }
               };
               renderAll();
+            } else if (msg.type === 'MEDIA_CHUNK' && typeof msg.key === 'string') {
+              if (!incomingChunks.has(msg.key)) {
+                incomingChunks.set(msg.key, { total: msg.total, parts: new Array(msg.total) });
+              }
+              const entry = incomingChunks.get(msg.key);
+              entry.parts[msg.index] = msg.chunk;
+              if (entry.parts.filter((p) => typeof p === 'string').length === entry.total) {
+                const fullDataUrl = entry.parts.join('');
+                incomingChunks.delete(msg.key);
+                if (isSafeMediaUrl(fullDataUrl)) {
+                  mediaBlobCache.set(msg.key, fullDataUrl);
+                  renderAll();
+                }
+              }
             }
           });
+
           conn.on('close', () => {
+            if (requestRetryTimer) clearInterval(requestRetryTimer);
             setTimeout(() => {
               try { clientPeer.destroy(); } catch (e) {}
               connectToHost();
             }, 2500);
           });
+        });
+
+        clientPeer.on('error', () => {
+          setTimeout(() => {
+            try { clientPeer.destroy(); } catch (e) {}
+            connectToHost();
+          }, 3000);
         });
       };
 
