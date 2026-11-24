@@ -1,0 +1,19 @@
+{
+  "updatedAt": 1795535542576,
+  "teams": [
+    {
+      "id": "team-soo-red",
+      "shortName": "SOO RED",
+      "fullName": "SOO JR. GREYHOUNDS RED",
+      "color": "#c8102e",
+      "logoPath": "./assets/home.png"
+    },
+    {
+      "id": "team-visitor",
+      "shortName": "GUEST",
+      "fullName": "VISITING TEAM",
+      "color": "#1d4ed8",
+      "logoPath": ""
+    }
+  ]
+}

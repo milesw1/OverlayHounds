@@ -1,0 +1,6 @@
+node_modules/
+.runtime-data/
+data/rooms/
+*.tmp
+.env
+.DS_Store
