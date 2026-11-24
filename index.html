@@ -76,8 +76,10 @@
     body.overlay-mode .safe-guide,
     body.overlay-mode .snap-guide,
     body.overlay-mode .resize-handle,
-    body.overlay-mode .drag-outline {
+    body.overlay-mode .drag-outline,
+    body.overlay-mode .snap-target-highlight {
       display: none !important;
+      box-shadow: none !important;
     }
 
     #overlay-mount-root { display: none; }
@@ -350,7 +352,18 @@
     }
 
     .safe-guide { position: absolute; inset: 44px 64px; border: 1px dashed rgba(255, 255, 255, 0.12); pointer-events: none; z-index: 1; }
-    .snap-guide { position: absolute; background: rgba(56, 189, 248, 0.75); pointer-events: none; z-index: 90; display: none; }
+    .snap-guide {
+      position: absolute;
+      background: rgba(56, 189, 248, 0.9);
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.55);
+      pointer-events: none;
+      z-index: 90;
+      display: none;
+    }
+    .snap-guide.is-asset {
+      background: rgba(244, 63, 94, 0.95);
+      box-shadow: 0 0 10px rgba(244, 63, 94, 0.65);
+    }
     .snap-guide.v { width: 2px; top: 0; bottom: 0; left: 960px; }
     .snap-guide.h { height: 2px; left: 0; right: 0; top: 540px; }
 
@@ -372,10 +385,17 @@
       border: 2px dashed rgba(59, 130, 246, 0.0);
       border-radius: 8px;
       pointer-events: none;
-      transition: border-color 0.15s;
+      transition: border-color 0.12s, box-shadow 0.12s;
     }
     .draggable-graphic:not(.locked):hover .drag-outline,
     .draggable-graphic.is-dragging .drag-outline { border-color: rgba(59, 130, 246, 0.85); }
+    .draggable-graphic.snap-target-highlight .drag-outline {
+      border-color: rgba(244, 63, 94, 0.95);
+      box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.25);
+    }
+    #bottom-bar-layer.snap-target-highlight {
+      box-shadow: inset 0 2px 0 rgba(244, 63, 94, 0.95), 0 -4px 14px rgba(244, 63, 94, 0.35);
+    }
     .draggable-graphic.locked .resize-handle { display: none !important; }
 
     .resize-handle {
@@ -431,12 +451,13 @@
        MODE B: FULL-WIDTH BOTTOM BROADCAST BAR & TICKER
        ========================================================= */
     #bottom-bar-layer {
+      --bbar-scale: 2.2;
       position: absolute;
       left: 0;
       right: 0;
       bottom: 0;
       width: 1920px;
-      height: 54px;
+      height: calc(54px * var(--bbar-scale));
       z-index: 25;
       display: none;
       align-items: stretch;
@@ -448,23 +469,23 @@
     }
     #bottom-bar-layer.active { display: flex; }
     .bbar-score-cluster { display: flex; align-items: stretch; flex-shrink: 0; background: #0d121d; border-right: 2px solid rgba(255, 255, 255, 0.16); }
-    .bbar-team { display: flex; align-items: center; padding: 0 12px; gap: 9px; position: relative; }
-    .bbar-team-accent { width: 6px; height: 100%; position: absolute; top: 0; bottom: 0; }
+    .bbar-team { display: flex; align-items: center; padding: 0 calc(11px * var(--bbar-scale)); gap: calc(8px * var(--bbar-scale)); position: relative; }
+    .bbar-team-accent { width: calc(5px * var(--bbar-scale)); height: 100%; position: absolute; top: 0; bottom: 0; }
     .bbar-team.home .bbar-team-accent { left: 0; }
     .bbar-team.away .bbar-team-accent { right: 0; }
-    .bbar-logo { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; }
+    .bbar-logo { width: calc(36px * var(--bbar-scale)); height: calc(36px * var(--bbar-scale)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .bbar-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
-    .bbar-name { font-size: 24px; font-weight: 900; letter-spacing: 0.03em; color: #ffffff; text-transform: uppercase; }
-    .bbar-sog { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: #94a3b8; }
-    .bbar-score { width: 48px; height: 100%; background: #f8fafc; color: #090d16; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 900; transition: background-color 0.25s; }
+    .bbar-name { font-size: calc(22px * var(--bbar-scale)); line-height: 1.0; font-weight: 900; letter-spacing: 0.03em; color: #ffffff; text-transform: uppercase; }
+    .bbar-sog { font-family: var(--font-mono); font-size: calc(10px * var(--bbar-scale)); line-height: 1.15; margin-top: 2px; font-weight: 700; color: #94a3b8; }
+    .bbar-score { width: calc(44px * var(--bbar-scale)); height: 100%; background: #f8fafc; color: #090d16; display: flex; align-items: center; justify-content: center; font-size: calc(32px * var(--bbar-scale)); font-weight: 900; transition: background-color 0.25s; }
     .bbar-score.flash { background: #fef08a; }
-    .bbar-clock { display: flex; align-items: center; gap: 10px; padding: 0 18px; background: #172033; border-left: 1px solid rgba(255,255,255,0.12); }
-    .bbar-period { font-size: 18px; font-weight: 900; color: #38bdf8; letter-spacing: 0.06em; }
-    .bbar-time { font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: #ffffff; }
-    .bbar-ticker-label { display: flex; align-items: center; padding: 0 28px 0 20px; font-size: 20px; font-weight: 900; letter-spacing: 0.07em; color: #ffffff; text-transform: uppercase; flex-shrink: 0; clip-path: polygon(0 0, 100% 0, 94% 100%, 0% 100%); }
-    .bbar-marquee-viewport { flex: 1; overflow: hidden; display: flex; align-items: center; position: relative; padding: 0 16px; }
-    .bbar-marquee-track { display: inline-flex; align-items: center; white-space: nowrap; font-family: var(--font-ui); font-size: 19px; font-weight: 800; letter-spacing: 0.02em; color: #f1f5f9; animation: tickerScroll var(--ticker-dur, 24s) linear infinite; }
-    .bbar-marquee-track span.sep { color: #ef4444; margin: 0 24px; font-weight: 900; }
+    .bbar-clock { display: flex; align-items: center; gap: calc(9px * var(--bbar-scale)); padding: 0 calc(15px * var(--bbar-scale)); background: #172033; border-left: 1px solid rgba(255,255,255,0.12); }
+    .bbar-period { font-size: calc(17px * var(--bbar-scale)); font-weight: 900; color: #38bdf8; letter-spacing: 0.06em; }
+    .bbar-time { font-family: var(--font-mono); font-size: calc(22px * var(--bbar-scale)); font-weight: 800; color: #ffffff; }
+    .bbar-ticker-label { display: flex; align-items: center; padding: 0 calc(24px * var(--bbar-scale)) 0 calc(18px * var(--bbar-scale)); font-size: calc(18px * var(--bbar-scale)); font-weight: 900; letter-spacing: 0.07em; color: #ffffff; text-transform: uppercase; flex-shrink: 0; clip-path: polygon(0 0, 100% 0, 94% 100%, 0% 100%); }
+    .bbar-marquee-viewport { flex: 1; overflow: hidden; display: flex; align-items: center; position: relative; padding: 0 calc(14px * var(--bbar-scale)); }
+    .bbar-marquee-track { display: inline-flex; align-items: center; white-space: nowrap; font-family: var(--font-ui); font-size: calc(18px * var(--bbar-scale)); font-weight: 800; letter-spacing: 0.02em; color: #f1f5f9; animation: tickerScroll var(--ticker-dur, 24s) linear infinite; }
+    .bbar-marquee-track span.sep { color: #ef4444; margin: 0 calc(20px * var(--bbar-scale)); font-weight: 900; }
     @keyframes tickerScroll { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
 
     /* =========================================================
@@ -794,6 +815,7 @@
         <div class="stage-toolbar">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
             <button class="btn" id="btn-lock-layout" onclick="toggleLayoutLock()">Layout: Unlocked</button>
+            <button class="btn btn-blue" id="btn-snap-toggle" onclick="toggleSnapEnabled()" title="Snap graphics to other assets &amp; broadcast safe guides (hold Alt while dragging to bypass)">Snap: ON</button>
             <button class="btn" onclick="resetDefaultPositions()">Reset Pos</button>
           </div>
           <div style="display:flex;align-items:center;gap:6px;">
@@ -1189,7 +1211,7 @@
           <label>Active Scoreboard Display Mode</label>
           <select id="set-bug-mode" onchange="setScorebugMode(this.value)">
             <option value="compact">Compact Scorebug (130% Default Corner Box)</option>
-            <option value="bottom-bar">Full-Width Bottom Broadcast Bar + Ticker (1920&times;54)</option>
+            <option value="bottom-bar">Full-Width Bottom Broadcast Bar + Ticker (1920&times;119)</option>
             <option value="ticker-only">Bottom Ticker Crawl Only (No Score in Bar)</option>
             <option value="hidden">Hidden (Banners &amp; Takeovers Only)</option>
           </select>
@@ -1197,6 +1219,10 @@
         <div class="form-grid-2">
           <div class="form-row"><label>Bottom Bar Tag Label</label><input type="text" id="set-ticker-tag" maxlength="20" oninput="updateTickerConfig('tag', this.value)" /></div>
           <div class="form-row"><label>Scroll Loop Speed (Seconds)</label><input type="number" id="set-ticker-speed" min="10" max="90" onchange="updateTickerConfig('speedSec', Number(this.value))" /></div>
+        </div>
+        <div class="form-row">
+          <label>Bottom Bar Height: <span id="set-ticker-height-val" style="color:var(--text);font-family:var(--font-mono);">119px</span></label>
+          <input type="range" id="set-ticker-height" min="54" max="150" step="2" value="119" oninput="updateTickerConfig('heightPx', Number(this.value))" />
         </div>
         <div class="form-row">
           <label>Add or Edit Bottom Ticker Message</label>
@@ -1661,11 +1687,13 @@
       gameLog: [],
       periodStats: {},
       layoutLocked: false,
+      snapEnabled: true,
       positions: JSON.parse(JSON.stringify(DEFAULT_POSITIONS)),
       settings: { fadeMs: 300, goalBannerSec: 6, infoBannerSec: 6 },
       ticker: {
         tag: 'HOCKEY LIVE',
         speedSec: 26,
+        heightPx: 119,
         messages: [
           'SOO JR. GREYHOUNDS RED LIVE BROADCAST',
           'THANK YOU TO OUR TEAM SPONSORS & FAMILIES FOR SUPPORTING YOUTH HOCKEY',
@@ -2297,13 +2325,181 @@
       const snapV = document.getElementById('snap-v');
       const snapH = document.getElementById('snap-h');
       const readout = document.getElementById('stage-coords-readout');
+      const SNAP_THRESHOLD = 14;
+      const ASSET_GAP = 16;
+      const TARGET_LABELS = {
+        scorebug: 'SCOREBUG',
+        sponsor: 'SPONSOR',
+        banner: 'BANNER',
+        alert: 'ALERT',
+        bottombar: 'BOTTOM BAR'
+      };
       let interaction = null;
+
+      const clearSnapVisuals = () => {
+        if (snapV) { snapV.style.display = 'none'; snapV.classList.remove('is-asset'); }
+        if (snapH) { snapH.style.display = 'none'; snapH.classList.remove('is-asset'); }
+        document.querySelectorAll('.snap-target-highlight').forEach((node) => node.classList.remove('snap-target-highlight'));
+      };
+
+      const collectPeerSnapBoxes = (activeTarget) => {
+        const peers = [];
+        ['scorebug', 'sponsor', 'banner', 'alert'].forEach((key) => {
+          if (key === activeTarget) return;
+          const peerEl = document.getElementById(`${key}-node`);
+          const p = state.positions[key];
+          if (!peerEl || !p) return;
+          if (peerEl.classList.contains('inactive')) return;
+          if (getComputedStyle(peerEl).display === 'none') return;
+          const w = peerEl.offsetWidth * p.scale;
+          const h = peerEl.offsetHeight * p.scale;
+          if (w <= 0 || h <= 0) return;
+          peers.push({
+            key,
+            label: TARGET_LABELS[key] || key.toUpperCase(),
+            el: peerEl,
+            left: p.x,
+            centerX: p.x + w / 2,
+            right: p.x + w,
+            top: p.y,
+            centerY: p.y + h / 2,
+            bottom: p.y + h
+          });
+        });
+
+        const bottomBarEl = document.getElementById('bottom-bar-layer');
+        if (bottomBarEl && bottomBarEl.classList.contains('active')) {
+          const bh = bottomBarEl.offsetHeight || 68;
+          const top = 1080 - bh;
+          peers.push({
+            key: 'bottombar',
+            label: TARGET_LABELS.bottombar,
+            el: bottomBarEl,
+            left: 0,
+            centerX: 960,
+            right: 1920,
+            top,
+            centerY: top + bh / 2,
+            bottom: 1080
+          });
+        }
+        return peers;
+      };
+
+      const computeDragSnap = (nx, ny, w, h, peers) => {
+        let bestX = null;
+        let bestY = null;
+
+        const considerX = (snappedLeft, guidePos, dist, isAsset, label, peerEl = null) => {
+          const absDist = Math.abs(dist);
+          if (absDist > SNAP_THRESHOLD) return;
+          // Slight priority boost for peer assets over static canvas lines when nearly tied
+          const score = absDist - (isAsset ? 1.5 : 0);
+          if (!bestX || score < bestX.score) {
+            bestX = { pos: Math.round(snappedLeft), guide: Math.round(guidePos), isAsset, label, peerEl, score };
+          }
+        };
+
+        const considerY = (snappedTop, guidePos, dist, isAsset, label, peerEl = null) => {
+          const absDist = Math.abs(dist);
+          if (absDist > SNAP_THRESHOLD) return;
+          const score = absDist - (isAsset ? 1.5 : 0);
+          if (!bestY || score < bestY.score) {
+            bestY = { pos: Math.round(snappedTop), guide: Math.round(guidePos), isAsset, label, peerEl, score };
+          }
+        };
+
+        // 1. Broadcast Safe Margins & Canvas Center Guides
+        considerX(960 - w / 2, 960, (nx + w / 2) - 960, false, 'CENTER X');
+        considerX(64, 64, nx - 64, false, 'SAFE LEFT');
+        considerX(1856 - w, 1856, (nx + w) - 1856, false, 'SAFE RIGHT');
+        considerX(0, 0, nx, false, 'EDGE LEFT');
+        considerX(1920 - w, 1920, (nx + w) - 1920, false, 'EDGE RIGHT');
+
+        considerY(540 - h / 2, 540, (ny + h / 2) - 540, false, 'CENTER Y');
+        considerY(44, 44, ny - 44, false, 'SAFE TOP');
+        considerY(1036 - h, 1036, (ny + h) - 1036, false, 'SAFE BOTTOM');
+        considerY(0, 0, ny, false, 'EDGE TOP');
+        considerY(1080 - h, 1080, (ny + h) - 1080, false, 'EDGE BOTTOM');
+
+        // 2. Existing Visible Canvas Assets (Edges, Centers, Flush & 16px Gap)
+        peers.forEach((peer) => {
+          // Horizontal alignments (X axis)
+          considerX(peer.left, peer.left, nx - peer.left, true, `${peer.label} L`, peer.el);
+          considerX(peer.right - w, peer.right, (nx + w) - peer.right, true, `${peer.label} R`, peer.el);
+          considerX(peer.centerX - w / 2, peer.centerX, (nx + w / 2) - peer.centerX, true, `${peer.label} CX`, peer.el);
+          considerX(peer.right, peer.right, nx - peer.right, true, `${peer.label} FLUSH`, peer.el);
+          considerX(peer.left - w, peer.left, (nx + w) - peer.left, true, `${peer.label} FLUSH`, peer.el);
+          considerX(peer.right + ASSET_GAP, peer.right + ASSET_GAP, nx - (peer.right + ASSET_GAP), true, `${peer.label} +${ASSET_GAP}px`, peer.el);
+          considerX(peer.left - ASSET_GAP - w, peer.left - ASSET_GAP, (nx + w) - (peer.left - ASSET_GAP), true, `${peer.label} +${ASSET_GAP}px`, peer.el);
+
+          // Vertical alignments (Y axis)
+          considerY(peer.top, peer.top, ny - peer.top, true, `${peer.label} T`, peer.el);
+          considerY(peer.bottom - h, peer.bottom, (ny + h) - peer.bottom, true, `${peer.label} B`, peer.el);
+          considerY(peer.centerY - h / 2, peer.centerY, (ny + h / 2) - peer.centerY, true, `${peer.label} CY`, peer.el);
+          considerY(peer.bottom, peer.bottom, ny - peer.bottom, true, `${peer.label} FLUSH`, peer.el);
+          considerY(peer.top - h, peer.top, (ny + h) - peer.top, true, `${peer.label} FLUSH`, peer.el);
+          considerY(peer.bottom + ASSET_GAP, peer.bottom + ASSET_GAP, ny - (peer.bottom + ASSET_GAP), true, `${peer.label} +${ASSET_GAP}px`, peer.el);
+          considerY(peer.top - ASSET_GAP - h, peer.top - ASSET_GAP, (ny + h) - (peer.top - ASSET_GAP), true, `${peer.label} +${ASSET_GAP}px`, peer.el);
+        });
+
+        return { bestX, bestY };
+      };
+
+      const computeResizeSnap = (pos, elWidth, elHeight, candidateScale, peers) => {
+        if (elWidth <= 0 || elHeight <= 0) return { scale: candidateScale, bestX: null, bestY: null };
+        const right = pos.x + elWidth * candidateScale;
+        const bottom = pos.y + elHeight * candidateScale;
+        let best = null;
+
+        const considerRight = (targetRight, isAsset, label, peerEl = null) => {
+          const dist = Math.abs(right - targetRight);
+          if (dist > SNAP_THRESHOLD) return;
+          const snappedScale = +((targetRight - pos.x) / elWidth).toFixed(2);
+          if (snappedScale < 0.45 || snappedScale > 2.4) return;
+          const score = dist - (isAsset ? 1.5 : 0);
+          if (!best || score < best.score) {
+            best = { axis: 'x', scale: snappedScale, guide: Math.round(targetRight), isAsset, label, peerEl, score };
+          }
+        };
+
+        const considerBottom = (targetBottom, isAsset, label, peerEl = null) => {
+          const dist = Math.abs(bottom - targetBottom);
+          if (dist > SNAP_THRESHOLD) return;
+          const snappedScale = +((targetBottom - pos.y) / elHeight).toFixed(2);
+          if (snappedScale < 0.45 || snappedScale > 2.4) return;
+          const score = dist - (isAsset ? 1.5 : 0);
+          if (!best || score < best.score) {
+            best = { axis: 'y', scale: snappedScale, guide: Math.round(targetBottom), isAsset, label, peerEl, score };
+          }
+        };
+
+        considerRight(1856, false, 'SAFE RIGHT');
+        considerRight(960, false, 'CENTER X');
+        considerBottom(1036, false, 'SAFE BOTTOM');
+        considerBottom(540, false, 'CENTER Y');
+
+        peers.forEach((peer) => {
+          considerRight(peer.right, true, `${peer.label} R`, peer.el);
+          considerRight(peer.left, true, `${peer.label} L`, peer.el);
+          considerRight(peer.left - ASSET_GAP, true, `${peer.label} +${ASSET_GAP}px`, peer.el);
+          considerBottom(peer.bottom, true, `${peer.label} B`, peer.el);
+          considerBottom(peer.top, true, `${peer.label} T`, peer.el);
+          considerBottom(peer.top - ASSET_GAP, true, `${peer.label} +${ASSET_GAP}px`, peer.el);
+        });
+
+        if (!best) return { scale: candidateScale, bestX: null, bestY: null };
+        return {
+          scale: best.scale,
+          bestX: best.axis === 'x' ? best : null,
+          bestY: best.axis === 'y' ? best : null
+        };
+      };
 
       const finishInteraction = () => {
         if (!interaction) return;
         document.querySelectorAll('.draggable-graphic').forEach((el) => el.classList.remove('is-dragging'));
-        if (snapV) snapV.style.display = 'none';
-        if (snapH) snapH.style.display = 'none';
+        clearSnapVisuals();
         if (readout) readout.textContent = '1920\u00d71080';
         interaction = null;
         saveState(); renderNumericCoords(); publishState();
@@ -2318,7 +2514,18 @@
           e.preventDefault(); e.stopPropagation();
           const isResize = e.target.classList.contains('resize-handle');
           const pos = state.positions[target];
-          interaction = { mode: isResize ? 'resize' : 'drag', target, startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y, origScale: pos.scale, elWidth: el.offsetWidth, elHeight: el.offsetHeight };
+          interaction = {
+            mode: isResize ? 'resize' : 'drag',
+            target,
+            startX: e.clientX,
+            startY: e.clientY,
+            origX: pos.x,
+            origY: pos.y,
+            origScale: pos.scale,
+            elWidth: el.offsetWidth,
+            elHeight: el.offsetHeight,
+            peers: collectPeerSnapBoxes(target)
+          };
           el.classList.add('is-dragging');
           try { el.setPointerCapture(e.pointerId); } catch (err) {}
         });
@@ -2332,23 +2539,73 @@
         const dx = (e.clientX - interaction.startX) / stageScale;
         const dy = (e.clientY - interaction.startY) / stageScale;
         const pos = state.positions[interaction.target];
+        const snapActive = state.snapEnabled !== false && !e.altKey;
+        const snapTags = [];
+
+        clearSnapVisuals();
 
         if (interaction.mode === 'drag') {
           let nx = Math.round(interaction.origX + dx);
           let ny = Math.round(interaction.origY + dy);
-          const centerX = nx + (interaction.elWidth * pos.scale) / 2;
-          const centerY = ny + (interaction.elHeight * pos.scale) / 2;
-          let snappedV = false, snappedH = false;
-          if (Math.abs(centerX - 960) < 16) { nx = Math.round(960 - (interaction.elWidth * pos.scale) / 2); snappedV = true; }
-          if (Math.abs(centerY - 540) < 16) { ny = Math.round(540 - (interaction.elHeight * pos.scale) / 2); snappedH = true; }
-          snapV.style.display = snappedV ? 'block' : 'none';
-          snapH.style.display = snappedH ? 'block' : 'none';
+          const w = interaction.elWidth * pos.scale;
+          const h = interaction.elHeight * pos.scale;
+
+          if (snapActive) {
+            const { bestX, bestY } = computeDragSnap(nx, ny, w, h, interaction.peers);
+            if (bestX) {
+              nx = bestX.pos;
+              if (snapV) {
+                snapV.style.left = `${bestX.guide}px`;
+                snapV.classList.toggle('is-asset', !!bestX.isAsset);
+                snapV.style.display = 'block';
+              }
+              if (bestX.peerEl) bestX.peerEl.classList.add('snap-target-highlight');
+              snapTags.push(bestX.label);
+            }
+            if (bestY) {
+              ny = bestY.pos;
+              if (snapH) {
+                snapH.style.top = `${bestY.guide}px`;
+                snapH.classList.toggle('is-asset', !!bestY.isAsset);
+                snapH.style.display = 'block';
+              }
+              if (bestY.peerEl) bestY.peerEl.classList.add('snap-target-highlight');
+              snapTags.push(bestY.label);
+            }
+          }
+
           pos.x = Math.max(-100, Math.min(1880, nx));
           pos.y = Math.max(-50, Math.min(1040, ny));
         } else {
-          pos.scale = Math.max(0.45, Math.min(2.4, +(interaction.origScale + Math.max(dx, dy) / 260).toFixed(2)));
+          let nextScale = Math.max(0.45, Math.min(2.4, +(interaction.origScale + Math.max(dx, dy) / 260).toFixed(2)));
+          if (snapActive) {
+            const snapped = computeResizeSnap(pos, interaction.elWidth, interaction.elHeight, nextScale, interaction.peers);
+            nextScale = snapped.scale;
+            if (snapped.bestX) {
+              if (snapV) {
+                snapV.style.left = `${snapped.bestX.guide}px`;
+                snapV.classList.toggle('is-asset', !!snapped.bestX.isAsset);
+                snapV.style.display = 'block';
+              }
+              if (snapped.bestX.peerEl) snapped.bestX.peerEl.classList.add('snap-target-highlight');
+              snapTags.push(snapped.bestX.label);
+            }
+            if (snapped.bestY) {
+              if (snapH) {
+                snapH.style.top = `${snapped.bestY.guide}px`;
+                snapH.classList.toggle('is-asset', !!snapped.bestY.isAsset);
+                snapH.style.display = 'block';
+              }
+              if (snapped.bestY.peerEl) snapped.bestY.peerEl.classList.add('snap-target-highlight');
+              snapTags.push(snapped.bestY.label);
+            }
+          }
+          pos.scale = nextScale;
         }
-        if (readout) readout.textContent = `${interaction.target.toUpperCase()}: X ${pos.x}, Y ${pos.y} (${Math.round(pos.scale * 100)}%)`;
+        if (readout) {
+          const baseTxt = `${interaction.target.toUpperCase()}: X ${pos.x}, Y ${pos.y} (${Math.round(pos.scale * 100)}%)`;
+          readout.textContent = snapTags.length ? `${baseTxt} \u2022 SNAP: ${snapTags.join(' + ')}` : baseTxt;
+        }
         applyElementPositions();
       });
 
@@ -2367,6 +2624,12 @@
     }
 
     function toggleLayoutLock() { state.layoutLocked = !state.layoutLocked; saveState(); renderAll(); }
+    function toggleSnapEnabled() {
+      state.snapEnabled = state.snapEnabled === false;
+      saveState();
+      renderAll();
+      showStudioToast(state.snapEnabled ? 'Smart asset & guide snapping ON' : 'Snapping OFF (freehand positioning)', 'info');
+    }
     function resetDefaultPositions() { state.positions = JSON.parse(JSON.stringify(DEFAULT_POSITIONS)); saveState(); applyElementPositions(); renderNumericCoords(); publishState(); showStudioToast('Positions reset to defaults', 'info'); }
 
     /* =========================================================
@@ -2984,6 +3247,12 @@
       document.documentElement.style.setProperty('--fade-ms', `${state.settings.fadeMs}ms`);
       const lockBtn = document.getElementById('btn-lock-layout');
       if (lockBtn) { lockBtn.textContent = state.layoutLocked ? 'Layout: Locked' : 'Layout: Unlocked'; lockBtn.classList.toggle('btn-amber', state.layoutLocked); }
+      const snapBtn = document.getElementById('btn-snap-toggle');
+      if (snapBtn) {
+        const on = state.snapEnabled !== false;
+        snapBtn.textContent = on ? 'Snap: ON' : 'Snap: OFF';
+        snapBtn.classList.toggle('btn-blue', on);
+      }
       const spBtn = document.getElementById('btn-sponsor-toggle');
       if (spBtn) { spBtn.textContent = state.sponsorLoop.enabled ? 'Sponsor Loop: ON' : 'Sponsor Loop: OFF'; spBtn.classList.toggle('btn-green', state.sponsorLoop.enabled); }
       applyScorebugModeVisibility(); applyElementPositions(); renderScorebug(); renderBottomTicker(); renderSponsorLoop(); renderActiveBanner(); renderCustomAlert(); renderActiveTakeover(); renderGameControls(); renderKeeperUI(); renderUndoButtons(); renderTriggerPads(); renderSetupForm();
@@ -3126,14 +3395,18 @@
       document.getElementById('bug-time').style.display = showClk ? 'block' : 'none';
       document.getElementById('bug-clock-box').classList.toggle('no-clock', !showClk);
 
+      const bbarHeightPx = clampNum(state.ticker?.heightPx, 54, 150, 119);
+      const bbarScale = +(bbarHeightPx / 54).toFixed(3);
+      const bbarLogoPx = Math.round(32 * bbarScale);
+
       document.getElementById('bbar-home-bar').style.background = homeColor;
-      renderTeamLogoInto('bbar-home-logo', state.home, 32);
+      renderTeamLogoInto('bbar-home-logo', state.home, bbarLogoPx);
       document.getElementById('bbar-home-name').textContent = state.home.shortName;
       document.getElementById('bbar-home-sog').textContent = `SOG ${state.home.sog}${state.home.pp ? ' \u2022 PP' : ''}${state.home.en ? ' \u2022 EN' : ''}`;
       document.getElementById('bbar-home-score').textContent = state.home.score;
 
       document.getElementById('bbar-away-bar').style.background = awayColor;
-      renderTeamLogoInto('bbar-away-logo', state.away, 32);
+      renderTeamLogoInto('bbar-away-logo', state.away, bbarLogoPx);
       document.getElementById('bbar-away-name').textContent = state.away.shortName;
       document.getElementById('bbar-away-sog').textContent = `SOG ${state.away.sog}${state.away.pp ? ' \u2022 PP' : ''}${state.away.en ? ' \u2022 EN' : ''}`;
       document.getElementById('bbar-away-score').textContent = state.away.score;
@@ -3144,9 +3417,12 @@
     }
 
     function renderBottomTicker() {
+      const barEl = document.getElementById('bottom-bar-layer');
       const tagEl = document.getElementById('bbar-ticker-tag');
       const trackEl = document.getElementById('bbar-marquee-track');
       if (!tagEl || !trackEl) return;
+      const heightPx = clampNum(state.ticker?.heightPx, 54, 150, 119);
+      if (barEl) barEl.style.setProperty('--bbar-scale', (heightPx / 54).toFixed(3));
       const tag = state.ticker.tag || 'HOCKEY LIVE';
       const color = sanitizeHexColor(state.home.color, '#c8102e');
       const speedSec = Math.max(10, Number(state.ticker.speedSec) || 26);
@@ -3432,6 +3708,10 @@
       bugModeSel.value = state.scorebugMode || 'compact';
       setInputIfNotFocused('set-ticker-tag', state.ticker.tag || 'HOCKEY LIVE');
       setInputIfNotFocused('set-ticker-speed', state.ticker.speedSec || 26);
+      const bbarH = clampNum(state.ticker.heightPx, 54, 150, 119);
+      setInputIfNotFocused('set-ticker-height', bbarH);
+      const bbarHLbl = document.getElementById('set-ticker-height-val');
+      if (bbarHLbl) bbarHLbl.textContent = `${bbarH}px`;
       setInputIfNotFocused('set-home-short', state.home.shortName);
       setInputIfNotFocused('set-home-full', state.home.fullName);
       document.getElementById('set-home-color').value = sanitizeHexColor(state.home.color, '#c8102e');
@@ -3572,7 +3852,15 @@
     }
 
     /* --- Tickers --- */
-    function updateTickerConfig(key, val) { state.ticker[key] = key === 'speedSec' ? clampNum(val, 10, 90, 26) : val; saveState(); renderBottomTicker(); publishState(); }
+    function updateTickerConfig(key, val) {
+      if (key === 'speedSec') state.ticker[key] = clampNum(val, 10, 90, 26);
+      else if (key === 'heightPx') {
+        state.ticker[key] = clampNum(val, 54, 150, 119);
+        const lbl = document.getElementById('set-ticker-height-val');
+        if (lbl) lbl.textContent = `${state.ticker[key]}px`;
+      } else state.ticker[key] = val;
+      saveState(); renderScorebug(); renderBottomTicker(); publishState();
+    }
     function saveTickerMessage() {
       const inp = document.getElementById('new-ticker-msg');
       const txt = (inp.value || '').trim(); if (!txt) return;
