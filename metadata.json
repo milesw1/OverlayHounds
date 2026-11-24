@@ -1,0 +1,5 @@
+{
+  "name": "1080p Hockey Broadcast Scorebug & Live Producer Studio v8",
+  "description": "1080p hockey broadcast scorebug, live producer control studio, and clean overlay view with Firebase Realtime Database sync and config.json defaults.",
+  "requestFramePermissions": []
+}
