@@ -1327,6 +1327,28 @@
           <a class="btn btn-xs" id="link-open-keeper-modal" href="?mode=keeper" target="_blank" rel="noopener">Open &#8599;</a>
         </div>
       </div>
+      <div id="sync-server-badges" style="margin-top:12px;display:none;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 10px;border-radius:8px;background:#0a0e17;border:1px solid var(--border);font-size:11px;color:var(--text-dim);">
+        <span id="sync-server-badge-text"></span>
+        <button class="btn btn-xs" id="btn-lock-admin-session" style="display:none;" onclick="lockAdminSession()">Lock Session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Optional Server ADMIN_PIN Unlock Modal (Never shown in Moblin ?overlay=true mode) -->
+  <div class="modal-backdrop" id="admin-pin-modal" style="z-index:120;">
+    <div class="modal-card" style="width:min(400px,94vw);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <h3 style="font-size:15px;font-weight:800;">Broadcast PIN Required</h3>
+        <span style="font-family:var(--font-mono);font-size:10px;padding:2px 7px;border-radius:5px;background:rgba(16,185,129,0.14);color:#34d399;border:1px solid rgba(16,185,129,0.35);">MOBLIN OPEN</span>
+      </div>
+      <p id="admin-pin-reason" style="font-size:12px;color:var(--text-dim);line-height:1.5;margin-bottom:12px;">
+        This server is protected by an <strong>ADMIN_PIN</strong>. Enter the PIN to unlock Producer Studio and Scorekeeper controls. Moblin overlays stay open automatically.
+      </p>
+      <form onsubmit="submitAdminPinUnlock(event)" style="display:flex;flex-direction:column;gap:10px;">
+        <input type="password" id="admin-pin-input" maxlength="64" autocomplete="current-password" inputmode="text" placeholder="Enter Broadcast PIN" style="font-size:16px;padding:11px 12px;" />
+        <div id="admin-pin-error" style="display:none;font-size:12px;font-weight:700;color:#fca5a5;"></div>
+        <button type="submit" class="btn btn-blue" id="admin-pin-submit" style="justify-content:center;padding:11px 14px;font-size:13px;">Unlock Broadcast Controls</button>
+      </form>
     </div>
   </div>
 
@@ -1565,6 +1587,10 @@
           body: JSON.stringify({ filename: String(filename || 'asset'), dataUrl })
         });
         const data = await res.json().catch(() => ({}));
+        if (res.status === 401 && data.adminPinRequired) {
+          handleAdminPinUnauthorized('Enter Broadcast PIN to upload assets.');
+          return null;
+        }
         if (res.status === 403) {
           showStudioToast('Room is PIN-locked — enter Producer PIN in Sync modal to upload.', 'error');
           return null;
@@ -1713,6 +1739,9 @@
 
     // Live Sync Engine (Built-In Studio Server SSE + Flat-File JSON Store, with Static Hosting Fallback)
     let serverAvailable = false;
+    let persistentVolumeActive = false;
+    let adminPinRequired = false;
+    let adminAuthToken = '';
     let liveEventSource = null;
     let liveReconnectTimer = null;
     let liveReconnectAttempts = 0;
@@ -1742,8 +1771,104 @@
         'Content-Type': 'application/json',
         'X-Room-Id': sanitizeRoomId(state.fixedRoomName || 'soo-greyhounds-red') || 'soo-greyhounds-red'
       };
+      if (adminAuthToken) headers['Authorization'] = `Bearer ${adminAuthToken}`;
       if (roomPinInMemory) headers['X-Room-Pin'] = roomPinInMemory;
       return headers;
+    }
+
+    function updateSyncServerBadges() {
+      const box = document.getElementById('sync-server-badges');
+      const txt = document.getElementById('sync-server-badge-text');
+      const lockBtn = document.getElementById('btn-lock-admin-session');
+      if (!box || !txt) return;
+      const parts = [];
+      if (persistentVolumeActive) parts.push('Persistent Volume (/storage) active');
+      if (adminPinRequired) parts.push(adminAuthToken ? 'ADMIN_PIN unlocked (Moblin open)' : 'ADMIN_PIN locked');
+      if (!parts.length) {
+        box.style.display = 'none';
+        return;
+      }
+      txt.textContent = parts.join(' \u2022 ');
+      box.style.display = 'flex';
+      if (lockBtn) lockBtn.style.display = (adminPinRequired && adminAuthToken) ? 'inline-flex' : 'none';
+    }
+
+    function openAdminPinModal(reasonMsg = '') {
+      if (isOverlayMode || !adminPinRequired) return;
+      const modal = document.getElementById('admin-pin-modal');
+      const errEl = document.getElementById('admin-pin-error');
+      const reasonEl = document.getElementById('admin-pin-reason');
+      const inp = document.getElementById('admin-pin-input');
+      if (reasonEl && reasonMsg) reasonEl.textContent = reasonMsg;
+      if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+      if (modal) modal.classList.add('open');
+      if (inp) {
+        inp.value = '';
+        setTimeout(() => inp.focus(), 60);
+      }
+    }
+
+    function closeAdminPinModal() {
+      const modal = document.getElementById('admin-pin-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function handleAdminPinUnauthorized(reasonMsg = 'Session locked — enter your Broadcast PIN to continue.') {
+      adminPinRequired = true;
+      adminAuthToken = '';
+      setLiveStatusUI(false, 'PIN REQUIRED');
+      updateSyncServerBadges();
+      openAdminPinModal(reasonMsg);
+    }
+
+    function lockAdminSession() {
+      adminAuthToken = '';
+      updateSyncServerBadges();
+      closeSyncModal();
+      openAdminPinModal('Session locked. Enter your Broadcast PIN to resume control.');
+    }
+
+    async function submitAdminPinUnlock(e) {
+      if (e) e.preventDefault();
+      const inp = document.getElementById('admin-pin-input');
+      const errEl = document.getElementById('admin-pin-error');
+      const btn = document.getElementById('admin-pin-submit');
+      const pin = inp ? inp.value.trim() : '';
+      if (!pin) {
+        if (errEl) { errEl.textContent = 'Please enter the Broadcast PIN.'; errEl.style.display = 'block'; }
+        return;
+      }
+      if (btn) btn.disabled = true;
+      if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+      try {
+        const res = await fetch('./api/auth/unlock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          if (errEl) {
+            errEl.textContent = data.error || 'Incorrect Broadcast PIN.';
+            errEl.style.display = 'block';
+          }
+          if (inp) { inp.value = ''; inp.focus(); }
+          return;
+        }
+        adminAuthToken = typeof data.token === 'string' ? data.token : '';
+        if (inp) inp.value = '';
+        closeAdminPinModal();
+        updateSyncServerBadges();
+        setLiveStatusUI(true, 'CONNECTED');
+        showStudioToast('Broadcast controls unlocked!', 'success');
+      } catch (err) {
+        if (errEl) {
+          errEl.textContent = 'Could not reach server to verify PIN.';
+          errEl.style.display = 'block';
+        }
+      } finally {
+        if (btn) btn.disabled = false;
+      }
     }
 
     async function fetchGitHubConfigJson() {
@@ -1893,11 +2018,15 @@
           const data = await res.json().catch(() => null);
           if (data && data.ok === true) {
             serverAvailable = true;
+            persistentVolumeActive = !!data.persistentVolume;
+            adminPinRequired = !!data.adminPinRequired;
             return true;
           }
         }
       } catch (e) {}
       serverAvailable = false;
+      persistentVolumeActive = false;
+      adminPinRequired = false;
       return false;
     }
 
@@ -1976,12 +2105,15 @@
             }
           });
         }
+        if (adminPinRequired && !adminAuthToken) openAdminPinModal();
       } else {
         await Promise.all([
           initStudioSync(),
           refreshServerAssets(false),
           loadTeamPresetsFromServer()
         ]);
+        updateSyncServerBadges();
+        if (adminPinRequired && !adminAuthToken) openAdminPinModal();
       }
     }
 
@@ -2908,6 +3040,10 @@
     }
 
     function toggleKeeperPinBar() {
+      if (adminPinRequired) {
+        openAdminPinModal('Enter your server Broadcast PIN to unlock Scorekeeper controls.');
+        return;
+      }
       const bar = document.getElementById('keeper-pin-bar');
       if (!bar) return;
       bar.style.display = bar.style.display === 'none' ? 'block' : 'none';
@@ -3901,6 +4037,10 @@
           headers: buildApiHeaders()
         });
         const data = await res.json().catch(() => ({}));
+        if (res.status === 401 && data.adminPinRequired) {
+          handleAdminPinUnauthorized('Enter Broadcast PIN to delete assets.');
+          return;
+        }
         if (!res.ok) return showStudioToast(data.error || 'Could not delete asset.', 'error');
         serverAssets = serverAssets.filter((a) => a.name !== asset.name);
         renderAssetsGrid();
@@ -3994,7 +4134,9 @@
 
         const tag = document.createElement('span');
         tag.className = 'asset-kind-tag';
-        tag.textContent = asset.local ? 'LOCAL' : (asset.kind === 'video' ? 'VIDEO' : 'IMG');
+        tag.textContent = asset.local
+          ? 'LOCAL'
+          : (asset.source === 'bundled' ? 'REPO' : (asset.kind === 'video' ? 'VIDEO' : 'IMG'));
         thumb.appendChild(tag);
 
         if (assetPickerContext) {
@@ -4048,7 +4190,7 @@
           }
         }
 
-        if (serverAvailable || asset.local) {
+        if ((serverAvailable && asset.deletable !== false) || asset.local) {
           const delBtn = document.createElement('button');
           delBtn.className = 'btn btn-red btn-xs';
           delBtn.textContent = 'Del';
@@ -4128,6 +4270,10 @@
           body: JSON.stringify({ teams: teamPresets })
         });
         const data = await res.json().catch(() => ({}));
+        if (res.status === 401 && data.adminPinRequired) {
+          handleAdminPinUnauthorized('Enter Broadcast PIN to save team presets.');
+          return false;
+        }
         if (res.status === 403) {
           showStudioToast('Room is PIN-locked — enter Producer PIN to save team presets.', 'error');
           return false;
@@ -4478,6 +4624,10 @@
           body: JSON.stringify({ currentPin: roomPinInMemory, newPin })
         });
         const data = await res.json().catch(() => ({}));
+        if (res.status === 401 && data.adminPinRequired) {
+          handleAdminPinUnauthorized('Enter Broadcast PIN to update room settings.');
+          return;
+        }
         if (!res.ok) {
           return showStudioToast(data.error || 'Could not update Producer PIN.', 'error');
         }
@@ -4565,6 +4715,7 @@
       const mRoom = document.getElementById('modal-fixed-room'); if (mRoom) mRoom.value = state.fixedRoomName || 'soo-greyhounds-red';
       const mBase = document.getElementById('modal-public-base-url'); if (mBase) mBase.value = state.publicOverlayBaseUrl || '';
       updateCleanViewUrls();
+      updateSyncServerBadges();
       document.getElementById('sync-modal').classList.add('open');
     }
     function closeSyncModal() { document.getElementById('sync-modal').classList.remove('open'); }
@@ -4586,6 +4737,10 @@
           headers: buildApiHeaders(),
           body: JSON.stringify({ message })
         });
+        if (res.status === 401) {
+          handleAdminPinUnauthorized('Enter Broadcast PIN to ping Moblin.');
+          return;
+        }
         if (res.status === 403) {
           showStudioToast('Room is PIN-locked. Enter Producer PIN in Sync modal.', 'error');
           openSyncModal();
@@ -4625,12 +4780,12 @@
           const serverTs = Number(data.state?._updatedAt) || 0;
           const localTs = Number(state._updatedAt) || 0;
 
-          if (!forcePushLocal && data.exists && data.state && serverTs > localTs) {
+          if (!forcePushLocal && data.exists && data.state && (serverTs > localTs || (adminPinRequired && !adminAuthToken))) {
             applyIncomingRoomState(data.state, data.clock, data.serverTime);
-          } else {
+          } else if (!adminPinRequired || adminAuthToken) {
             await publishState();
           }
-          setLiveStatusUI(true, 'CONNECTED');
+          setLiveStatusUI(true, (adminPinRequired && !adminAuthToken) ? 'PIN REQUIRED' : 'CONNECTED');
         }
       } catch (e) {
         setLiveStatusUI(false, 'Server Sync Offline');
@@ -4698,7 +4853,10 @@
           headers: buildApiHeaders(),
           body: JSON.stringify(payload)
         });
-        if (res.status === 403) {
+        if (res.status === 401) {
+          handleAdminPinUnauthorized('Broadcast PIN required to update the live scoreboard.');
+          ok = false;
+        } else if (res.status === 403) {
           setLiveStatusUI(false, 'PIN REQUIRED');
           if (isKeeperMode) {
             const bar = document.getElementById('keeper-pin-bar');
@@ -4749,6 +4907,10 @@
           method: 'PUT',
           headers: buildApiHeaders(),
           body: JSON.stringify(clockPayload)
+        }).then((res) => {
+          if (res && res.status === 401) {
+            handleAdminPinUnauthorized('Broadcast PIN required to control the game clock.');
+          }
         }).catch(() => {});
       } catch (e) {}
     }

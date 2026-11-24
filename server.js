@@ -35,17 +35,22 @@ const EXT_TO_MIME = {
   '.mp4': 'video/mp4',
 };
 
-const DATA_ROOT = path.resolve(__dirname, 'data');
+const RAW_STORAGE_DIR = String(process.env.STORAGE_DIR || process.env.RAILWAY_VOLUME_MOUNT_PATH || '').trim();
+const STORAGE_ROOT = RAW_STORAGE_DIR ? path.resolve(RAW_STORAGE_DIR) : __dirname;
+const USING_VOLUME = STORAGE_ROOT !== __dirname;
+
+const DATA_ROOT = path.resolve(STORAGE_ROOT, 'data');
 const ROOMS_DIR = path.resolve(DATA_ROOT, 'rooms');
 const PRESETS_FILE = path.resolve(DATA_ROOT, 'team-presets.json');
-const ASSETS_DIR = path.resolve(__dirname, 'assets');
-const ASSETS_MANIFEST_FILE = path.resolve(ASSETS_DIR, 'manifest.json');
+const BUNDLED_ASSETS_DIR = path.resolve(__dirname, 'assets');
+const UPLOADED_ASSETS_DIR = USING_VOLUME ? path.resolve(STORAGE_ROOT, 'assets') : BUNDLED_ASSETS_DIR;
+const ASSETS_MANIFEST_FILE = path.resolve(UPLOADED_ASSETS_DIR, 'manifest.json');
 
 try {
   fs.mkdirSync(ROOMS_DIR, { recursive: true });
-  fs.mkdirSync(ASSETS_DIR, { recursive: true });
+  fs.mkdirSync(UPLOADED_ASSETS_DIR, { recursive: true });
 } catch (err) {
-  console.warn('Could not initialize data/assets directories:', err.message);
+  console.warn('Could not initialize storage directories:', err.message);
 }
 
 /* =========================================================
@@ -83,15 +88,19 @@ function getRoomSnapshotPath(roomId) {
   return resolved;
 }
 
-function getSafeAssetPath(filename) {
+function getSafePathInDir(baseDir, filename) {
   if (!ASSET_NAME_RE.test(filename) || filename.includes('..')) {
     return null;
   }
-  const resolved = path.resolve(ASSETS_DIR, filename);
-  if (!resolved.startsWith(ASSETS_DIR + path.sep)) {
+  const resolved = path.resolve(baseDir, filename);
+  if (!resolved.startsWith(baseDir + path.sep)) {
     return null;
   }
   return resolved;
+}
+
+function getSafeAssetPath(filename) {
+  return getSafePathInDir(UPLOADED_ASSETS_DIR, filename);
 }
 
 function writeJsonAtomic(filePath, dataObj) {
@@ -256,10 +265,68 @@ function broadcastToAllStudios(eventName, dataObj) {
 }
 
 /* =========================================================
-   OPTIONAL ROOM PRODUCER PIN (SCRYPT + TIMING-SAFE COMPARE)
+   OPTIONAL SERVER-WIDE ADMIN_PIN + ROOM PRODUCER PIN
+   (SCRYPT + TIMING-SAFE COMPARE + HMAC BEARER SESSIONS)
    ========================================================= */
 function hashPin(pin, salt) {
   return crypto.scryptSync(pin, salt, 32).toString('hex');
+}
+
+const ADMIN_PIN_RAW = String(process.env.ADMIN_PIN || '').trim();
+const ADMIN_PIN_ENABLED = ADMIN_PIN_RAW.length > 0;
+const ADMIN_PIN_SALT = ADMIN_PIN_ENABLED ? crypto.randomBytes(16).toString('hex') : '';
+const ADMIN_PIN_HASH = ADMIN_PIN_ENABLED ? hashPin(ADMIN_PIN_RAW, ADMIN_PIN_SALT) : '';
+const TOKEN_SIGNING_KEY = process.env.SESSION_SECRET
+  ? crypto.createHash('sha256').update(String(process.env.SESSION_SECRET)).digest()
+  : crypto.randomBytes(32);
+const ADMIN_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
+
+function verifyAdminPin(suppliedPin) {
+  if (!ADMIN_PIN_ENABLED) return true;
+  if (typeof suppliedPin !== 'string' || !suppliedPin) return false;
+  const candidate = Buffer.from(hashPin(suppliedPin.trim(), ADMIN_PIN_SALT), 'hex');
+  const expected = Buffer.from(ADMIN_PIN_HASH, 'hex');
+  if (candidate.length !== expected.length) return false;
+  return crypto.timingSafeEqual(candidate, expected);
+}
+
+function issueAdminToken() {
+  const payload = Buffer.from(JSON.stringify({
+    role: 'admin',
+    exp: Date.now() + ADMIN_TOKEN_TTL_MS,
+    nonce: crypto.randomBytes(8).toString('hex'),
+  })).toString('base64url');
+  const sig = crypto.createHmac('sha256', TOKEN_SIGNING_KEY).update(payload).digest('base64url');
+  return `${payload}.${sig}`;
+}
+
+function verifyAdminToken(authHeader) {
+  if (!ADMIN_PIN_ENABLED) return true;
+  if (typeof authHeader !== 'string' || !authHeader.startsWith('Bearer ')) return false;
+  const token = authHeader.slice(7).trim();
+  const dot = token.indexOf('.');
+  if (dot <= 0) return false;
+  const payload = token.slice(0, dot);
+  const sig = token.slice(dot + 1);
+  if (!payload || !sig) return false;
+  const expectedSig = crypto.createHmac('sha256', TOKEN_SIGNING_KEY).update(payload).digest('base64url');
+  const sigBuf = Buffer.from(sig);
+  const expBuf = Buffer.from(expectedSig);
+  if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) return false;
+  try {
+    const parsed = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+    return parsed && parsed.role === 'admin' && typeof parsed.exp === 'number' && parsed.exp > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+function isRequestAdminAuthenticated(req) {
+  if (!ADMIN_PIN_ENABLED) return true;
+  if (verifyAdminToken(req.get('Authorization') || '')) return true;
+  const directPin = String(req.get('X-Admin-Pin') || '');
+  if (directPin && verifyAdminPin(directPin)) return true;
+  return false;
 }
 
 function verifyRoomPin(room, suppliedPin) {
@@ -275,6 +342,8 @@ function verifyRoomPin(room, suppliedPin) {
    RATE LIMITING, VALIDATION & MAGIC-BYTE CHECKS
    ========================================================= */
 const rateBuckets = new Map();
+const authRateBuckets = new Map();
+
 function writeRateLimit(req, res, next) {
   const ip = req.ip || 'unknown';
   const now = Date.now();
@@ -290,10 +359,29 @@ function writeRateLimit(req, res, next) {
   next();
 }
 
+function authRateLimit(req, res, next) {
+  const ip = req.ip || 'unknown';
+  const now = Date.now();
+  let bucket = authRateBuckets.get(ip);
+  if (!bucket || now - bucket.start > 5 * 60 * 1000) {
+    bucket = { start: now, count: 0 };
+    authRateBuckets.set(ip, bucket);
+  }
+  bucket.count += 1;
+  if (bucket.count > 10) {
+    return res.status(429).json({ error: 'Too many PIN attempts. Please wait a few minutes and try again.' });
+  }
+  next();
+}
+
 setInterval(() => {
   const cutoff = Date.now() - 30000;
   for (const [ip, b] of rateBuckets.entries()) {
     if (b.start < cutoff) rateBuckets.delete(ip);
+  }
+  const authCutoff = Date.now() - 5 * 60 * 1000;
+  for (const [ip, b] of authRateBuckets.entries()) {
+    if (b.start < authCutoff) authRateBuckets.delete(ip);
   }
 }, 60000).unref();
 
@@ -338,10 +426,11 @@ function detectVerifiedMedia(buf) {
   return null;
 }
 
-function listAssetsOnDisk() {
+function scanAssetsDirectory(dirPath, sourceTag, deletable) {
+  const items = [];
   try {
-    const entries = fs.readdirSync(ASSETS_DIR, { withFileTypes: true });
-    const items = [];
+    if (!fs.existsSync(dirPath)) return items;
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
     for (const entry of entries) {
       if (!entry.isFile()) continue;
       if (!ASSET_NAME_RE.test(entry.name)) continue;
@@ -349,7 +438,7 @@ function listAssetsOnDisk() {
       const isImage = ALLOWED_IMAGE_EXTS.has(ext);
       const isVideo = ALLOWED_VIDEO_EXTS.has(ext);
       if (!isImage && !isVideo) continue;
-      const fullPath = getSafeAssetPath(entry.name);
+      const fullPath = getSafePathInDir(dirPath, entry.name);
       if (!fullPath) continue;
       const stat = fs.statSync(fullPath);
       items.push({
@@ -359,13 +448,27 @@ function listAssetsOnDisk() {
         mime: EXT_TO_MIME[ext] || 'application/octet-stream',
         size: stat.size,
         updatedAt: Math.round(stat.mtimeMs),
+        source: sourceTag,
+        deletable: !!deletable,
       });
     }
-    items.sort((a, b) => b.updatedAt - a.updatedAt);
-    return items;
   } catch {
-    return [];
+    // Ignore unreadable directory
   }
+  return items;
+}
+
+function listAssetsOnDisk() {
+  const primary = scanAssetsDirectory(UPLOADED_ASSETS_DIR, USING_VOLUME ? 'volume' : 'local', true);
+  if (!USING_VOLUME) {
+    primary.sort((a, b) => b.updatedAt - a.updatedAt);
+    return primary;
+  }
+  const seen = new Set(primary.map((a) => a.name));
+  const bundled = scanAssetsDirectory(BUNDLED_ASSETS_DIR, 'bundled', false).filter((a) => !seen.has(a.name));
+  const merged = [...primary, ...bundled];
+  merged.sort((a, b) => b.updatedAt - a.updatedAt);
+  return merged;
 }
 
 function syncAssetsManifestFile() {
@@ -380,13 +483,25 @@ function syncAssetsManifestFile() {
 
 syncAssetsManifestFile();
 
-function checkOptionalRoomPinForSharedWrite(req) {
-  const roomHint = String(req.get('X-Room-Id') || '').trim().toLowerCase();
-  if (!roomHint || !ROOM_ID_RE.test(roomHint)) return true;
-  const room = rooms.get(roomHint);
-  if (!room) return true;
-  const suppliedPin = String(req.get('X-Room-Pin') || '');
-  return verifyRoomPin(room, suppliedPin);
+function authorizeWriteRequest(req, room = null) {
+  if (ADMIN_PIN_ENABLED) {
+    if (!isRequestAdminAuthenticated(req)) {
+      return { ok: false, status: 401, body: { error: 'Broadcast Admin PIN required to make changes.', adminPinRequired: true } };
+    }
+    return { ok: true };
+  }
+  const targetRoom = room || (() => {
+    const roomHint = String(req.get('X-Room-Id') || '').trim().toLowerCase();
+    if (!roomHint || !ROOM_ID_RE.test(roomHint)) return null;
+    return rooms.get(roomHint) || null;
+  })();
+  if (targetRoom) {
+    const suppliedPin = String(req.get('X-Room-Pin') || '');
+    if (!verifyRoomPin(targetRoom, suppliedPin)) {
+      return { ok: false, status: 403, body: { error: 'Room Producer PIN required or incorrect', hasPin: true } };
+    }
+  }
+  return { ok: true };
 }
 
 /* =========================================================
@@ -400,6 +515,35 @@ app.use((_req, res, next) => {
 });
 
 /* =========================================================
+   OPTIONAL ADMIN_PIN AUTH ROUTES (MOBLIN OVERLAY STAYS OPEN)
+   ========================================================= */
+app.get('/api/auth/status', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({
+    adminPinRequired: ADMIN_PIN_ENABLED,
+    unlocked: isRequestAdminAuthenticated(req),
+  });
+});
+
+app.post(
+  '/api/auth/unlock',
+  authRateLimit,
+  express.json({ limit: '4kb' }),
+  (req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
+    if (!ADMIN_PIN_ENABLED) {
+      return res.json({ ok: true, adminPinRequired: false, token: '' });
+    }
+    const suppliedPin = typeof req.body?.pin === 'string' ? req.body.pin.trim() : '';
+    if (!suppliedPin || !verifyAdminPin(suppliedPin)) {
+      return res.status(401).json({ error: 'Incorrect Broadcast PIN.', adminPinRequired: true });
+    }
+    const token = issueAdminToken();
+    return res.json({ ok: true, adminPinRequired: true, token, expiresInMs: ADMIN_TOKEN_TTL_MS });
+  }
+);
+
+/* =========================================================
    REAL-TIME BROADCAST SYNC API ROUTES (FLAT-FILE JSON DB)
    ========================================================= */
 app.get('/api/health', (_req, res) => {
@@ -408,6 +552,8 @@ app.get('/api/health', (_req, res) => {
     ok: true,
     version: 'v9',
     storage: 'flat-file-json',
+    persistentVolume: USING_VOLUME,
+    adminPinRequired: ADMIN_PIN_ENABLED,
     rooms: rooms.size,
     clients: totalSseClients,
     assets: listAssetsOnDisk().length,
@@ -490,10 +636,8 @@ app.put(
   express.json({ limit: '512kb' }),
   (req, res) => {
     const room = getOrCreateRoom(req.roomId);
-    const suppliedPin = String(req.get('X-Room-Pin') || '');
-    if (!verifyRoomPin(room, suppliedPin)) {
-      return res.status(403).json({ error: 'Room Producer PIN required or incorrect', hasPin: true });
-    }
+    const auth = authorizeWriteRequest(req, room);
+    if (!auth.ok) return res.status(auth.status).json(auth.body);
     if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
       return res.status(400).json({ error: 'Invalid state payload' });
     }
@@ -536,10 +680,8 @@ app.put(
   express.json({ limit: '16kb' }),
   (req, res) => {
     const room = getOrCreateRoom(req.roomId);
-    const suppliedPin = String(req.get('X-Room-Pin') || '');
-    if (!verifyRoomPin(room, suppliedPin)) {
-      return res.status(403).json({ error: 'Room Producer PIN required or incorrect', hasPin: true });
-    }
+    const auth = authorizeWriteRequest(req, room);
+    if (!auth.ok) return res.status(auth.status).json(auth.body);
     const sec = Number(req.body?.clockRemainingSec);
     if (!Number.isFinite(sec) || sec < 0 || sec > 7200) {
       return res.status(400).json({ error: 'Invalid clock value' });
@@ -572,10 +714,8 @@ app.post(
   express.json({ limit: '8kb' }),
   (req, res) => {
     const room = getOrCreateRoom(req.roomId);
-    const suppliedPin = String(req.get('X-Room-Pin') || '');
-    if (!verifyRoomPin(room, suppliedPin)) {
-      return res.status(403).json({ error: 'Room Producer PIN required or incorrect', hasPin: true });
-    }
+    const auth = authorizeWriteRequest(req, room);
+    if (!auth.ok) return res.status(auth.status).json(auth.body);
     const msg = typeof req.body?.message === 'string' ? req.body.message.slice(0, 80) : `SYNC TEST OK (${req.roomId})`;
     const now = Date.now();
     broadcastToRoom(room, 'ping', { message: msg, t: now });
@@ -591,9 +731,15 @@ app.put(
   express.json({ limit: '8kb' }),
   (req, res) => {
     const room = getOrCreateRoom(req.roomId);
-    const currentPin = String(req.get('X-Room-Pin') || req.body?.currentPin || '');
-    if (!verifyRoomPin(room, currentPin)) {
-      return res.status(403).json({ error: 'Current Producer PIN is incorrect' });
+    if (ADMIN_PIN_ENABLED) {
+      if (!isRequestAdminAuthenticated(req)) {
+        return res.status(401).json({ error: 'Broadcast Admin PIN required to modify room settings.', adminPinRequired: true });
+      }
+    } else {
+      const currentPin = String(req.get('X-Room-Pin') || req.body?.currentPin || '');
+      if (!verifyRoomPin(room, currentPin)) {
+        return res.status(403).json({ error: 'Current Producer PIN is incorrect' });
+      }
     }
     const newPin = typeof req.body?.newPin === 'string' ? req.body.newPin.trim() : '';
     if (newPin.length > 32) {
@@ -626,9 +772,8 @@ app.post(
   writeRateLimit,
   express.json({ limit: '12mb' }),
   (req, res) => {
-    if (!checkOptionalRoomPinForSharedWrite(req)) {
-      return res.status(403).json({ error: 'Room Producer PIN required or incorrect', hasPin: true });
-    }
+    const auth = authorizeWriteRequest(req);
+    if (!auth.ok) return res.status(auth.status).json(auth.body);
     const rawDataUrl = String(req.body?.dataUrl || '').trim();
     const rawName = String(req.body?.filename || '').trim();
     const match = /^data:(image\/(png|jpeg|jpg|webp|gif|apng)|video\/(webm|mp4));base64,([A-Za-z0-9+/=]+)$/i.exec(rawDataUrl);
@@ -677,6 +822,8 @@ app.post(
         mime: verified.mime,
         size: stat.size,
         updatedAt: Math.round(stat.mtimeMs),
+        source: USING_VOLUME ? 'volume' : 'local',
+        deletable: true,
       };
       syncAssetsManifestFile();
       broadcastToAllStudios('assets', { action: 'added', asset });
@@ -688,13 +835,18 @@ app.post(
 );
 
 app.delete('/api/assets/:filename', writeRateLimit, (req, res) => {
-  if (!checkOptionalRoomPinForSharedWrite(req)) {
-    return res.status(403).json({ error: 'Room Producer PIN required or incorrect', hasPin: true });
-  }
+  const auth = authorizeWriteRequest(req);
+  if (!auth.ok) return res.status(auth.status).json(auth.body);
   const filename = String(req.params.filename || '').trim();
   const fullPath = getSafeAssetPath(filename);
   if (!fullPath) return res.status(400).json({ error: 'Invalid filename' });
-  if (!fs.existsSync(fullPath)) return res.status(404).json({ error: 'Asset not found' });
+  if (!fs.existsSync(fullPath)) {
+    const bundledPath = USING_VOLUME ? getSafePathInDir(BUNDLED_ASSETS_DIR, filename) : null;
+    if (bundledPath && fs.existsSync(bundledPath)) {
+      return res.status(400).json({ error: 'Built-in GitHub /assets/ files cannot be deleted here — remove them from your repository instead.' });
+    }
+    return res.status(404).json({ error: 'Asset not found' });
+  }
   try {
     fs.unlinkSync(fullPath);
     syncAssetsManifestFile();
@@ -718,9 +870,8 @@ app.put(
   writeRateLimit,
   express.json({ limit: '256kb' }),
   (req, res) => {
-    if (!checkOptionalRoomPinForSharedWrite(req)) {
-      return res.status(403).json({ error: 'Room Producer PIN required or incorrect', hasPin: true });
-    }
+    const auth = authorizeWriteRequest(req);
+    if (!auth.ok) return res.status(auth.status).json(auth.body);
     if (!Array.isArray(req.body?.teams)) {
       return res.status(400).json({ error: 'Invalid teams preset list' });
     }
@@ -731,7 +882,7 @@ app.put(
 );
 
 /* =========================================================
-   STATIC FILE SERVING (WITH SERVER & DATA CONFINEMENT)
+   STATIC FILE SERVING (WITH VOLUME ASSETS & DATA CONFINEMENT)
    ========================================================= */
 const BLOCKED_PATHS = new Set([
   '/server.js',
@@ -754,6 +905,16 @@ app.use((req, res, next) => {
   next();
 });
 
+if (USING_VOLUME) {
+  app.use(
+    '/assets',
+    express.static(UPLOADED_ASSETS_DIR, {
+      dotfiles: 'ignore',
+      fallthrough: true,
+    })
+  );
+}
+
 app.use(
   express.static(__dirname, {
     dotfiles: 'ignore',
@@ -766,5 +927,7 @@ app.get('*', (_req, res) => {
 });
 
 app.listen(PORT, HOST, () => {
-  console.log(`Hockey Broadcast Studio v9 listening on http://${HOST}:${PORT}`);
+  const storageMode = USING_VOLUME ? 'persistent volume' : 'local folder';
+  const lockMode = ADMIN_PIN_ENABLED ? 'ADMIN_PIN enabled' : 'open (no ADMIN_PIN)';
+  console.log(`Hockey Broadcast Studio v9 listening on http://${HOST}:${PORT} [${storageMode}, ${lockMode}]`);
 });
