@@ -44,11 +44,13 @@ const ROOMS_DIR = path.resolve(DATA_ROOT, 'rooms');
 const PRESETS_FILE = path.resolve(DATA_ROOT, 'team-presets.json');
 const BUNDLED_ASSETS_DIR = path.resolve(__dirname, 'assets');
 const UPLOADED_ASSETS_DIR = USING_VOLUME ? path.resolve(STORAGE_ROOT, 'assets') : BUNDLED_ASSETS_DIR;
+const PLAYER_ASSETS_DIR = path.resolve(UPLOADED_ASSETS_DIR, 'player');
 const ASSETS_MANIFEST_FILE = path.resolve(UPLOADED_ASSETS_DIR, 'manifest.json');
 
 try {
   fs.mkdirSync(ROOMS_DIR, { recursive: true });
   fs.mkdirSync(UPLOADED_ASSETS_DIR, { recursive: true });
+  fs.mkdirSync(PLAYER_ASSETS_DIR, { recursive: true });
 } catch (err) {
   console.warn('Could not initialize storage directories:', err.message);
 }
