@@ -1,5 +1,5 @@
 {
-  "name": "1080p Hockey Broadcast Scorebug & Live Producer Studio v8",
-  "description": "1080p hockey broadcast scorebug, live producer control studio, and clean overlay view with Firebase Realtime Database sync and config.json defaults.",
+  "name": "1080p Hockey Broadcast Scorebug & Live Producer Studio v10",
+  "description": "Hockey broadcast scorebug, producer studio, clean overlay, phone scorekeeper, flat-file live sync, Home roster CSV import, and player goal graphics. UI version stamp: V10, updated 2026-11-25.",
   "requestFramePermissions": []
 }

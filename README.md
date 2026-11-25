@@ -1,6 +1,10 @@
-# 1080p Hockey Broadcast Scorebug & Live Producer Studio (v9)
+# 1080p Hockey Broadcast Scorebug & Live Producer Studio (v10)
 
-## What's New in v9
+## V10 Update
+1. **Home Roster & Player Goal Graphics**: Import the Home roster from CSV (`number,name,photo`), select the scorer after a Home goal, and show their photo, jersey number, and name in the goal strip.
+2. **Visible Version Stamp**: The Producer Studio and Phone Scorekeeper show `V10 · UPDATED 2026-11-25` so you can confirm which build is open.
+
+## Existing Features
 1. **Built-In Live Sync & Flat-File JSON Store (`/data/`)**: Zero external database setup required — room state, team presets, and `/assets/` uploads persist locally in `/data/` and stream live to Moblin (`?overlay=true`) and Rinkside Scorekeepers (`?mode=keeper`) over HTTPS Port 443 SSE + REST.
 2. **Popup `/assets/` Media Library & Browser**: Visual thumbnail browser listing all files in `/assets/` so you can reuse logos, sponsor badges, and custom graphics across Home, Away, Sponsors, Custom Pads, and Saved Teams without re-uploading.
 3. **Saved Teams & Opponent Presets Library**: Save league and tournament opponents once (name, color, `/assets/` logo) and swap Home or Away in 1 click before puck drop.

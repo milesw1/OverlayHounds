@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; frame-src https://www.youtube.com https://www.youtube-nocookie.com; connect-src 'self'; object-src 'none'; base-uri 'self';" />
-  <title>1080p Hockey Broadcast Scorebug &amp; Live Producer Studio v9</title>
+  <title>1080p Hockey Broadcast Scorebug &amp; Live Producer Studio v10</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
@@ -163,6 +163,7 @@
       letter-spacing: 0.02em;
       white-space: nowrap;
     }
+    .version-stamp { font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0; color: #fde68a; background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.32); border-radius: 999px; padding: 4px 7px; }
     .brand-dot {
       width: 10px;
       height: 10px;
@@ -514,6 +515,9 @@
     .goal-details { padding: 0 24px 0 20px; display: flex; flex-direction: column; justify-content: center; }
     .goal-team-title { font-size: 30px; font-weight: 900; letter-spacing: 0.03em; color: #ffffff; line-height: 0.98; text-transform: uppercase; white-space: nowrap; }
     .goal-meta-line { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: #cbd5e1; margin-top: 4px; letter-spacing: 0.03em; white-space: nowrap; }
+    .goal-player-photo { width: 58px; height: 58px; object-fit: cover; border-radius: 50%; border: 2px solid rgba(255,255,255,0.85); margin-left: 14px; flex-shrink: 0; background: #1e293b; }
+    .goal-player-name { font-size: 27px; }
+    .goal-player-number { color: #facc15; }
 
     .espn-info-strip { display: inline-flex; align-items: center; height: 64px; background: linear-gradient(180deg, #161d2b 0%, #0b0f18 100%); border-radius: 6px; overflow: hidden; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(255, 255, 255, 0.16); font-family: var(--font-tv); }
     .info-pill-tag { height: 100%; padding: 0 18px; display: flex; align-items: center; font-size: 22px; font-weight: 900; letter-spacing: 0.06em; color: #fff; text-transform: uppercase; }
@@ -691,7 +695,7 @@
       <div style="display:flex;align-items:center;gap:7px;min-width:0;">
         <span class="brand-dot"></span>
         <div style="min-width:0;">
-          <div style="font-size:12px;font-weight:800;letter-spacing:0.03em;">RINKSIDE SCOREKEEPER</div>
+          <div style="font-size:12px;font-weight:800;letter-spacing:0.03em;">RINKSIDE SCOREKEEPER <span class="version-stamp">V10 · 2026-11-25</span></div>
           <div id="keeper-sync-badge" style="font-family:var(--font-mono);font-size:10px;color:var(--accent-amber);">Connecting...</div>
         </div>
       </div>
@@ -792,7 +796,8 @@
     <header class="topbar">
       <div class="brand">
         <span class="brand-dot"></span>
-        <span>HOCKEY BROADCAST STUDIO v9</span>
+        <span>HOCKEY BROADCAST STUDIO</span>
+        <span class="version-stamp">V10 · UPDATED 2026-11-25</span>
       </div>
 
       <nav class="nav-tabs">
@@ -1154,6 +1159,17 @@
             </div>
           </div>
         </div>
+        <div style="margin-top:10px;padding-top:9px;border-top:1px solid var(--border);">
+          <div class="panel-title" style="margin-bottom:5px;">
+            <span>Home Roster <span id="home-roster-count" style="font-weight:500;text-transform:none;letter-spacing:0;"></span></span>
+            <div style="display:flex;gap:5px;">
+              <button class="btn btn-xs" onclick="downloadRosterTemplate()">CSV Template</button>
+              <label class="btn btn-blue btn-xs" style="cursor:pointer;">Import CSV<input type="file" accept=".csv,text/csv" style="display:none;" onchange="importHomeRosterCsv(event)" /></label>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--text-dim);margin-bottom:6px;">Import replaces this roster. Columns: number, name, photo. Photo can be a URL or an image path in /assets/.</div>
+          <div id="home-roster-list" style="max-height:180px;overflow-y:auto;"></div>
+        </div>
       </section>
 
       <!-- Card 2B: Saved Teams & Opponent Presets Library -->
@@ -1421,6 +1437,16 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="goal-scorer-modal" onclick="if(event.target===this) scoreUnattributedGoal()">
+    <div class="modal-card" style="max-width:540px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div><h3 style="font-size:16px;font-weight:800;">Who scored?</h3><div id="goal-scorer-subtitle" style="font-size:11px;color:var(--text-dim);margin-top:3px;"></div></div>
+        <button class="btn" onclick="scoreUnattributedGoal()">Skip</button>
+      </div>
+      <div id="goal-scorer-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:7px;max-height:55vh;overflow-y:auto;"></div>
+    </div>
+  </div>
+
   <script>
     /* =========================================================
        SECURITY & SANITIZATION HELPERS
@@ -1650,7 +1676,7 @@
     }
 
     /* =========================================================
-       APPLICATION STATE & CONFIG.JSON FLAT-FILE DEFAULTS (v9)
+       APPLICATION STATE & CONFIG.JSON FLAT-FILE DEFAULTS (v10)
        ========================================================= */
     const STORAGE_KEY = 'hockey_broadcast_state_v9';
     const PRESETS_STORAGE_KEY = 'hockey_broadcast_team_presets_v9';
@@ -1677,7 +1703,7 @@
       autoConnectHost: true,
       scorebugMode: 'compact',
       showClock: true,
-      home: { shortName: 'SOO RED', fullName: 'SOO JR. GREYHOUNDS RED', color: '#c8102e', score: 0, sog: 0, pp: false, en: false, logoPath: './assets/home.png', logoKey: 'home_logo' },
+      home: { shortName: 'SOO RED', fullName: 'SOO JR. GREYHOUNDS RED', color: '#c8102e', score: 0, sog: 0, pp: false, en: false, logoPath: './assets/home.png', logoKey: 'home_logo', players: [] },
       away: { shortName: 'GUEST', fullName: 'VISITING TEAM', color: '#1d4ed8', score: 0, sog: 0, pp: false, en: false, logoPath: '', logoKey: '' },
       period: '1ST',
       periodMinutes: 15,
@@ -1926,6 +1952,18 @@
       return out;
     }
 
+    function normalizeHomePlayers(raw) {
+      if (!Array.isArray(raw)) return [];
+      return raw.slice(0, 100).map((player, index) => {
+        if (!player || typeof player !== 'object') return null;
+        const name = String(player.name || '').trim().slice(0, 50);
+        const number = String(player.number ?? '').trim().replace(/[^a-zA-Z0-9-]/g, '').slice(0, 4);
+        const photo = typeof player.photo === 'string' && isSafeMediaUrl(player.photo) ? player.photo.trim().slice(0, 500) : '';
+        if (!name || !number) return null;
+        return { id: sanitizeId(player.id, `player-${index + 1}`), name, number, photo };
+      }).filter(Boolean);
+    }
+
     function mergeConfigIntoState(base, rawOverride, opts = {}) {
       if (!rawOverride || typeof rawOverride !== 'object') return base;
       const override = stripDangerousKeys(rawOverride);
@@ -1941,6 +1979,7 @@
       mergedAway.sog = Math.max(0, Math.floor(Number(mergedAway.sog) || 0));
       mergedHome.pp = !!mergedHome.pp;
       mergedHome.en = !!mergedHome.en;
+      mergedHome.players = normalizeHomePlayers(mergedHome.players);
       mergedAway.pp = !!mergedAway.pp;
       mergedAway.en = !!mergedAway.en;
 
@@ -2168,7 +2207,8 @@
           shortName: state.home.shortName,
           fullName: state.home.fullName,
           color: state.home.color,
-          logoPath: state.home.logoPath || './assets/home.png'
+          logoPath: state.home.logoPath || './assets/home.png',
+          players: normalizeHomePlayers(state.home.players)
         },
         away: {
           shortName: state.away.shortName,
@@ -2249,7 +2289,7 @@
         }
         if (e.metaKey || e.ctrlKey || e.altKey) return;
 
-        const openModals = ['sync-modal', 'assets-modal', 'match-export-modal']
+        const openModals = ['sync-modal', 'assets-modal', 'match-export-modal', 'goal-scorer-modal']
           .map((id) => document.getElementById(id))
           .filter((el) => el && el.classList.contains('open'));
 
@@ -2258,6 +2298,7 @@
             closeSyncModal();
             closeAssetsModal();
             closeMatchExportModal();
+            closeGoalScorerPicker();
             return;
           }
           e.preventDefault();
@@ -2822,7 +2863,7 @@
           const row = document.createElement('div');
           row.className = 'match-log-row';
           const left = document.createElement('span');
-          left.textContent = `#${idx + 1} [${ev.period}${ev.clock ? ' ' + ev.clock : ''}] ${ev.teamFull || ev.teamShort} GOAL`;
+          left.textContent = `#${idx + 1} [${ev.period}${ev.clock ? ' ' + ev.clock : ''}] ${ev.teamFull || ev.teamShort} GOAL${ev.scorerName ? ` - #${ev.scorerNumber} ${ev.scorerName}` : ''}`;
           const right = document.createElement('span');
           right.style.fontFamily = 'var(--font-mono)';
           right.style.fontWeight = '800';
@@ -2881,7 +2922,58 @@
     /* =========================================================
        GAME ACTIONS, CLOCK & CUSTOM ALERT
        ========================================================= */
+    let pendingGoalSide = '';
+
     function scoreGoal(side) {
+      if (side === 'home' && normalizeHomePlayers(state.home.players).length) {
+        openGoalScorerPicker();
+        return;
+      }
+      completeGoal(side, null);
+    }
+
+    function openGoalScorerPicker() {
+      pendingGoalSide = 'home';
+      const list = document.getElementById('goal-scorer-list');
+      const subtitle = document.getElementById('goal-scorer-subtitle');
+      if (!list) return completeGoal('home', null);
+      if (subtitle) subtitle.textContent = `${state.home.shortName} goal · choose a player or skip attribution`;
+      list.textContent = '';
+      normalizeHomePlayers(state.home.players).forEach((player) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.style.cssText = 'display:flex;align-items:center;gap:9px;text-align:left;min-height:58px;';
+        const photo = document.createElement('span');
+        photo.style.cssText = 'width:40px;height:40px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#334155;color:#fff;font-weight:900;';
+        if (player.photo) {
+          const img = document.createElement('img');
+          img.src = resolveAssetSrc(player.photo, ''); img.alt = ''; img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+          photo.appendChild(img);
+        } else photo.textContent = `#${player.number}`;
+        const name = document.createElement('span');
+        name.innerHTML = `<strong>#${escapeHTML(player.number)}</strong><br>${escapeHTML(player.name)}`;
+        btn.append(photo, name);
+        btn.addEventListener('click', () => {
+          closeGoalScorerPicker();
+          completeGoal('home', player);
+        });
+        list.appendChild(btn);
+      });
+      document.getElementById('goal-scorer-modal')?.classList.add('open');
+    }
+
+    function closeGoalScorerPicker() {
+      document.getElementById('goal-scorer-modal')?.classList.remove('open');
+      pendingGoalSide = '';
+    }
+
+    function scoreUnattributedGoal() {
+      const side = pendingGoalSide || 'home';
+      closeGoalScorerPicker();
+      completeGoal(side, null);
+    }
+
+    function completeGoal(side, scorer) {
       pushUndoSnapshot(`${state[side].shortName} Goal`);
       state[side].score += 1;
       const bucket = ensurePeriodBucket(state.period);
@@ -2895,6 +2987,10 @@
         side,
         teamShort: state[side].shortName,
         teamFull: state[side].fullName,
+        scorerId: scorer?.id || '',
+        scorerName: scorer?.name || '',
+        scorerNumber: scorer?.number || '',
+        scorerPhoto: scorer?.photo || '',
         period: state.period,
         clock: state.showClock ? formatClock(state.clockRemainingSec) : '',
         homeScore: state.home.score,
@@ -2907,7 +3003,7 @@
         const cell = document.getElementById(`${prefix}-${side}-score`);
         if (cell) { cell.classList.add('flash'); setTimeout(() => cell.classList.remove('flash'), 650); }
       });
-      triggerBanner({ id: `goal-${side}`, type: 'goal', side, durationSec: state.settings.goalBannerSec, _nonce: Date.now() });
+      triggerBanner({ id: `goal-${side}`, type: 'goal', side, scorer: scorer ? { ...scorer } : null, durationSec: state.settings.goalBannerSec, _nonce: Date.now() });
     }
 
     function adjustScore(side, delta) {
@@ -2915,14 +3011,16 @@
       if (next === state[side].score) return;
       pushUndoSnapshot(`${state[side].shortName} Score ${delta > 0 ? '+1' : '-1'}`);
       state[side].score = next;
-      const bucket = ensurePeriodBucket(state.period);
-      if (side === 'home') bucket.homeGoals = Math.max(0, bucket.homeGoals + delta);
-      else bucket.awayGoals = Math.max(0, bucket.awayGoals + delta);
+      let correctedGoal = null;
       if (delta < 0 && Array.isArray(state.gameLog) && state.gameLog.length) {
         for (let i = state.gameLog.length - 1; i >= 0; i--) {
-          if (state.gameLog[i].side === side) { state.gameLog.splice(i, 1); break; }
+          if (state.gameLog[i].side === side && state.gameLog[i].type === 'goal') { correctedGoal = state.gameLog.splice(i, 1)[0]; break; }
         }
       }
+      const periodKey = correctedGoal?.period || state.period;
+      const bucket = ensurePeriodBucket(periodKey);
+      const statKey = side === 'home' ? 'homeGoals' : 'awayGoals';
+      bucket[statKey] = Math.max(0, bucket[statKey] + delta);
       saveState(); renderScorebug(); renderGameControls(); renderKeeperUI(); renderActiveTakeover(); publishState();
     }
 
@@ -3255,7 +3353,7 @@
       }
       const spBtn = document.getElementById('btn-sponsor-toggle');
       if (spBtn) { spBtn.textContent = state.sponsorLoop.enabled ? 'Sponsor Loop: ON' : 'Sponsor Loop: OFF'; spBtn.classList.toggle('btn-green', state.sponsorLoop.enabled); }
-      applyScorebugModeVisibility(); applyElementPositions(); renderScorebug(); renderBottomTicker(); renderSponsorLoop(); renderActiveBanner(); renderCustomAlert(); renderActiveTakeover(); renderGameControls(); renderKeeperUI(); renderUndoButtons(); renderTriggerPads(); renderSetupForm();
+      applyScorebugModeVisibility(); applyElementPositions(); renderScorebug(); renderBottomTicker(); renderSponsorLoop(); renderActiveBanner(); renderCustomAlert(); renderActiveTakeover(); renderGameControls(); renderKeeperUI(); renderUndoButtons(); renderTriggerPads(); renderSetupForm(); renderHomeRosterList();
     }
 
     function renderKeeperUI() {
@@ -3535,9 +3633,17 @@
         const logoSrc = resolveAssetSrc(tm.logoPath, tm.logoKey);
         const logoImg = logoSrc ? `<img src="${escapeHTML(logoSrc)}" alt="" />` : `<div class="bug-logo-fallback" style="background:${tmColor};width:52px;height:52px;font-size:22px;">${escapeHTML(tm.shortName.slice(0,3))}</div>`;
         const clockPart = state.showClock ? ` (${formatClock(state.clockRemainingSec)})` : '';
-        sig = `goal|${b._nonce || ''}|${b.side}|${tm.fullName}|${tmColor}|${logoSrc}|${state.home.score}|${state.away.score}|${state.period}`;
+        const scorer = b.scorer || null;
+        const playerPhoto = scorer?.photo ? resolveAssetSrc(scorer.photo, '') : '';
+        const playerPhotoHtml = scorer ? (playerPhoto
+          ? `<img class="goal-player-photo" src="${escapeHTML(playerPhoto)}" alt="" />`
+          : `<div class="goal-player-photo" style="display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:900;">${escapeHTML(scorer.number)}</div>`) : '';
+        const scorerTitle = scorer
+          ? `<span class="goal-player-number">#${escapeHTML(scorer.number)}</span> ${escapeHTML(scorer.name)}`
+          : escapeHTML(tm.fullName);
+        sig = `goal|${b._nonce || ''}|${b.side}|${tm.fullName}|${tmColor}|${logoSrc}|${scorer?.id || ''}|${playerPhoto}|${state.home.score}|${state.away.score}|${state.period}`;
         if (sig === lastBannerSig) return;
-        html = `<div class="espn-goal-strip"><div class="goal-crest-box">${logoImg}</div><div class="goal-badge-skew" style="background:${tmColor};">GOAL!</div><div class="goal-details"><div class="goal-team-title">${escapeHTML(tm.fullName)}</div><div class="goal-meta-line">${escapeHTML(state.home.shortName)} ${state.home.score} &ndash; ${escapeHTML(state.away.shortName)} ${state.away.score} &bull; ${escapeHTML(state.period)}${clockPart}</div></div></div>`;
+        html = `<div class="espn-goal-strip"><div class="goal-crest-box">${logoImg}</div><div class="goal-badge-skew" style="background:${tmColor};">GOAL!</div>${playerPhotoHtml}<div class="goal-details"><div class="goal-team-title ${scorer ? 'goal-player-name' : ''}">${scorerTitle}</div>${scorer ? `<div class="goal-meta-line">${escapeHTML(tm.fullName)}</div>` : ''}<div class="goal-meta-line">${escapeHTML(state.home.shortName)} ${state.home.score} &ndash; ${escapeHTML(state.away.shortName)} ${state.away.score} &bull; ${escapeHTML(state.period)}${clockPart}</div></div></div>`;
       } else if (b.type === 'matchup') {
         const hUrl = resolveAssetSrc(state.home.logoPath, state.home.logoKey);
         const aUrl = resolveAssetSrc(state.away.logoPath, state.away.logoKey);
@@ -4089,6 +4195,112 @@
       state[side][field] = val;
       saveState(); renderScorebug(); renderBottomTicker(); renderGameControls(); renderTriggerPads(); renderActiveTakeover(); renderSetupForm(); publishState();
     }
+
+    function parseCsvRows(text) {
+      const rows = [];
+      let row = [], cell = '', quoted = false;
+      const src = String(text || '').replace(/^\uFEFF/, '');
+      for (let i = 0; i < src.length; i++) {
+        const ch = src[i];
+        if (ch === '"') {
+          if (quoted && src[i + 1] === '"') { cell += '"'; i++; }
+          else quoted = !quoted;
+        } else if (ch === ',' && !quoted) {
+          row.push(cell.trim()); cell = '';
+        } else if ((ch === '\n' || ch === '\r') && !quoted) {
+          if (ch === '\r' && src[i + 1] === '\n') i++;
+          row.push(cell.trim());
+          if (row.some((value) => value !== '')) rows.push(row);
+          row = []; cell = '';
+        } else cell += ch;
+      }
+      if (quoted) throw new Error('CSV has an unclosed quoted field.');
+      row.push(cell.trim());
+      if (row.some((value) => value !== '')) rows.push(row);
+      return rows;
+    }
+
+    async function importHomeRosterCsv(event) {
+      const input = event.target;
+      const file = input.files?.[0];
+      if (!file) return;
+      try {
+        if (file.size > 1024 * 1024) throw new Error('CSV must be 1 MB or smaller.');
+        const rows = parseCsvRows(await file.text());
+        if (rows.length < 2) throw new Error('CSV needs a header row and at least one player.');
+        const headers = rows[0].map((header) => header.toLowerCase().replace(/[ _-]+/g, ''));
+        const numberCol = headers.findIndex((h) => ['number', 'jersey', 'jerseynumber', 'no'].includes(h));
+        const nameCol = headers.findIndex((h) => ['name', 'player', 'playername'].includes(h));
+        const photoCol = headers.findIndex((h) => ['photo', 'image', 'photopath', 'imagepath'].includes(h));
+        if (numberCol < 0 || nameCol < 0) throw new Error('CSV headers must include number and name.');
+        if (rows.length - 1 > 100) throw new Error('Roster is limited to 100 players.');
+        const players = [];
+        const seenNumbers = new Set();
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          const number = String(row[numberCol] || '').trim().replace(/^#/, '');
+          const name = String(row[nameCol] || '').trim();
+          const photo = photoCol >= 0 ? String(row[photoCol] || '').trim() : '';
+          if (!number || !name) throw new Error(`Row ${i + 1} needs both a number and a name.`);
+          if (!/^[a-zA-Z0-9-]{1,4}$/.test(number)) throw new Error(`Row ${i + 1} has an invalid jersey number.`);
+          if (seenNumbers.has(number.toLowerCase())) throw new Error(`Jersey number ${number} appears more than once.`);
+          if (photo && (!isSafeMediaUrl(photo) || /\.(mp4|webm)(\?|$)/i.test(photo))) throw new Error(`Row ${i + 1} has an invalid photo URL/path.`);
+          seenNumbers.add(number.toLowerCase());
+          players.push({ id: `home-${number.toLowerCase()}`, number, name: name.slice(0, 50), photo: photo.slice(0, 500) });
+        }
+        state.home.players = normalizeHomePlayers(players);
+        saveState(); renderHomeRosterList(); publishState();
+        showStudioToast(`Imported ${players.length} Home roster players.`, 'success');
+      } catch (err) {
+        showStudioToast(err.message || 'Could not import roster CSV.', 'error');
+      } finally {
+        input.value = '';
+      }
+    }
+
+    function downloadRosterTemplate() {
+      const csv = 'number,name,photo\n"9","Alex Example","./assets/player-9.jpg"\n"21","Jordan Example",""\n';
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'home-roster-template.csv'; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+
+    function removeHomeRosterPlayer(index) {
+      if (!Array.isArray(state.home.players)) return;
+      state.home.players.splice(index, 1);
+      saveState(); renderHomeRosterList(); publishState();
+    }
+
+    function renderHomeRosterList() {
+      const list = document.getElementById('home-roster-list');
+      const count = document.getElementById('home-roster-count');
+      if (!list) return;
+      const players = normalizeHomePlayers(state.home.players);
+      if (count) count.textContent = `(${players.length})`;
+      list.textContent = '';
+      if (!players.length) {
+        list.textContent = 'No players yet. Import a CSV to add the Home roster.';
+        list.style.cssText = 'max-height:180px;overflow-y:auto;font-size:11px;color:var(--text-dim);padding:5px 2px;';
+        return;
+      }
+      list.style.cssText = 'max-height:180px;overflow-y:auto;';
+      players.forEach((player, index) => {
+        const row = document.createElement('div');
+        row.className = 'list-item-row';
+        const label = document.createElement('span');
+        label.style.cssText = 'display:flex;align-items:center;gap:7px;min-width:0;';
+        if (player.photo) {
+          const img = document.createElement('img'); img.src = resolveAssetSrc(player.photo, ''); img.alt = '';
+          img.style.cssText = 'width:30px;height:30px;object-fit:cover;border-radius:50%;'; label.appendChild(img);
+        }
+        const text = document.createElement('span'); text.textContent = `#${player.number} ${player.name}`; label.appendChild(text);
+        const del = document.createElement('button'); del.className = 'btn btn-red btn-xs'; del.textContent = 'Remove';
+        del.addEventListener('click', () => removeHomeRosterPlayer(index));
+        row.append(label, del); list.appendChild(row);
+      });
+    }
+
     function updateSetting(key, val) {
       const bounds = key === 'fadeMs' ? [0, 2000, 300] : [2, 30, 6];
       state.settings[key] = clampNum(val, bounds[0], bounds[1], bounds[2]);

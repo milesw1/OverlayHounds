@@ -550,7 +550,7 @@ app.get('/api/health', (_req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.json({
     ok: true,
-    version: 'v9',
+    version: 'v10',
     storage: 'flat-file-json',
     persistentVolume: USING_VOLUME,
     adminPinRequired: ADMIN_PIN_ENABLED,
@@ -929,5 +929,5 @@ app.get('*', (_req, res) => {
 app.listen(PORT, HOST, () => {
   const storageMode = USING_VOLUME ? 'persistent volume' : 'local folder';
   const lockMode = ADMIN_PIN_ENABLED ? 'ADMIN_PIN enabled' : 'open (no ADMIN_PIN)';
-  console.log(`Hockey Broadcast Studio v9 listening on http://${HOST}:${PORT} [${storageMode}, ${lockMode}]`);
+  console.log(`Hockey Broadcast Studio v10 listening on http://${HOST}:${PORT} [${storageMode}, ${lockMode}]`);
 });
